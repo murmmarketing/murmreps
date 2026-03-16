@@ -5,7 +5,7 @@ import { agents } from "@/lib/agents";
 interface Product {
   id: string;
   name: string;
-  price_cny: number;
+  price_cny: number | null;
   source_link: string;
   quality?: string | null;
 }
@@ -48,9 +48,13 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-lg font-semibold text-accent">
-              ¥{product.price_cny}
-            </p>
+            {product.price_cny != null ? (
+              <p className="mt-1 text-lg font-semibold text-accent">
+                ¥{product.price_cny}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-text-muted">Price not listed</p>
+            )}
           </div>
           <button
             onClick={onClose}

@@ -126,7 +126,7 @@ export default function NewsPage() {
                       {p.name}
                     </p>
                     <p className="text-xs text-text-muted">
-                      &yen;{p.price_cny}
+                      {p.price_cny != null ? <>&yen;{p.price_cny}</> : "No price"}
                     </p>
                   </div>
                   <svg

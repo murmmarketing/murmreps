@@ -91,11 +91,13 @@ export default function PopularFinds() {
 
               <div className="mt-2 flex items-center gap-2">
                 <span className="font-heading text-base font-bold text-white">
-                  &yen;{product.price_cny}
+                  {product.price_cny != null ? <>&yen;{product.price_cny}</> : <span className="text-sm text-text-muted">No price</span>}
                 </span>
-                <span className="text-xs text-text-muted">
-                  ${product.price_usd}
-                </span>
+                {product.price_usd != null && (
+                  <span className="text-xs text-text-muted">
+                    ${product.price_usd}
+                  </span>
+                )}
                 <span
                   className={`ml-auto rounded-pill px-2 py-0.5 text-[10px] font-medium ${tierColors[product.tier]}`}
                 >

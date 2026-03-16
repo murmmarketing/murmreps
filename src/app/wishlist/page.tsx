@@ -93,12 +93,21 @@ export default function WishlistPage() {
               </span>
 
               <div className="mt-3">
-                <span className="font-heading text-xl font-bold text-white">
-                  &yen;{product.price_cny}
-                </span>
-                <span className="ml-2 text-xs text-text-secondary">
-                  ${product.price_usd} / &euro;{product.price_eur}
-                </span>
+                {product.price_cny != null ? (
+                  <>
+                    <span className="font-heading text-xl font-bold text-white">
+                      &yen;{product.price_cny}
+                    </span>
+                    {product.price_usd != null && (
+                      <span className="ml-2 text-xs text-text-secondary">
+                        ${product.price_usd}
+                        {product.price_eur != null && <> / &euro;{product.price_eur}</>}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm text-text-muted">Price not listed</span>
+                )}
               </div>
 
               <div className="mt-4 flex gap-2">

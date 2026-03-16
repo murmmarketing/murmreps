@@ -87,8 +87,8 @@ export default function ProductsPage() {
     }
 
     result.sort((a, b) => {
-      if (sort === "price-asc") return a.price_cny - b.price_cny;
-      if (sort === "price-desc") return b.price_cny - a.price_cny;
+      if (sort === "price-asc") return (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999);
+      if (sort === "price-desc") return (b.price_cny ?? 0) - (a.price_cny ?? 0);
       return a.name.localeCompare(b.name);
     });
 
@@ -254,12 +254,23 @@ export default function ProductsPage() {
               </span>
 
               <div className="mt-3">
-                <span className="font-heading text-xl font-bold text-white">
-                  &yen;{product.price_cny}
-                </span>
-                <span className="ml-2 text-xs text-text-secondary">
-                  ${product.price_usd} / &euro;{product.price_eur}
-                </span>
+                {product.price_cny != null ? (
+                  <>
+                    <span className="font-heading text-xl font-bold text-white">
+                      &yen;{product.price_cny}
+                    </span>
+                    {product.price_usd != null && (
+                      <span className="ml-2 text-xs text-text-secondary">
+                        ${product.price_usd}
+                        {product.price_eur != null && <> / &euro;{product.price_eur}</>}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="font-heading text-sm font-medium text-text-muted">
+                    Price not listed
+                  </span>
+                )}
               </div>
 
               {/* Like / Dislike / Views */}

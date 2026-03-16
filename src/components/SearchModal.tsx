@@ -157,7 +157,7 @@ export default function SearchModal() {
                       {product.name}
                     </p>
                     <p className="text-xs text-text-muted">
-                      {product.brand} &middot; &yen;{product.price_cny}
+                      {product.brand}{product.price_cny != null && <> &middot; &yen;{product.price_cny}</>}
                     </p>
                   </div>
                   <svg
