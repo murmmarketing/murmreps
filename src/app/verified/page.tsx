@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Murm Verified — MurmReps",
-  description: "Hand-picked items personally bought, received, and reviewed.",
+  title: "Murm Verified \u2014 Personally Reviewed Rep Finds | MurmReps",
+  description:
+    "Hand-picked rep items personally bought, received, and reviewed by the MurmReps team. Only the best quality makes the cut.",
+  openGraph: {
+    title: "Murm Verified \u2014 Personally Reviewed Rep Finds | MurmReps",
+    description:
+      "Hand-picked rep items personally bought, received, and reviewed by the MurmReps team.",
+    url: "/verified",
+  },
+  twitter: {
+    title: "Murm Verified \u2014 Personally Reviewed Rep Finds | MurmReps",
+    description:
+      "Hand-picked rep items personally bought, received, and reviewed by the MurmReps team.",
+  },
+  alternates: { canonical: "/verified" },
 };
 
 export default function VerifiedPage() {

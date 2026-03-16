@@ -1,0 +1,80 @@
+[
+  {
+    "id": "1",
+    "title": "Budget Nike Dunk Low Panda",
+    "brand": "Nike",
+    "image": "",
+    "price_cny": 89,
+    "original_price_cny": 199,
+    "quality": "budget",
+    "valid_until": "2026-04-15",
+    "description": "Solid budget batch from famous H12 seller. Minor swoosh placement flaw but excellent for the price.",
+    "source_link": "https://weidian.com/item.html?itemID=example1",
+    "is_new": true
+  },
+  {
+    "id": "2",
+    "title": "Moncler Maya Down Jacket",
+    "brand": "Moncler",
+    "image": "",
+    "price_cny": 289,
+    "original_price_cny": 420,
+    "quality": "best",
+    "valid_until": "2026-04-01",
+    "description": "Top-tier batch with correct NFC scan and badge placement. Puffiest rep Maya available.",
+    "source_link": "https://weidian.com/item.html?itemID=example2",
+    "is_new": false
+  },
+  {
+    "id": "3",
+    "title": "Chrome Hearts Hoodie Flash Sale",
+    "brand": "Chrome Hearts",
+    "image": "",
+    "price_cny": 99,
+    "original_price_cny": 148,
+    "quality": "good",
+    "valid_until": "2026-03-25",
+    "description": "Correct cross patches and heavyweight cotton. Print quality is near-retail on this batch.",
+    "source_link": "https://weidian.com/item.html?itemID=example3",
+    "is_new": true
+  },
+  {
+    "id": "4",
+    "title": "Goyard Card Holder Clearance",
+    "brand": "Goyard",
+    "image": "",
+    "price_cny": 19,
+    "original_price_cny": 38,
+    "quality": "budget",
+    "valid_until": "2026-03-10",
+    "description": "Y-pattern touching on this batch. Great beater card holder at half price.",
+    "source_link": "https://weidian.com/item.html?itemID=example4",
+    "is_new": false
+  },
+  {
+    "id": "5",
+    "title": "Air Jordan 4 Black Cat Premium",
+    "brand": "Nike",
+    "image": "",
+    "price_cny": 179,
+    "original_price_cny": 250,
+    "quality": "best",
+    "valid_until": "2026-05-01",
+    "description": "X-batch with correct nubuck and jumpman placement. Suede is alive and cage is properly angled.",
+    "source_link": "https://weidian.com/item.html?itemID=example5",
+    "is_new": true
+  },
+  {
+    "id": "6",
+    "title": "Stone Island Crewneck Spring Deal",
+    "brand": "Stone Island",
+    "image": "",
+    "price_cny": 59,
+    "original_price_cny": 95,
+    "quality": "good",
+    "valid_until": "2026-02-28",
+    "description": "TopStoney badge with correct compass detail. Soft cotton blend, great spring layering piece.",
+    "source_link": "https://weidian.com/item.html?itemID=example6",
+    "is_new": false
+  }
+]

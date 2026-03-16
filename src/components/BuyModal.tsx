@@ -7,14 +7,22 @@ interface Product {
   name: string;
   price_cny: number;
   source_link: string;
+  quality?: string | null;
 }
+
+const qualityBadgeStyles: Record<string, string> = {
+  best: "bg-[#1DB954]/15 text-[#1DB954]",
+  good: "bg-[#F59E0B]/15 text-[#F59E0B]",
+  budget: "bg-[#6C757D]/20 text-white",
+};
 
 interface BuyModalProps {
   product: Product | null;
   onClose: () => void;
+  stats?: { likes: number; dislikes: number; views: number };
 }
 
-export default function BuyModal({ product, onClose }: BuyModalProps) {
+export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
   if (!product) return null;
 
   return (
@@ -26,11 +34,20 @@ export default function BuyModal({ product, onClose }: BuyModalProps) {
         className="w-full max-w-lg rounded-card border border-subtle bg-surface p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-6 flex items-start justify-between">
+        <div className="mb-4 flex items-start justify-between">
           <div>
-            <h2 className="font-heading text-xl font-bold text-white">
-              {product.name}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-heading text-xl font-bold text-white">
+                {product.name}
+              </h2>
+              {product.quality && qualityBadgeStyles[product.quality] && (
+                <span
+                  className={`shrink-0 rounded-pill px-2 py-0.5 text-[10px] font-medium ${qualityBadgeStyles[product.quality]}`}
+                >
+                  {product.quality}
+                </span>
+              )}
+            </div>
             <p className="mt-1 text-lg font-semibold text-accent">
               ¥{product.price_cny}
             </p>
@@ -45,6 +62,23 @@ export default function BuyModal({ product, onClose }: BuyModalProps) {
             </svg>
           </button>
         </div>
+
+        {stats && (
+          <div className="mb-4 flex items-center gap-3 rounded-btn bg-void px-3 py-2 text-[11px] text-[#6C757D]">
+            <span className="flex items-center gap-1">
+              <span>👍</span>
+              <span>{stats.likes}</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span>👎</span>
+              <span>{stats.dislikes}</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span>👁</span>
+              <span>{stats.views}</span>
+            </span>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           {agents.map((agent) => {

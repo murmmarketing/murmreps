@@ -11,7 +11,8 @@
     "source_link": "https://weidian.com/item.html?itemID=7637305464",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   },
   {
     "id": "2",
@@ -25,7 +26,8 @@
     "source_link": "https://weidian.com/item.html?itemID=7312091006",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   },
   {
     "id": "3",
@@ -39,7 +41,8 @@
     "source_link": "https://weidian.com/item.html?itemID=5765498426",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "budget"
   },
   {
     "id": "4",
@@ -53,7 +56,8 @@
     "source_link": "https://weidian.com/item.html?itemID=7480478644",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "best"
   },
   {
     "id": "5",
@@ -67,7 +71,8 @@
     "source_link": "https://weidian.com/item.html?itemID=6531780253",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "best"
   },
   {
     "id": "6",
@@ -81,7 +86,8 @@
     "source_link": "https://weidian.com/item.html?itemID=7302710498",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   },
   {
     "id": "7",
@@ -95,7 +101,8 @@
     "source_link": "https://weidian.com/item.html?itemID=5765112388",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   },
   {
     "id": "8",
@@ -109,7 +116,8 @@
     "source_link": "https://weidian.com/item.html?itemID=5890743218",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   },
   {
     "id": "9",
@@ -123,7 +131,8 @@
     "source_link": "https://weidian.com/item.html?itemID=6234518790",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "budget"
   },
   {
     "id": "10",
@@ -137,7 +146,8 @@
     "source_link": "https://weidian.com/item.html?itemID=7118234567",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   },
   {
     "id": "11",
@@ -151,7 +161,8 @@
     "source_link": "https://weidian.com/item.html?itemID=6897234561",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "best"
   },
   {
     "id": "12",
@@ -165,7 +176,8 @@
     "source_link": "https://weidian.com/item.html?itemID=5412398761",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "budget"
   },
   {
     "id": "13",
@@ -179,7 +191,8 @@
     "source_link": "https://weidian.com/item.html?itemID=6789012345",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "best"
   },
   {
     "id": "14",
@@ -193,7 +206,8 @@
     "source_link": "https://weidian.com/item.html?itemID=5543219876",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "budget"
   },
   {
     "id": "15",
@@ -207,7 +221,8 @@
     "source_link": "https://item.taobao.com/item.htm?id=904880439368",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "budget"
   },
   {
     "id": "16",
@@ -221,6 +236,7 @@
     "source_link": "https://weidian.com/item.html?itemID=6123456789",
     "image": "",
     "qc_rating": null,
-    "verified": false
+    "verified": false,
+    "quality": "good"
   }
 ]

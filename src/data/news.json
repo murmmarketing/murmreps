@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "title": "MurmReps site is live!",
+    "content": "We just launched murmreps.com with 500+ products, a link converter, agent comparison, and more tools. Check it out and let us know what you think!",
+    "author": "Murm",
+    "date": "2026-03-16",
+    "tags": ["announcement"],
+    "link": null
+  },
+  {
+    "id": "2",
+    "title": "New products added: 10 streetwear drops",
+    "content": "We added 10 new streetwear finds to the product database including Moncler puffers, Chrome Hearts accessories, and Essentials hoodies. All verified with QC photos and available through 8 agents.",
+    "author": "Murm",
+    "date": "2026-03-14",
+    "tags": ["new products"],
+    "link": "/products"
+  },
+  {
+    "id": "3",
+    "title": "Agent comparison page updated for 2026",
+    "content": "We refreshed the agent comparison table with the latest shipping rates, service fees, and user ratings. KakoBuy still takes the top spot with the best overall experience and fastest QC photos.",
+    "author": "Murm",
+    "date": "2026-03-12",
+    "tags": ["update"],
+    "link": "/agents"
+  },
+  {
+    "id": "4",
+    "title": "Step-by-step beginner guide published",
+    "content": "New to reps? Our interactive 11-step guide walks you through everything from picking an agent to tracking your first haul. Perfect for beginners who want to learn the process without the confusion.",
+    "author": "Murm",
+    "date": "2026-03-10",
+    "tags": ["announcement"],
+    "link": "/guide"
+  },
+  {
+    "id": "5",
+    "title": "Deals page coming soon",
+    "content": "We are working on a dedicated deals page with limited-time promotions, discount codes, and flash sales from top sellers. Stay tuned for curated deals updated weekly.",
+    "author": "Murm",
+    "date": "2026-03-08",
+    "tags": ["update"],
+    "link": "/deals"
+  }
+]

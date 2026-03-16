@@ -1,4 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import PopularFinds from "@/components/PopularFinds";
+
+export const metadata: Metadata = {
+  title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+  description:
+    "Browse 500+ verified rep finds with QC reviews and buy links across 8 agents. Shoes, streetwear, bags, and jewelry all in one place.",
+  openGraph: {
+    title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+    description:
+      "Browse 500+ verified rep finds with QC reviews and buy links across 8 agents.",
+    url: "/",
+  },
+  twitter: {
+    title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+    description:
+      "Browse 500+ verified rep finds with QC reviews and buy links across 8 agents.",
+  },
+  alternates: { canonical: "/" },
+};
 
 const features = [
   {
@@ -73,9 +93,27 @@ const features = [
   },
 ];
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "MurmReps",
+  url: "https://murmreps.com",
+  logo: "https://murmreps.com/favicon.svg",
+  sameAs: [
+    "https://instagram.com/murmreps",
+    "https://tiktok.com/@murmreps",
+  ],
+  description:
+    "Find the best reps, all in one place. 500+ verified products with QC reviews and buy links across 8 agents.",
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-surface/50 to-void" />
@@ -124,6 +162,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Popular finds carousel */}
+      <PopularFinds />
 
       {/* Features */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
