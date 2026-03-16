@@ -6,9 +6,9 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="flex flex-col items-center gap-6 text-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-accent">
-              <span className="font-heading text-base font-black leading-none text-white">
+          <Link href="/" className="flex items-center gap-[10px]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-accent">
+              <span className="font-heading text-[15px] font-black leading-none text-white">
                 M
               </span>
             </div>

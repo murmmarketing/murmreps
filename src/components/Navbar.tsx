@@ -15,9 +15,9 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-subtle bg-void/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-accent">
-            <span className="font-heading text-lg font-black leading-none text-white">
+        <Link href="/" className="flex items-center gap-[10px]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent">
+            <span className="font-heading text-[18px] font-black leading-none text-white">
               M
             </span>
           </div>

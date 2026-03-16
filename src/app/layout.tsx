@@ -27,6 +27,14 @@ export const metadata: Metadata = {
       "500+ verified products with honest QC reviews and buy links across 8 agents.",
     type: "website",
     siteName: "MurmReps",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "MurmReps — Find the best reps, all in one place",
+      },
+    ],
   },
 };
 
