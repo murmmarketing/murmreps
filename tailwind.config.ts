@@ -9,8 +9,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        void: "#0A0A0A",
+        surface: "#141414",
+        accent: "#FF6B35",
+        "text-primary": "#FFFFFF",
+        "text-secondary": "#9CA3AF",
+        "text-muted": "#6C757D",
+        verified: "#1DB954",
+        danger: "#EF4444",
+        warning: "#F59E0B",
+      },
+      fontFamily: {
+        heading: ["var(--font-space-grotesk)", "sans-serif"],
+        body: ["var(--font-inter)", "sans-serif"],
+      },
+      borderRadius: {
+        card: "12px",
+        btn: "8px",
+        pill: "99px",
+      },
+      borderColor: {
+        subtle: "rgba(255,255,255,0.08)",
       },
     },
   },
