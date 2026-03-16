@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PopularFinds from "@/components/PopularFinds";
+import Typewriter from "@/components/Typewriter";
 
 export const metadata: Metadata = {
   title: "MurmReps \u2014 Find the Best Reps, All in One Place",
@@ -123,10 +124,7 @@ export default function Home() {
               Find the best reps,{" "}
               <span className="text-accent">all in one place.</span>
             </h1>
-            <p className="mt-6 text-lg text-text-secondary">
-              2000+ verified products with honest QC reviews and buy links across
-              8 agents.
-            </p>
+            <Typewriter />
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/products"
