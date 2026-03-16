@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <circle cx="200" cy="200" r="200" fill="#FF6B35"/>
-  <text x="200" y="272" text-anchor="middle" fill="white" font-family="'Space Grotesk', sans-serif" font-weight="900" font-size="240">M</text>
+  <!-- Circle for profile pic -->
+  <circle cx="200" cy="200" r="200" fill="#141414"/>
+  <!-- Large white M -->
+  <text x="200" y="230" text-anchor="middle" fill="white" font-family="'Space Grotesk', Arial Black, sans-serif" font-weight="900" font-size="220">M</text>
+  <!-- Orange REPS text -->
+  <text x="200" y="305" text-anchor="middle" fill="#FF6B35" font-family="'Space Grotesk', Arial, sans-serif" font-weight="700" font-size="58" letter-spacing="10">REPS</text>
+  <!-- Orange underline -->
+  <line x1="95" y1="320" x2="305" y2="320" stroke="#FF6B35" stroke-width="4" stroke-linecap="round"/>
 </svg>

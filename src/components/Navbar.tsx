@@ -20,16 +20,14 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-subtle bg-void/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-[10px]">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent">
-            <span className="font-heading text-[18px] font-black leading-none text-white">
-              M
-            </span>
-          </div>
-          <span className="font-heading text-xl font-extrabold tracking-[-1.5px]">
-            <span className="text-white">Murm</span>
-            <span className="text-accent">Reps</span>
-          </span>
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="MurmReps logo"
+            className="h-9 w-auto object-contain"
+            loading="eager"
+          />
         </Link>
 
         {/* Desktop nav */}

@@ -6,16 +6,13 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="flex flex-col items-center gap-6 text-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-[10px]">
-            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-accent">
-              <span className="font-heading text-[15px] font-black leading-none text-white">
-                M
-              </span>
-            </div>
-            <span className="font-heading text-lg font-extrabold tracking-[-1.5px]">
-              <span className="text-white">Murm</span>
-              <span className="text-accent">Reps</span>
-            </span>
+          <Link href="/" className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="MurmReps logo"
+              className="h-8 w-auto object-contain"
+            />
           </Link>
 
           {/* Social links */}
