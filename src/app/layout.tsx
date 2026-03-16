@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
+import ReferralBanner from "@/components/ReferralBanner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} font-body bg-void text-text-primary antialiased`}
       >
+        <ReferralBanner />
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
