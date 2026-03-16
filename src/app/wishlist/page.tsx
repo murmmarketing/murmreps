@@ -106,7 +106,7 @@ export default function WishlistPage() {
                     )}
                   </>
                 ) : (
-                  <span className="text-sm text-text-muted">Price not listed</span>
+                  <span className="font-heading text-lg font-bold text-text-muted">Multi</span>
                 )}
               </div>
 

@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "500+ verified products with honest QC reviews and buy links across 8 agents. Search reps for shoes, streetwear, bags, and jewelry.",
+    "2000+ verified products with honest QC reviews and buy links across 8 agents. Search reps for shoes, streetwear, bags, and jewelry.",
   openGraph: {
     title: "MurmReps \u2014 Find the Best Reps, All in One Place",
     description:
-      "500+ verified products with honest QC reviews and buy links across 8 agents.",
+      "2000+ verified products with honest QC reviews and buy links across 8 agents.",
     type: "website",
     siteName: "MurmReps",
     images: [
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "MurmReps \u2014 Find the Best Reps, All in One Place",
     description:
-      "500+ verified products with honest QC reviews and buy links across 8 agents.",
+      "2000+ verified products with honest QC reviews and buy links across 8 agents.",
     images: ["/og-image.svg"],
   },
   alternates: {

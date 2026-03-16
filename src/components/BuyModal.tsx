@@ -27,7 +27,7 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -53,7 +53,7 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
                 ¥{product.price_cny}
               </p>
             ) : (
-              <p className="mt-1 text-sm text-text-muted">Price not listed</p>
+              <p className="mt-1 text-lg font-semibold text-text-muted">Multi</p>
             )}
           </div>
           <button
@@ -84,9 +84,20 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
           </div>
         )}
 
+        {product.source_link ? (
+          <p className="mb-3 text-xs text-text-muted">
+            Buy this item through an agent:
+          </p>
+        ) : (
+          <p className="mb-3 text-xs text-text-muted">
+            No direct link available. Sign up with an agent:
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           {agents.map((agent) => {
-            const url = product.source_link
+            const hasLink = !!product.source_link;
+            const url = hasLink
               ? agent.buildUrl(product.source_link)
               : agent.referralUrl;
             return (
@@ -95,9 +106,12 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center rounded-btn border border-subtle bg-void px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                className="flex items-center justify-center gap-2 rounded-btn border border-subtle bg-void px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
               >
                 {agent.name}
+                <svg className="h-3.5 w-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
               </a>
             );
           })}

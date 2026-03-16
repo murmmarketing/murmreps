@@ -5,17 +5,17 @@ import PopularFinds from "@/components/PopularFinds";
 export const metadata: Metadata = {
   title: "MurmReps \u2014 Find the Best Reps, All in One Place",
   description:
-    "Browse 500+ verified rep finds with QC reviews and buy links across 8 agents. Shoes, streetwear, bags, and jewelry all in one place.",
+    "Browse 2000+ verified rep finds with QC reviews and buy links across 8 agents. Shoes, streetwear, bags, and jewelry all in one place.",
   openGraph: {
     title: "MurmReps \u2014 Find the Best Reps, All in One Place",
     description:
-      "Browse 500+ verified rep finds with QC reviews and buy links across 8 agents.",
+      "Browse 2000+ verified rep finds with QC reviews and buy links across 8 agents.",
     url: "/",
   },
   twitter: {
     title: "MurmReps \u2014 Find the Best Reps, All in One Place",
     description:
-      "Browse 500+ verified rep finds with QC reviews and buy links across 8 agents.",
+      "Browse 2000+ verified rep finds with QC reviews and buy links across 8 agents.",
   },
   alternates: { canonical: "/" },
 };
@@ -24,7 +24,7 @@ const features = [
   {
     title: "Products",
     description:
-      "Search 500+ finds across shoes, streetwear, bags, and jewelry",
+      "Search 2000+ finds across shoes, streetwear, bags, and jewelry",
     href: "/products",
     external: false,
     icon: (
@@ -104,7 +104,7 @@ const jsonLd = {
     "https://tiktok.com/@murmreps",
   ],
   description:
-    "Find the best reps, all in one place. 500+ verified products with QC reviews and buy links across 8 agents.",
+    "Find the best reps, all in one place. 2000+ verified products with QC reviews and buy links across 8 agents.",
 };
 
 export default function Home() {
@@ -124,7 +124,7 @@ export default function Home() {
               <span className="text-accent">all in one place.</span>
             </h1>
             <p className="mt-6 text-lg text-text-secondary">
-              500+ verified products with honest QC reviews and buy links across
+              2000+ verified products with honest QC reviews and buy links across
               8 agents.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -146,7 +146,7 @@ export default function Home() {
           {/* Stats */}
           <div className="mx-auto mt-16 flex max-w-lg items-center justify-center divide-x divide-subtle">
             {[
-              { value: "500+", label: "Products" },
+              { value: "2000+", label: "Products" },
               { value: "8", label: "Agents" },
               { value: "Weekly", label: "Updates" },
             ].map((stat) => (

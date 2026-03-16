@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import products from "@/data/products.json";
 import BuyModal from "@/components/BuyModal";
 import { useWishlist } from "@/lib/useWishlist";
@@ -51,6 +51,7 @@ export default function ProductsPage() {
   const [tier, setTier] = useState<Tier>("all");
   const [quality, setQuality] = useState<Quality>("all");
   const [sort, setSort] = useState<Sort>("price-asc");
+  const [visible, setVisible] = useState(24);
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[0] | null
   >(null);
@@ -63,6 +64,7 @@ export default function ProductsPage() {
   };
 
   const filtered = useMemo(() => {
+    setVisible(24);
     let result = [...products];
 
     if (search) {
@@ -94,6 +96,10 @@ export default function ProductsPage() {
 
     return result;
   }, [search, category, tier, quality, sort]);
+
+  const paginated = filtered.slice(0, visible);
+  const hasMore = visible < filtered.length;
+  const loadMore = useCallback(() => setVisible((v) => v + 24), []);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -183,9 +189,14 @@ export default function ProductsPage() {
         ))}
       </div>
 
+      {/* Result count */}
+      <p className="mt-6 text-sm text-text-muted">
+        Showing {paginated.length} of {filtered.length} products
+      </p>
+
       {/* Product grid */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((product) => {
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {paginated.map((product) => {
           const saved = wishlist.has(product.id);
           return (
             <div
@@ -267,8 +278,8 @@ export default function ProductsPage() {
                     )}
                   </>
                 ) : (
-                  <span className="font-heading text-sm font-medium text-text-muted">
-                    Price not listed
+                  <span className="font-heading text-lg font-bold text-text-muted">
+                    Multi
                   </span>
                 )}
               </div>
@@ -310,6 +321,18 @@ export default function ProductsPage() {
           );
         })}
       </div>
+
+      {/* Load more */}
+      {hasMore && (
+        <div className="mt-8 text-center">
+          <button
+            onClick={loadMore}
+            className="rounded-btn border border-subtle bg-surface px-8 py-3 text-sm font-semibold text-white transition-all duration-200 hover:border-accent/30 hover:text-accent"
+          >
+            Load more
+          </button>
+        </div>
+      )}
 
       {filtered.length === 0 && (
         <div className="mt-16 text-center">

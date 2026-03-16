@@ -10,7 +10,7 @@ const tierColors: Record<string, string> = {
   premium: "bg-danger/10 text-danger",
 };
 
-const popular = products.slice(0, 8);
+const popular = products.filter((p) => p.price_cny != null).slice(0, 8);
 
 export default function PopularFinds() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -91,7 +91,7 @@ export default function PopularFinds() {
 
               <div className="mt-2 flex items-center gap-2">
                 <span className="font-heading text-base font-bold text-white">
-                  {product.price_cny != null ? <>&yen;{product.price_cny}</> : <span className="text-sm text-text-muted">No price</span>}
+                  {product.price_cny != null ? <>&yen;{product.price_cny}</> : <span className="text-sm font-bold text-text-muted">Multi</span>}
                 </span>
                 {product.price_usd != null && (
                   <span className="text-xs text-text-muted">
