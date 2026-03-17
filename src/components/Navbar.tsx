@@ -96,6 +96,7 @@ function openSearchModal() {
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const wishlistCount = useWishlistCount();
   const pathname = usePathname();
 
@@ -104,18 +105,14 @@ export default function Navbar() {
       {/* ─── Desktop ─── */}
       <div className="mx-auto hidden h-14 max-w-7xl items-center gap-5 px-4 lg:flex xl:px-6">
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-3">
+        <Link href="/" className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
-            alt="MurmReps logo"
+            alt="MurmReps"
             className="h-8 w-auto object-contain"
             loading="eager"
           />
-          <span className="font-heading text-lg font-extrabold tracking-[-1.5px]">
-            <span className="text-white">Murm</span>
-            <span className="text-accent">Reps</span>
-          </span>
         </Link>
 
         {/* Center search trigger */}
@@ -261,6 +258,36 @@ export default function Navbar() {
               />
             </svg>
           </a>
+
+          {/* Login button */}
+          <div className="relative">
+            <button
+              onClick={() => setLoginOpen(!loginOpen)}
+              className="rounded-full bg-accent px-5 py-2 text-[14px] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+            >
+              Login
+            </button>
+            {loginOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-[60]"
+                  onClick={() => setLoginOpen(false)}
+                />
+                <div className="absolute right-0 top-full z-[61] mt-2 w-72 rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[#141414] p-4 shadow-lg">
+                  <p className="text-[13px] leading-relaxed text-[#9CA3AF]">
+                    Login coming soon! For now, your wishlist and votes are saved
+                    locally on your device.
+                  </p>
+                  <button
+                    onClick={() => setLoginOpen(false)}
+                    className="mt-3 w-full rounded-btn bg-accent/10 py-2 text-[13px] font-semibold text-accent transition-colors duration-200 hover:bg-accent/20"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -347,6 +374,30 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="fixed inset-0 top-12 z-50 bg-[#0a0a0a] lg:hidden">
           <div className="flex h-full flex-col overflow-y-auto px-4 pb-8 pt-4">
+            <div className="mb-4 flex items-center justify-between">
+              <button
+                onClick={() => { setLoginOpen(!loginOpen); }}
+                className="rounded-full bg-accent px-5 py-2 text-[14px] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+              >
+                Login
+              </button>
+            </div>
+
+            {loginOpen && (
+              <div className="mb-4 rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[#141414] p-4">
+                <p className="text-[13px] leading-relaxed text-[#9CA3AF]">
+                  Login coming soon! For now, your wishlist and votes are saved
+                  locally on your device.
+                </p>
+                <button
+                  onClick={() => setLoginOpen(false)}
+                  className="mt-3 w-full rounded-btn bg-accent/10 py-2 text-[13px] font-semibold text-accent transition-colors duration-200 hover:bg-accent/20"
+                >
+                  Got it
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col">
               {allMobileLinks.map((link) => (
                 <Link

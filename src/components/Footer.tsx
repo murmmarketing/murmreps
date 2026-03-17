@@ -10,8 +10,8 @@ export default function Footer() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
-              alt="MurmReps logo"
-              className="h-8 w-auto object-contain"
+              alt="MurmReps"
+              className="h-7 w-auto object-contain"
             />
           </Link>
 
