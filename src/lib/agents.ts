@@ -45,7 +45,7 @@ export const agents: Agent[] = [
   {
     name: "KakoBuy",
     buildUrl: (link) =>
-      `https://www.kakobuy.com/item/detail?url=${encodeURIComponent(link)}`,
+      `https://www.kakobuy.com/item/details?url=${encodeURIComponent(link)}`,
     referralUrl: "https://ikako.vip/r/6gkjt",
   },
   {
@@ -63,9 +63,9 @@ export const agents: Agent[] = [
         const p =
           platform === "weidian" ? "WEIDIAN" :
           platform === "taobao" ? "TAOBAO" : "ALI_1688";
-        return `https://cnfans.com/product/?platform=${p}&id=${itemId}&ref=17439797`;
+        return `https://cnfans.com/product?platform=${p}&id=${itemId}&ref=17439797`;
       }
-      return `https://cnfans.com/product/?url=${encodeURIComponent(link)}&ref=17439797`;
+      return `https://cnfans.com/product?url=${encodeURIComponent(link)}&ref=17439797`;
     },
     referralUrl: "https://cnfans.com/register?ref=17439797",
   },
@@ -129,7 +129,7 @@ export const agents: Agent[] = [
   {
     name: "SugarGoo",
     buildUrl: (link) =>
-      `https://www.sugargoo.com/#/home/productDetail?productLink=${encodeURIComponent(link)}`,
+      `https://www.sugargoo.com/index/item/index.html?tp=taobao&searchLk=${encodeURIComponent(link)}`,
     referralUrl: "https://sugargoo.com",
   },
 ];
