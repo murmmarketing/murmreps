@@ -128,7 +128,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/products"
-                className="inline-flex h-12 items-center rounded-btn bg-accent px-8 font-heading text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                className="inline-flex h-12 items-center rounded-btn bg-accent px-8 font-heading text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
               >
                 Explore products
               </Link>
@@ -183,7 +183,7 @@ export default function Home() {
             );
 
             const className =
-              "group block rounded-card border border-subtle bg-surface p-6 transition-all duration-200 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(255,107,53,0.05)]";
+              "group block rounded-card border border-subtle bg-surface p-6 transition-all duration-200 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(254,66,5,0.05)]";
 
             if (feature.external) {
               return (

@@ -115,7 +115,7 @@ export default function QCPage() {
         </div>
         <button
           onClick={handleSubmit}
-          className="shrink-0 rounded-btn bg-accent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+          className="shrink-0 rounded-btn bg-accent px-6 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
         >
           Check QC
         </button>
@@ -134,7 +134,7 @@ export default function QCPage() {
                 href={agent.buildUrl(submitted)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-card border border-[rgba(255,255,255,0.06)] bg-[#141414] px-5 py-4 transition-all duration-200 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(255,107,53,0.05)]"
+                className="flex items-center justify-between rounded-card border border-[rgba(255,255,255,0.06)] bg-[#141414] px-5 py-4 transition-all duration-200 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(254,66,5,0.05)]"
               >
                 <span className="font-heading text-sm font-semibold text-white">
                   {agent.name}

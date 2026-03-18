@@ -4,7 +4,7 @@
   <!-- Large white M -->
   <text x="200" y="230" text-anchor="middle" fill="white" font-family="'Space Grotesk', Arial Black, sans-serif" font-weight="900" font-size="220">M</text>
   <!-- Orange REPS text -->
-  <text x="200" y="305" text-anchor="middle" fill="#FF6B35" font-family="'Space Grotesk', Arial, sans-serif" font-weight="700" font-size="58" letter-spacing="10">REPS</text>
+  <text x="200" y="305" text-anchor="middle" fill="#FE4205" font-family="'Space Grotesk', Arial, sans-serif" font-weight="700" font-size="58" letter-spacing="10">REPS</text>
   <!-- Orange underline -->
-  <line x1="95" y1="320" x2="305" y2="320" stroke="#FF6B35" stroke-width="4" stroke-linecap="round"/>
+  <line x1="95" y1="320" x2="305" y2="320" stroke="#FE4205" stroke-width="4" stroke-linecap="round"/>
 </svg>

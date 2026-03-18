@@ -252,7 +252,7 @@ export default function AgentsPage() {
           href="https://ikako.vip/r/6gkjt"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex h-12 items-center rounded-btn bg-accent px-8 font-heading text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+          className="mt-6 inline-flex h-12 items-center rounded-btn bg-accent px-8 font-heading text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
         >
           Sign up for KakoBuy
         </a>

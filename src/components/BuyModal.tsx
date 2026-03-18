@@ -106,7 +106,7 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-btn border border-subtle bg-void px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                className="flex items-center justify-center gap-2 rounded-btn border border-subtle bg-void px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
               >
                 {agent.name}
                 <svg className="h-3.5 w-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

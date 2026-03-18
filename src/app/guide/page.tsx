@@ -167,7 +167,7 @@ function buildSteps(): Step[] {
                   rel="noopener noreferrer"
                   className={`mt-3 inline-flex items-center rounded-btn px-4 py-1.5 text-xs font-semibold text-white transition-all duration-200 ${
                     agent.recommended
-                      ? "bg-accent hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                      ? "bg-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
                       : "bg-[rgba(255,255,255,0.06)] hover:bg-accent"
                   }`}
                 >
@@ -192,7 +192,7 @@ function buildSteps(): Step[] {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 rounded-btn bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+              className="inline-flex items-center gap-2 rounded-btn bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
             >
               Browse products
             </Link>
@@ -334,7 +334,7 @@ function buildSteps(): Step[] {
           <div className="mt-6">
             <Link
               href="/tracking"
-              className="inline-flex items-center gap-2 rounded-btn bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+              className="inline-flex items-center gap-2 rounded-btn bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
             >
               Track your parcel
             </Link>
@@ -381,7 +381,7 @@ function buildSteps(): Step[] {
           <div className="mt-6">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 rounded-btn bg-accent px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+              className="inline-flex items-center gap-2 rounded-btn bg-accent px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
             >
               Browse more products &rarr;
             </Link>
@@ -424,7 +424,7 @@ export default function GuidePage() {
             particleCount: 120,
             spread: 80,
             origin: { y: 0.6 },
-            colors: ["#FF6B35", "#ffffff", "#1DB954", "#F59E0B"],
+            colors: ["#FE4205", "#ffffff", "#1DB954", "#F59E0B"],
           });
         }
       }, 300);
@@ -571,7 +571,7 @@ export default function GuidePage() {
                 className={`flex items-center gap-2 rounded-btn px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
                   current === total - 1
                     ? "cursor-not-allowed text-text-muted"
-                    : "bg-accent text-white hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                    : "bg-accent text-white hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
                 }`}
               >
                 Next

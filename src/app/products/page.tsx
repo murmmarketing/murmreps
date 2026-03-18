@@ -201,7 +201,7 @@ export default function ProductsPage() {
           return (
             <div
               key={product.id}
-              className="group relative rounded-card border border-[rgba(255,255,255,0.06)] bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(255,107,53,0.05)]"
+              className="group relative rounded-card border border-[rgba(255,255,255,0.06)] bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(254,66,5,0.05)]"
             >
               {/* Wishlist heart */}
               <button
@@ -313,7 +313,7 @@ export default function ProductsPage() {
 
               <button
                 onClick={() => handleBuy(product)}
-                className="mt-4 w-full rounded-btn bg-accent py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                className="mt-4 w-full rounded-btn bg-accent py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
               >
                 Buy
               </button>

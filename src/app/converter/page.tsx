@@ -58,7 +58,7 @@ export default function ConverterPage() {
         <button
           onClick={handleConvert}
           disabled={!url.trim()}
-          className="shrink-0 rounded-btn bg-accent px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,107,53,0.15)] disabled:opacity-40"
+          className="shrink-0 rounded-btn bg-accent px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)] disabled:opacity-40"
         >
           Convert
         </button>
@@ -120,7 +120,7 @@ export default function ConverterPage() {
               href={agent.referralUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center rounded-btn border border-subtle bg-void px-4 py-2.5 text-xs font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+              className="flex items-center justify-center rounded-btn border border-subtle bg-void px-4 py-2.5 text-xs font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
             >
               {agent.name}
             </a>

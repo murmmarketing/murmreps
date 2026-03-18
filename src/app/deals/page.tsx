@@ -146,7 +146,7 @@ export default function DealsPage() {
               className={`relative rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 ${
                 expired
                   ? "opacity-50 grayscale"
-                  : "hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(255,107,53,0.05)]"
+                  : "hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(254,66,5,0.05)]"
               }`}
             >
               {/* Image area */}
@@ -234,7 +234,7 @@ export default function DealsPage() {
                   className={`mt-4 flex w-full items-center justify-center gap-1.5 rounded-btn py-2.5 text-sm font-semibold transition-all duration-200 ${
                     expired
                       ? "cursor-not-allowed bg-[#333] text-text-muted"
-                      : "bg-accent text-white hover:shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                      : "bg-accent text-white hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
                   }`}
                 >
                   {expired ? "Expired" : "Get deal"}

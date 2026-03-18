@@ -5,5 +5,5 @@
   <!-- Tagline -->
   <text x="600" y="400" text-anchor="middle" fill="white" font-family="'Inter', sans-serif" font-weight="400" font-size="24">Find the best reps, all in one place.</text>
   <!-- Subtle accent line -->
-  <line x1="450" y1="440" x2="750" y2="440" stroke="#FF6B35" stroke-width="3" stroke-opacity="0.4" stroke-linecap="round"/>
+  <line x1="450" y1="440" x2="750" y2="440" stroke="#FE4205" stroke-width="3" stroke-opacity="0.4" stroke-linecap="round"/>
 </svg>
