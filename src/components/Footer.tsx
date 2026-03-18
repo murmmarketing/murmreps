@@ -11,7 +11,7 @@ export default function Footer() {
             <img
               src="/logo.png"
               alt="MurmReps"
-              className="h-7 w-auto object-contain"
+              className="h-9 w-auto object-contain"
             />
           </Link>
 

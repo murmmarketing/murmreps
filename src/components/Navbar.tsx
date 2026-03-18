@@ -110,7 +110,7 @@ export default function Navbar() {
           <img
             src="/logo.png"
             alt="MurmReps"
-            className="h-8 w-auto object-contain"
+            className="h-11 w-auto object-contain"
             loading="eager"
           />
         </Link>
