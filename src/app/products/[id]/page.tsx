@@ -77,7 +77,7 @@ export default function ProductDetailPage() {
       <div className="mt-2 grid gap-8 lg:grid-cols-[55%_1fr]">
         {/* LEFT — Image */}
         <div>
-          <div className="relative aspect-square overflow-hidden rounded-xl bg-[#141414]">
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-[#0a0a0a]">
             {product.image && !imgError ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
@@ -97,12 +97,12 @@ export default function ProductDetailPage() {
           {/* Thumbnail strip */}
           {product.image && !imgError && (
             <div className="mt-3 flex gap-2">
-              <div className="h-16 w-16 overflow-hidden rounded-lg border-2 border-accent bg-[#141414]">
+              <div className="h-16 w-16 overflow-hidden rounded-lg border-2 border-accent bg-[#0a0a0a]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               </div>
             </div>
@@ -293,14 +293,14 @@ export default function ProductDetailPage() {
                 href={`/products/${p.id}`}
                 className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 sm:w-auto"
               >
-                <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#141414]">
+                <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#0a0a0a]">
                   {p.image ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={p.image}
                       alt={p.name}
                       loading="lazy"
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                       }}

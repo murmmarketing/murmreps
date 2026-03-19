@@ -74,14 +74,14 @@ export default function PopularFinds() {
             className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20"
           >
             {/* Product image */}
-            <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#1a1a1a]">
+            <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#0a0a0a]">
               {product.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={product.image}
                   alt={product.name}
                   loading="lazy"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                   onError={(e) => {
                     const target = e.currentTarget;
                     target.style.display = "none";

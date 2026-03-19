@@ -61,14 +61,14 @@ export default function WishlistPage() {
               className="group rounded-card border border-[rgba(255,255,255,0.06)] bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(254,66,5,0.05)]"
             >
               {/* Product image */}
-              <div className="relative mb-4 h-40 overflow-hidden rounded-btn bg-void">
+              <div className="relative mb-4 h-40 overflow-hidden rounded-btn bg-[#0a0a0a]">
                 {product.image ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                     onError={(e) => {
                       const target = e.currentTarget;
                       target.style.display = "none";
