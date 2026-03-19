@@ -438,7 +438,7 @@ export default function Navbar() {
                 </svg>
               </a>
               <a
-                href="https://discord.gg/murmreps"
+                href="https://discord.gg/8r5EFMRg"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#9CA3AF] transition-colors hover:text-white"

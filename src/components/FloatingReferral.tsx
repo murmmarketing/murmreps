@@ -33,7 +33,7 @@ export default function FloatingReferral() {
 
       {/* Discord */}
       <a
-        href="https://discord.gg/murmreps"
+        href="https://discord.gg/8r5EFMRg"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Discord"

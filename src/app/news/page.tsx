@@ -180,7 +180,7 @@ export default function NewsPage() {
                 TikTok
               </a>
               <a
-                href="https://discord.gg/murmreps"
+                href="https://discord.gg/8r5EFMRg"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-btn bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-accent"

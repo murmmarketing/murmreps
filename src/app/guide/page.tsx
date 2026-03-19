@@ -367,7 +367,7 @@ function buildSteps(): Step[] {
               @murmreps on IG
             </a>
             <a
-              href="https://discord.gg/murmreps"
+              href="https://discord.gg/8r5EFMRg"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-btn border border-subtle bg-surface px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-accent/30"

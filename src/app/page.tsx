@@ -220,7 +220,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://discord.gg/murmreps"
+                  href="https://discord.gg/8r5EFMRg"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-btn border border-subtle bg-void px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:border-[#5865F2]/50 hover:text-[#5865F2]"
