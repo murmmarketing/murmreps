@@ -197,8 +197,9 @@ export default function ProductsPage() {
 
       {/* Product grid */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {paginated.map((product) => {
+        {paginated.map((product, idx) => {
           const saved = wishlist.has(product.id);
+          const displayBrand = product.brand === "Various" ? "Unbranded" : product.brand;
           return (
             <div
               key={product.id}
@@ -224,31 +225,41 @@ export default function ProductsPage() {
                 </svg>
               </button>
 
-              {/* Product image */}
-              <Link href={`/products/${product.id}`} className="relative mb-4 block h-40 overflow-hidden rounded-btn bg-void">
+              {/* Product image — 4:3 aspect ratio */}
+              <Link href={`/products/${product.id}`} className="relative mb-4 block aspect-[4/3] overflow-hidden rounded-btn">
                 {product.image ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      target.style.display = "none";
-                      target.parentElement!.classList.add("flex", "items-center", "justify-center");
-                      const fallback = document.createElement("span");
-                      fallback.className = "font-heading text-lg font-bold text-text-muted/40";
-                      fallback.textContent = product.brand;
-                      target.parentElement!.appendChild(fallback);
-                    }}
-                  />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = "none";
+                        const gradient = target.nextElementSibling as HTMLElement;
+                        if (gradient) gradient.style.display = "none";
+                        target.parentElement!.classList.add("bg-[#1a1a1a]", "flex", "items-center", "justify-center");
+                        const fallback = document.createElement("span");
+                        fallback.className = "font-heading text-lg font-bold text-text-muted/40";
+                        fallback.textContent = displayBrand;
+                        target.parentElement!.appendChild(fallback);
+                      }}
+                    />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+                  </>
                 ) : (
-                  <div className="flex h-full items-center justify-center">
+                  <div className="flex h-full items-center justify-center bg-[#1a1a1a]">
                     <span className="font-heading text-lg font-bold text-text-muted/40">
-                      {product.brand}
+                      {displayBrand}
                     </span>
                   </div>
+                )}
+                {idx < 10 && (
+                  <span className="absolute left-2 top-2 z-10 rounded-pill bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">
+                    🔥 Hot
+                  </span>
                 )}
               </Link>
 
@@ -273,7 +284,7 @@ export default function ProductsPage() {
               </div>
 
               <span className="mt-1 inline-block rounded-pill bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
-                {product.brand}
+                {displayBrand}
               </span>
 
               <div className="mt-3">
