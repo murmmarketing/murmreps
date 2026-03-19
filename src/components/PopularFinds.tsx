@@ -73,11 +73,32 @@ export default function PopularFinds() {
             href="/products"
             className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20"
           >
-            {/* Image placeholder */}
-            <div className="flex h-[140px] items-center justify-center rounded-t-card bg-[#1a1a1a]">
-              <span className="text-xs font-medium text-text-muted">
-                {product.brand}
-              </span>
+            {/* Product image */}
+            <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#1a1a1a]">
+              {product.image ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = "none";
+                    target.parentElement!.classList.add("flex", "items-center", "justify-center");
+                    const fallback = document.createElement("span");
+                    fallback.className = "text-xs font-medium text-text-muted";
+                    fallback.textContent = product.brand;
+                    target.parentElement!.appendChild(fallback);
+                  }}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <span className="text-xs font-medium text-text-muted">
+                    {product.brand}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="p-4">
