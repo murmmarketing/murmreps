@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import products from "@/data/products.json";
 import BuyModal from "@/components/BuyModal";
 import { useWishlist } from "@/lib/useWishlist";
@@ -224,7 +225,7 @@ export default function ProductsPage() {
               </button>
 
               {/* Product image */}
-              <div className="relative mb-4 h-40 overflow-hidden rounded-btn bg-void">
+              <Link href={`/products/${product.id}`} className="relative mb-4 block h-40 overflow-hidden rounded-btn bg-void">
                 {product.image ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
@@ -249,12 +250,12 @@ export default function ProductsPage() {
                     </span>
                   </div>
                 )}
-              </div>
+              </Link>
 
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-heading text-base font-semibold text-white">
+                <Link href={`/products/${product.id}`} className="font-heading text-base font-semibold text-white hover:text-accent transition-colors">
                   {product.name}
-                </h3>
+                </Link>
                 <div className="flex shrink-0 items-center gap-1.5">
                   {product.quality && (
                     <span
