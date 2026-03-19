@@ -8,6 +8,30 @@ import { agents } from "@/lib/agents";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 
+interface ProductVariant {
+  name: string;
+  image?: string;
+  price?: number;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  price_cny: number | null;
+  price_usd: number | null;
+  price_eur: number | null;
+  tier: string;
+  source_link: string;
+  image: string;
+  qc_rating: number | null;
+  quality: string | null;
+  verified: boolean;
+  images?: string[];
+  variants?: ProductVariant[];
+}
+
 const tierColors: Record<string, string> = {
   budget: "bg-verified/10 text-verified",
   mid: "bg-accent/10 text-accent",
@@ -22,10 +46,14 @@ const qualityBadgeStyles: Record<string, string> = {
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const product = products.find((p) => p.id === String(params.id));
+  const product = (products as Product[]).find(
+    (p) => p.id === String(params.id)
+  );
   const wishlist = useWishlist();
   const productStats = useProductStats();
   const [imgError, setImgError] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
 
   if (!product) {
     return (
@@ -46,9 +74,26 @@ export default function ProductDetailPage() {
   const saved = wishlist.has(product.id);
   const stats = productStats.get(product.id);
   const hasLink = !!product.source_link;
-  const similar = products
+  const similar = (products as Product[])
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
+
+  // Build the list of all images for the gallery
+  const allImages: string[] =
+    product.images && product.images.length > 0
+      ? product.images
+      : product.image
+        ? [product.image]
+        : [];
+
+  const showThumbnails = allImages.length > 1;
+  const variants = product.variants || [];
+
+  // Determine the currently displayed image
+  const displayImage =
+    selectedVariant !== null && variants[selectedVariant]?.image
+      ? variants[selectedVariant].image!
+      : allImages[selectedImageIndex] || "";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -78,10 +123,10 @@ export default function ProductDetailPage() {
         {/* LEFT — Image */}
         <div>
           <div className="relative aspect-square overflow-hidden rounded-xl bg-[#0a0a0a]">
-            {product.image && !imgError ? (
+            {displayImage && !imgError ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={product.image}
+                src={displayImage}
                 alt={product.name}
                 className="h-full w-full object-contain"
                 onError={() => setImgError(true)}
@@ -94,13 +139,41 @@ export default function ProductDetailPage() {
               </div>
             )}
           </div>
+
           {/* Thumbnail strip */}
-          {product.image && !imgError && (
+          {showThumbnails && !imgError && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {allImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setSelectedImageIndex(i);
+                    setSelectedVariant(null);
+                  }}
+                  className={`h-16 w-16 overflow-hidden rounded-lg border-2 bg-[#141414] ${
+                    selectedVariant === null && selectedImageIndex === i
+                      ? "border-[#FE4205]"
+                      : "border-transparent hover:border-white/20"
+                  } cursor-pointer transition-colors`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img}
+                    alt={`${product.name} ${i + 1}`}
+                    className="h-full w-full object-contain"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Single image thumbnail (backwards compatible) */}
+          {!showThumbnails && displayImage && !imgError && (
             <div className="mt-3 flex gap-2">
               <div className="h-16 w-16 overflow-hidden rounded-lg border-2 border-accent bg-[#0a0a0a]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={product.image}
+                  src={displayImage}
                   alt={product.name}
                   className="h-full w-full object-contain"
                 />
@@ -123,8 +196,12 @@ export default function ProductDetailPage() {
                   &yen;{product.price_cny}
                 </span>
                 <div className="mt-1 flex gap-3 text-sm text-text-muted">
-                  {product.price_usd != null && <span>${product.price_usd}</span>}
-                  {product.price_eur != null && <span>&euro;{product.price_eur}</span>}
+                  {product.price_usd != null && (
+                    <span>${product.price_usd}</span>
+                  )}
+                  {product.price_eur != null && (
+                    <span>&euro;{product.price_eur}</span>
+                  )}
                 </div>
               </>
             ) : (
@@ -157,6 +234,54 @@ export default function ProductDetailPage() {
               </span>
             )}
           </div>
+
+          {/* Variant selector */}
+          {variants.length > 0 && (
+            <div className="mt-5">
+              <h3 className="mb-2 text-sm font-medium text-text-secondary">
+                Style
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setSelectedVariant(
+                        selectedVariant === i ? null : i
+                      );
+                    }}
+                    className={`overflow-hidden rounded-lg border-2 transition-colors ${
+                      selectedVariant === i
+                        ? "border-[#FE4205]"
+                        : "border-transparent hover:border-white/20"
+                    } ${v.image ? "h-12 w-12 bg-[#141414]" : "bg-[#141414] px-3 py-1.5"} cursor-pointer`}
+                    title={v.name}
+                  >
+                    {v.image ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={v.image}
+                        alt={v.name}
+                        className="h-full w-full rounded-md object-contain"
+                      />
+                    ) : (
+                      <span className="text-xs text-white">{v.name}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {selectedVariant !== null && variants[selectedVariant] && (
+                <p className="mt-2 text-xs text-text-secondary">
+                  {variants[selectedVariant].name}
+                  {variants[selectedVariant].price != null && (
+                    <span className="ml-2 text-accent">
+                      &yen;{variants[selectedVariant].price}
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Divider */}
           <div className="my-6 border-t border-subtle" />
