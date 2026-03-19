@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef } from "react";
 
 const phrases = [
-  "2000+ verified products across 8 agents.",
-  "Honest QC reviews. No cap.",
-  "Convert any link to all agents instantly.",
-  "The best rep finds, updated weekly.",
+  "Cop smarter. Buy verified.",
+  "The rep community's most trusted source.",
+  "2000+ finds. 8 agents. Zero cap.",
+  "See QC photos before you buy.",
 ];
 
 const TYPE_SPEED = 40;
