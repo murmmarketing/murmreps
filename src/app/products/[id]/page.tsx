@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import products from "@/data/products.json";
 import { agents } from "@/lib/agents";
 import { useWishlist } from "@/lib/useWishlist";
@@ -12,6 +12,11 @@ interface ProductVariant {
   name: string;
   image?: string;
   price?: number;
+}
+
+interface QCPhotoSet {
+  set: string;
+  images: string[];
 }
 
 interface Product {
@@ -30,6 +35,10 @@ interface Product {
   verified: boolean;
   images?: string[];
   variants?: ProductVariant[];
+  qc_photos?: QCPhotoSet[];
+  weight_g?: number | null;
+  dimensions?: string | null;
+  delivery_days?: number | null;
 }
 
 const tierColors: Record<string, string> = {
@@ -54,6 +63,47 @@ export default function ProductDetailPage() {
   const [imgError, setImgError] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSetIndex, setLightboxSetIndex] = useState(0);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  const [lightboxZoom, setLightboxZoom] = useState(1);
+  const [copied, setCopied] = useState(false);
+
+  const qcPhotos: QCPhotoSet[] = product ? ((product as Product).qc_photos || []) : [];
+  const currentLightboxSet = qcPhotos[lightboxSetIndex];
+  const currentLightboxImages = currentLightboxSet?.images || [];
+
+  const closeLightbox = useCallback(() => {
+    setLightboxOpen(false);
+    setLightboxZoom(1);
+  }, []);
+
+  const lightboxPrev = useCallback(() => {
+    if (!currentLightboxImages.length) return;
+    setLightboxImageIndex((i) =>
+      i === 0 ? currentLightboxImages.length - 1 : i - 1
+    );
+    setLightboxZoom(1);
+  }, [currentLightboxImages.length]);
+
+  const lightboxNext = useCallback(() => {
+    if (!currentLightboxImages.length) return;
+    setLightboxImageIndex((i) =>
+      i >= currentLightboxImages.length - 1 ? 0 : i + 1
+    );
+    setLightboxZoom(1);
+  }, [currentLightboxImages.length]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") lightboxPrev();
+      if (e.key === "ArrowRight") lightboxNext();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [lightboxOpen, lightboxPrev, lightboxNext, closeLightbox]);
 
   if (!product) {
     return (
@@ -94,6 +144,21 @@ export default function ProductDetailPage() {
     selectedVariant !== null && variants[selectedVariant]?.image
       ? variants[selectedVariant].image!
       : allImages[selectedImageIndex] || "";
+
+  const openLightbox = (setIdx: number, imgIdx = 0) => {
+    setLightboxSetIndex(setIdx);
+    setLightboxImageIndex(imgIdx);
+    setLightboxZoom(1);
+    setLightboxOpen(true);
+  };
+
+  const copyLink = () => {
+    if (product.source_link) {
+      navigator.clipboard.writeText(product.source_link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -283,11 +348,32 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Product info badges */}
+          {((product as Product).delivery_days || (product as Product).weight_g || (product as Product).dimensions) && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {(product as Product).delivery_days && (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-2 text-[13px] text-text-secondary">
+                  <span>🚚</span> Delivery: ~{(product as Product).delivery_days} days
+                </span>
+              )}
+              {(product as Product).weight_g && (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-2 text-[13px] text-text-secondary">
+                  <span>📦</span> Weight: {(product as Product).weight_g}g
+                </span>
+              )}
+              {(product as Product).dimensions && (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-2 text-[13px] text-text-secondary">
+                  <span>📐</span> {(product as Product).dimensions}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Divider */}
           <div className="my-6 border-t border-subtle" />
 
           {/* Buy section */}
-          <div>
+          <div data-buy-section>
             <p className="mb-3 text-sm font-medium text-text-secondary">
               {hasLink
                 ? "Buy this item through an agent:"
@@ -461,6 +547,211 @@ export default function ProductDetailPage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* QC Photos Section */}
+      <section className="mt-16">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-heading text-xl font-bold text-white">
+            Quality Check
+          </h2>
+          {product.source_link && (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 overflow-hidden rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#0a0a0a] px-3 py-2">
+                <span className="block truncate text-xs text-text-muted">
+                  {product.source_link}
+                </span>
+              </div>
+              <button
+                onClick={copyLink}
+                className="shrink-0 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-3 py-2 text-xs text-text-secondary transition-colors hover:border-accent/30 hover:text-white"
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+              <Link
+                href={`/qc?link=${encodeURIComponent(product.source_link)}`}
+                className="shrink-0 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Check QC
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {qcPhotos.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {qcPhotos.map((set, setIdx) => (
+              <button
+                key={setIdx}
+                onClick={() => openLightbox(setIdx)}
+                className="group relative aspect-square cursor-pointer overflow-hidden rounded-xl bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                {set.images[0] && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={set.images[0]}
+                    alt={set.set}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <p className="text-sm font-semibold text-white">{set.set}</p>
+                  <p className="text-xs text-text-muted">
+                    {set.images.length} QC Photo{set.images.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] px-8 py-16 text-center">
+            <svg
+              className="mx-auto mb-4 h-12 w-12 text-text-muted/30"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+              />
+            </svg>
+            <p className="text-sm font-medium text-text-secondary">
+              No QC photos available yet.
+            </p>
+            <p className="mt-1 text-xs text-text-muted">
+              Be the first to GP this item!{" "}
+              {hasLink && (
+                <button
+                  onClick={() => {
+                    const el = document.querySelector('[data-buy-section]');
+                    el?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-accent hover:underline"
+                >
+                  Buy through an agent &rarr;
+                </button>
+              )}
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* QC Lightbox Modal */}
+      {lightboxOpen && currentLightboxImages.length > 0 && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeLightbox();
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Counter */}
+          <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+            {lightboxImageIndex + 1} / {currentLightboxImages.length}
+          </div>
+
+          {/* Prev arrow */}
+          {currentLightboxImages.length > 1 && (
+            <button
+              onClick={lightboxPrev}
+              className="absolute left-4 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+          )}
+
+          {/* Main image */}
+          <div
+            className="flex max-h-[80vh] max-w-[90vw] items-center justify-center overflow-auto"
+            onWheel={(e) => {
+              e.preventDefault();
+              setLightboxZoom((z) => Math.max(0.5, Math.min(4, z + (e.deltaY > 0 ? -0.2 : 0.2))));
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentLightboxImages[lightboxImageIndex]}
+              alt={`QC Photo ${lightboxImageIndex + 1}`}
+              className="max-h-[80vh] max-w-[90vw] cursor-zoom-in rounded-lg object-contain transition-transform duration-200"
+              style={{ transform: `scale(${lightboxZoom})` }}
+              onClick={() => setLightboxZoom((z) => z === 1 ? 2 : 1)}
+            />
+          </div>
+
+          {/* Next arrow */}
+          {currentLightboxImages.length > 1 && (
+            <button
+              onClick={lightboxNext}
+              className="absolute right-4 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          )}
+
+          {/* Thumbnail strip */}
+          {currentLightboxImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 rounded-xl bg-black/60 p-2 backdrop-blur-sm">
+              {currentLightboxImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setLightboxImageIndex(i);
+                    setLightboxZoom(1);
+                  }}
+                  className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                    lightboxImageIndex === i
+                      ? "border-[#FE4205]"
+                      : "border-transparent hover:border-white/30"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img}
+                    alt={`Thumbnail ${i + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Zoom controls */}
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            <button
+              onClick={() => setLightboxZoom((z) => Math.max(0.5, z - 0.5))}
+              className="rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setLightboxZoom((z) => Math.min(4, z + 0.5))}
+              className="rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
