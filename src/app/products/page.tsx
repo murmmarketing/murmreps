@@ -164,8 +164,8 @@ export default function ProductsPage() {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else {
       result.sort((a, b) => {
-        const ha = Math.sin(parseInt(a.id) * 9301 + seed * 49297) % 1;
-        const hb = Math.sin(parseInt(b.id) * 9301 + seed * 49297) % 1;
+        const ha = Math.sin(parseInt(String(a.id)) * 9301 + seed * 49297) % 1;
+        const hb = Math.sin(parseInt(String(b.id)) * 9301 + seed * 49297) % 1;
         return ha - hb;
       });
     }
@@ -345,9 +345,10 @@ export default function ProductsPage() {
       {/* Product grid */}
       <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {paginated.map((product, idx) => {
-          const saved = wishlist.has(product.id);
+          const pid = String(product.id);
+          const saved = wishlist.has(pid);
           const displayBrand = product.brand === "Various" ? "Unbranded" : product.brand;
-          const s = productStats.get(product.id);
+          const s = productStats.get(pid);
           return (
             <div
               key={product.id}
@@ -376,7 +377,7 @@ export default function ProductsPage() {
 
                 {/* Wishlist heart — top right */}
                 <button
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); wishlist.toggle(product.id); }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); wishlist.toggle(pid); }}
                   className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm transition-all hover:scale-110"
                   aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
                 >
@@ -388,13 +389,13 @@ export default function ProductsPage() {
                 {/* Like/Dislike — top left */}
                 <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1">
                   <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); productStats.vote(product.id, "like"); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); productStats.vote(pid, "like"); }}
                     className={`flex h-7 items-center gap-1 rounded-full bg-black/50 px-2 text-[11px] backdrop-blur-sm transition-colors ${s.userVote === "like" ? "text-accent" : "text-white/70 hover:text-accent"}`}
                   >
                     <span>👍</span><span>{s.likes}</span>
                   </button>
                   <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); productStats.vote(product.id, "dislike"); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); productStats.vote(pid, "dislike"); }}
                     className={`flex h-7 items-center gap-1 rounded-full bg-black/50 px-2 text-[11px] backdrop-blur-sm transition-colors ${s.userVote === "dislike" ? "text-danger" : "text-white/70 hover:text-danger"}`}
                   >
                     <span>👎</span><span>{s.dislikes}</span>

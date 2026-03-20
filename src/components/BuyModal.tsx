@@ -3,7 +3,7 @@
 import { agents } from "@/lib/agents";
 
 interface Product {
-  id: string;
+  id: number | string;
   name: string;
   price_cny: number | null;
   source_link: string;

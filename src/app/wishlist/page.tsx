@@ -21,7 +21,7 @@ export default function WishlistPage() {
   >(null);
   const [confirmClear, setConfirmClear] = useState(false);
 
-  const saved = products.filter((p) => wishlist.has(p.id));
+  const saved = products.filter((p) => wishlist.has(String(p.id)));
 
   const handleClear = () => {
     if (!confirmClear) {
@@ -124,7 +124,7 @@ export default function WishlistPage() {
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={() => {
-                    productStats.addView(product.id);
+                    productStats.addView(String(product.id));
                     setSelectedProduct(product);
                   }}
                   className="flex-1 rounded-btn bg-accent py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
@@ -132,7 +132,7 @@ export default function WishlistPage() {
                   Buy
                 </button>
                 <button
-                  onClick={() => wishlist.remove(product.id)}
+                  onClick={() => wishlist.remove(String(product.id))}
                   className="rounded-btn border border-danger/30 px-4 py-2.5 text-sm font-medium text-danger transition-colors duration-200 hover:bg-danger/10"
                 >
                   Remove
@@ -176,7 +176,7 @@ export default function WishlistPage() {
       <BuyModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
-        stats={selectedProduct ? productStats.get(selectedProduct.id) : undefined}
+        stats={selectedProduct ? productStats.get(String(selectedProduct.id)) : undefined}
       />
     </div>
   );

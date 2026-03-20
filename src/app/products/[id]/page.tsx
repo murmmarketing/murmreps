@@ -20,7 +20,7 @@ interface QCPhotoSet {
 }
 
 interface Product {
-  id: string;
+  id: number | string;
   name: string;
   brand: string;
   category: string;
@@ -55,8 +55,8 @@ const qualityBadgeStyles: Record<string, string> = {
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const product = (products as Product[]).find(
-    (p) => p.id === String(params.id)
+  const product = (products as unknown as Product[]).find(
+    (p) => String(p.id) === String(params.id)
   );
   const wishlist = useWishlist();
   const productStats = useProductStats();
@@ -121,11 +121,12 @@ export default function ProductDetailPage() {
     );
   }
 
-  const saved = wishlist.has(product.id);
-  const stats = productStats.get(product.id);
+  const pid = String(product.id);
+  const saved = wishlist.has(pid);
+  const stats = productStats.get(pid);
   const hasLink = !!product.source_link;
-  const similar = (products as Product[])
-    .filter((p) => p.category === product.category && p.id !== product.id)
+  const similar = (products as unknown as Product[])
+    .filter((p) => p.category === product.category && String(p.id) !== pid)
     .slice(0, 4);
 
   // Build the list of all images for the gallery
@@ -436,7 +437,7 @@ export default function ProductDetailPage() {
               </Link>
             )}
             <button
-              onClick={() => wishlist.toggle(product.id)}
+              onClick={() => wishlist.toggle(pid)}
               className={`inline-flex items-center gap-2 rounded-btn border px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
                 saved
                   ? "border-accent/30 bg-accent/10 text-accent"
@@ -462,7 +463,7 @@ export default function ProductDetailPage() {
           {/* Like / Dislike */}
           <div className="mt-5 flex items-center gap-3">
             <button
-              onClick={() => productStats.vote(product.id, "like")}
+              onClick={() => productStats.vote(pid, "like")}
               className={`flex items-center gap-1.5 rounded-btn border px-4 py-2 text-sm transition-all duration-200 ${
                 stats.userVote === "like"
                   ? "border-accent/30 bg-accent/10 text-accent"
@@ -473,7 +474,7 @@ export default function ProductDetailPage() {
               <span>{stats.likes}</span>
             </button>
             <button
-              onClick={() => productStats.vote(product.id, "dislike")}
+              onClick={() => productStats.vote(pid, "dislike")}
               className={`flex items-center gap-1.5 rounded-btn border px-4 py-2 text-sm transition-all duration-200 ${
                 stats.userVote === "dislike"
                   ? "border-danger/30 bg-danger/10 text-danger"
