@@ -6,35 +6,29 @@ import products from "@/data/products.json";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 
-type Category = "All Categories" | "Shoes" | "Streetwear" | "Hoodies" | "T-Shirts" | "Jackets" | "Pants" | "Shorts" | "Jerseys" | "Bags" | "Accessories" | "Jewelry" | "Electronics" | "Watches" | "Perfumes";
 type Tier = "all" | "budget" | "mid" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
 type Sort = "random" | "popular" | "price-asc" | "price-desc";
 
-const categoryPills: Category[] = [
-  "All Categories", "Shoes", "Streetwear", "Hoodies", "T-Shirts", "Jackets",
-  "Pants", "Shorts", "Jerseys", "Bags", "Accessories", "Jewelry",
-  "Electronics", "Watches", "Perfumes",
-];
+const categoryPills = [
+  "All Categories",
+  // Footwear
+  "Sneakers", "Shoes", "Boots", "Slides & Sandals",
+  // Tops
+  "T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks", "Jerseys",
+  // Outerwear
+  "Jackets", "Coats & Puffers", "Vests",
+  // Bottoms
+  "Pants", "Jeans", "Shorts", "Tracksuits",
+  // Bags & Acc
+  "Bags", "Wallets", "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Phone Cases", "Socks & Underwear",
+  // Jewelry
+  "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
+  // Other
+  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories",
+] as const;
 
-// Map display categories to data categories
-const categoryMap: Record<Category, string | null> = {
-  "All Categories": null,
-  "Shoes": "Shoes",
-  "Streetwear": "Streetwear",
-  "Hoodies": "Streetwear",
-  "T-Shirts": "Streetwear",
-  "Jackets": "Streetwear",
-  "Pants": "Streetwear",
-  "Shorts": "Streetwear",
-  "Jerseys": "Streetwear",
-  "Bags": "Bags & Acc",
-  "Accessories": "Bags & Acc",
-  "Jewelry": "Jewelry",
-  "Electronics": "Jewelry",
-  "Watches": "Jewelry",
-  "Perfumes": "Bags & Acc",
-};
+type Category = (typeof categoryPills)[number];
 
 const tierLabels: Record<Tier, string> = {
   all: "All",
@@ -140,9 +134,8 @@ export default function ProductsPage() {
       );
     }
 
-    const dataCategory = categoryMap[category];
-    if (dataCategory) {
-      result = result.filter((p) => p.category === dataCategory);
+    if (category !== "All Categories") {
+      result = result.filter((p) => p.category === category);
     }
 
     if (tier !== "all") {
@@ -188,8 +181,7 @@ export default function ProductsPage() {
         (p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
       );
     }
-    const dataCategory = categoryMap[category];
-    if (dataCategory) result = result.filter((p) => p.category === dataCategory);
+    if (category !== "All Categories") result = result.filter((p) => p.category === category);
     if (tmpTier !== "all") result = result.filter((p) => p.tier === tmpTier);
     if (tmpQuality !== "all") result = result.filter((p) => p.quality === tmpQuality);
     if (tmpMinPrice) {

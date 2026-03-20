@@ -2,7 +2,7 @@ CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   brand TEXT DEFAULT 'Various',
-  category TEXT NOT NULL CHECK (category IN ('Shoes', 'Streetwear', 'Bags & Acc', 'Jewelry')),
+  category TEXT NOT NULL,
   price_cny DECIMAL,
   price_usd DECIMAL,
   price_eur DECIMAL,

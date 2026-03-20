@@ -21,7 +21,15 @@ interface Product {
   created_at: string;
 }
 
-const CATEGORIES = ["Shoes", "Streetwear", "Bags & Acc", "Jewelry"];
+const CATEGORIES = [
+  "Sneakers", "Shoes", "Boots", "Slides & Sandals",
+  "T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks", "Jerseys",
+  "Jackets", "Coats & Puffers", "Vests",
+  "Pants", "Jeans", "Shorts", "Tracksuits",
+  "Bags", "Wallets", "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Phone Cases", "Socks & Underwear",
+  "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
+  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories",
+];
 const TIERS = ["budget", "mid", "premium"];
 const QUALITIES = ["best", "good", "budget"];
 
