@@ -2,11 +2,12 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import products from "@/data/products.json";
 import { agents } from "@/lib/agents";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
+import { supabase } from "@/lib/supabase";
 
 interface ProductVariant {
   name: string;
@@ -68,6 +69,15 @@ export default function ProductDetailPage() {
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [copied, setCopied] = useState(false);
+  const viewIncrementedRef = useRef(false);
+
+  // Increment view count on page load (once per mount, safe in StrictMode)
+  useEffect(() => {
+    if (viewIncrementedRef.current) return;
+    if (!params.id) return;
+    viewIncrementedRef.current = true;
+    supabase.rpc('increment_views', { product_id: Number(params.id) }).then(() => {});
+  }, [params.id]);
 
   const qcPhotos: QCPhotoSet[] = product ? ((product as Product).qc_photos || []) : [];
   const currentLightboxSet = qcPhotos[lightboxSetIndex];

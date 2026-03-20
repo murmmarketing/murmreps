@@ -9,6 +9,7 @@ import { useProductStats } from "@/lib/useProductStats";
 type Tier = "all" | "budget" | "mid" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
 type Sort = "random" | "popular" | "price-asc" | "price-desc";
+type Tab = "all" | "trending" | "new";
 
 const categoryPills = [
   "All Categories",
@@ -53,9 +54,31 @@ const qualityBadgeStyles: Record<string, string> = {
 const sortOptions: { value: Sort; label: string; icon: string }[] = [
   { value: "random", label: "Random", icon: "M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" },
   { value: "popular", label: "Most Popular", icon: "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
-  { value: "price-asc", label: "Price ↑", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" },
-  { value: "price-desc", label: "Price ↓", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" },
+  { value: "price-asc", label: "Price \u2191", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" },
+  { value: "price-desc", label: "Price \u2193", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" },
 ];
+
+const tabs: { value: Tab; label: string }[] = [
+  { value: "all", label: "All Products" },
+  { value: "trending", label: "\uD83D\uDD25 Trending" },
+  { value: "new", label: "\u2B50 New This Week" },
+];
+
+// Seeded hash for deterministic "trending" sort when views are all 0
+function seededHash(id: number, seed: number): number {
+  return Math.sin(id * 2654435761 + seed * 1013904223) % 1;
+}
+
+// Compute the set of top-20 trending product IDs (by views, fallback to seeded random)
+function computeTrendingIds(seed: number): Set<string> {
+  const sorted = [...products].sort((a, b) => {
+    const viewsA = (a as { views?: number }).views ?? 0;
+    const viewsB = (b as { views?: number }).views ?? 0;
+    if (viewsB !== viewsA) return viewsB - viewsA;
+    return seededHash(a.id, seed) - seededHash(b.id, seed);
+  });
+  return new Set(sorted.slice(0, 20).map((p) => String(p.id)));
+}
 
 export default function ProductsPage() {
   const [search, setSearch] = useState("");
@@ -67,6 +90,7 @@ export default function ProductsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [visible, setVisible] = useState(24);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("all");
 
   const [tmpTier, setTmpTier] = useState<Tier>(tier);
   const [tmpQuality, setTmpQuality] = useState<Quality>(quality);
@@ -120,6 +144,15 @@ export default function ProductsPage() {
     (maxPrice ? 1 : 0);
 
   const [seed] = useState(() => Math.random());
+  const [trendingSeed] = useState(() => Math.random() * 1000);
+
+  // Pre-compute trending IDs for badge display
+  const trendingIds = useMemo(() => computeTrendingIds(trendingSeed), [trendingSeed]);
+
+  const handleTabChange = useCallback((tab: Tab) => {
+    setActiveTab(tab);
+    setVisible(24);
+  }, []);
 
   const filtered = useMemo(() => {
     setVisible(24);
@@ -156,22 +189,46 @@ export default function ProductsPage() {
       if (!isNaN(max)) result = result.filter((p) => p.price_cny != null && p.price_cny <= max);
     }
 
-    if (sort === "price-asc") {
-      result.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
-    } else if (sort === "price-desc") {
-      result.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
-    } else if (sort === "popular") {
-      result.sort((a, b) => a.name.localeCompare(b.name));
-    } else {
+    // Apply tab-specific sorting
+    if (activeTab === "trending") {
+      // Sort by views desc, fallback to seeded random for deterministic order
       result.sort((a, b) => {
-        const ha = Math.sin(parseInt(String(a.id)) * 9301 + seed * 49297) % 1;
-        const hb = Math.sin(parseInt(String(b.id)) * 9301 + seed * 49297) % 1;
-        return ha - hb;
+        const viewsA = (a as { views?: number }).views ?? 0;
+        const viewsB = (b as { views?: number }).views ?? 0;
+        if (viewsB !== viewsA) return viewsB - viewsA;
+        return seededHash(a.id, trendingSeed) - seededHash(b.id, trendingSeed);
       });
+    } else if (activeTab === "new") {
+      // Sort by created_at desc, prefer products from last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const cutoff = sevenDaysAgo.toISOString();
+
+      result.sort((a, b) => {
+        const aRecent = (a.created_at ?? "") >= cutoff ? 1 : 0;
+        const bRecent = (b.created_at ?? "") >= cutoff ? 1 : 0;
+        if (bRecent !== aRecent) return bRecent - aRecent;
+        return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      });
+    } else {
+      // "all" tab: use existing sort logic from filters
+      if (sort === "price-asc") {
+        result.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
+      } else if (sort === "price-desc") {
+        result.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
+      } else if (sort === "popular") {
+        result.sort((a, b) => a.name.localeCompare(b.name));
+      } else {
+        result.sort((a, b) => {
+          const ha = Math.sin(parseInt(String(a.id)) * 9301 + seed * 49297) % 1;
+          const hb = Math.sin(parseInt(String(b.id)) * 9301 + seed * 49297) % 1;
+          return ha - hb;
+        });
+      }
     }
 
     return result;
-  }, [search, category, tier, quality, sort, minPrice, maxPrice, seed]);
+  }, [search, category, tier, quality, sort, minPrice, maxPrice, seed, activeTab, trendingSeed]);
 
   const tmpFilteredCount = useMemo(() => {
     let result = [...products];
@@ -257,6 +314,26 @@ export default function ProductsPage() {
         ))}
       </div>
 
+      {/* Tab bar */}
+      <div className="mt-4 flex gap-6 border-b border-[rgba(255,255,255,0.06)]">
+        {tabs.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => handleTabChange(tab.value)}
+            className={`relative pb-3 text-sm font-medium transition-colors ${
+              activeTab === tab.value
+                ? "text-white"
+                : "text-[#9CA3AF] hover:text-white"
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.value && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#FE4205]" />
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* Result count */}
       <div className="mt-5 flex items-center justify-between">
         <p className="text-sm text-text-muted">
@@ -298,8 +375,8 @@ export default function ProductsPage() {
               <div>
                 <label className="text-xs font-semibold uppercase tracking-[1px] text-accent">Price Range</label>
                 <div className="mt-3 flex gap-3">
-                  <input type="number" placeholder="Min ¥" value={tmpMinPrice} onChange={(e) => setTmpMinPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
-                  <input type="number" placeholder="Max ¥" value={tmpMaxPrice} onChange={(e) => setTmpMaxPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
+                  <input type="number" placeholder="Min \u00A5" value={tmpMinPrice} onChange={(e) => setTmpMinPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
+                  <input type="number" placeholder="Max \u00A5" value={tmpMaxPrice} onChange={(e) => setTmpMaxPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
                 </div>
               </div>
 
@@ -344,11 +421,12 @@ export default function ProductsPage() {
 
       {/* Product grid */}
       <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {paginated.map((product, idx) => {
+        {paginated.map((product) => {
           const pid = String(product.id);
           const saved = wishlist.has(pid);
           const displayBrand = product.brand === "Various" ? "Unbranded" : product.brand;
           const s = productStats.get(pid);
+          const isTrending = trendingIds.has(pid);
           return (
             <div
               key={product.id}
@@ -375,7 +453,7 @@ export default function ProductsPage() {
                   </div>
                 )}
 
-                {/* Wishlist heart — top right */}
+                {/* Wishlist heart -- top right */}
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); wishlist.toggle(pid); }}
                   className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm transition-all hover:scale-110"
@@ -386,23 +464,23 @@ export default function ProductsPage() {
                   </svg>
                 </button>
 
-                {/* Like/Dislike — top left */}
+                {/* Like/Dislike -- top left */}
                 <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1">
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); productStats.vote(pid, "like"); }}
                     className={`flex h-7 items-center gap-1 rounded-full bg-black/50 px-2 text-[11px] backdrop-blur-sm transition-colors ${s.userVote === "like" ? "text-accent" : "text-white/70 hover:text-accent"}`}
                   >
-                    <span>👍</span><span>{s.likes}</span>
+                    <span>{"\uD83D\uDC4D"}</span><span>{s.likes}</span>
                   </button>
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); productStats.vote(pid, "dislike"); }}
                     className={`flex h-7 items-center gap-1 rounded-full bg-black/50 px-2 text-[11px] backdrop-blur-sm transition-colors ${s.userVote === "dislike" ? "text-danger" : "text-white/70 hover:text-danger"}`}
                   >
-                    <span>👎</span><span>{s.dislikes}</span>
+                    <span>{"\uD83D\uDC4E"}</span><span>{s.dislikes}</span>
                   </button>
                 </div>
 
-                {/* Views — bottom right */}
+                {/* Views -- bottom right */}
                 <div className="absolute bottom-2.5 right-2.5 z-10 flex h-7 items-center gap-1 rounded-full bg-black/50 px-2.5 text-[11px] text-white/70 backdrop-blur-sm">
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -411,10 +489,10 @@ export default function ProductsPage() {
                   <span>{s.views}</span>
                 </div>
 
-                {/* Hot badge */}
-                {idx < 10 && (
-                  <span className="absolute left-2.5 bottom-2.5 z-10 rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-semibold text-white">
-                    🔥 Hot
+                {/* Trending badge -- top left of image */}
+                {isTrending && (
+                  <span className="absolute left-2.5 bottom-2.5 z-10 rounded-full bg-[#FE4205] px-2 py-0.5 text-[10px] font-semibold text-white">
+                    {"\uD83D\uDD25"}
                   </span>
                 )}
               </Link>

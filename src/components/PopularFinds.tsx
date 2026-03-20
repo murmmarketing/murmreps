@@ -10,7 +10,18 @@ const tierColors: Record<string, string> = {
   premium: "bg-danger/10 text-danger",
 };
 
-const popular = products.filter((p) => p.price_cny != null).slice(0, 8);
+const popular = (() => {
+  const withPrice = products.filter((p) => p.price_cny != null);
+  // Sort by views desc (products with most views first), then take top 8
+  const sorted = [...withPrice].sort((a, b) => {
+    const viewsA = (a as { views?: number }).views ?? 0;
+    const viewsB = (b as { views?: number }).views ?? 0;
+    return viewsB - viewsA;
+  });
+  // If all views are 0 (no data yet), fall back to the original static order
+  const hasViews = sorted.some((p) => ((p as { views?: number }).views ?? 0) > 0);
+  return hasViews ? sorted.slice(0, 8) : withPrice.slice(0, 8);
+})();
 
 export default function PopularFinds() {
   const scrollRef = useRef<HTMLDivElement>(null);
