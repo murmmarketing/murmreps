@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
-import products from "@/data/products.json";
+import staticProducts from "@/data/products.json";
+import { supabase } from "@/lib/supabase";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 
@@ -65,7 +66,7 @@ const tabs: { value: Tab; label: string }[] = [
 ];
 
 // Compute the set of top-20 trending product IDs (by views desc, id asc as tiebreaker)
-function computeTrendingIds(): Set<string> {
+function computeTrendingIds(products: typeof staticProducts): Set<string> {
   const sorted = [...products].sort((a, b) => {
     const viewsA = (a as { views?: number }).views ?? 0;
     const viewsB = (b as { views?: number }).views ?? 0;
@@ -76,6 +77,43 @@ function computeTrendingIds(): Set<string> {
 }
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState(staticProducts);
+  const [, setLoading] = useState(true);
+
+  // Fetch products from Supabase on mount, fall back to static JSON
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        let all: typeof staticProducts = [];
+        let from = 0;
+        const pageSize = 1000;
+        while (true) {
+          const { data, error } = await supabase
+            .from("products")
+            .select("*")
+            .order("id")
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          all = all.concat(data as typeof staticProducts);
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+        if (all.length > 0) {
+          console.log(`Fetched ${all.length} products from Supabase`);
+          setProducts(all);
+        } else {
+          console.log("Falling back to static JSON");
+        }
+      } catch (err) {
+        console.log("Supabase fetch failed, using static JSON:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("All Categories");
   const [tier, setTier] = useState<Tier>("all");
@@ -139,7 +177,7 @@ export default function ProductsPage() {
     (maxPrice ? 1 : 0);
 
   // Pre-compute trending IDs for badge display
-  const trendingIds = useMemo(() => computeTrendingIds(), []);
+  const trendingIds = useMemo(() => computeTrendingIds(products), [products]);
 
   const handleTabChange = useCallback((tab: Tab) => {
     setActiveTab(tab);
@@ -222,7 +260,7 @@ export default function ProductsPage() {
     }
 
     return result;
-  }, [search, category, tier, quality, sort, minPrice, maxPrice, activeTab]);
+  }, [search, category, tier, quality, sort, minPrice, maxPrice, activeTab, products]);
 
   const tmpFilteredCount = useMemo(() => {
     let result = [...products];
@@ -244,7 +282,7 @@ export default function ProductsPage() {
       if (!isNaN(max)) result = result.filter((p) => p.price_cny != null && p.price_cny <= max);
     }
     return result.length;
-  }, [search, category, tmpTier, tmpQuality, tmpMinPrice, tmpMaxPrice]);
+  }, [search, category, tmpTier, tmpQuality, tmpMinPrice, tmpMaxPrice, products]);
 
   const paginated = filtered.slice(0, visible);
   const hasMore = visible < filtered.length;
