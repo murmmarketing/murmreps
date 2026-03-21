@@ -81,7 +81,7 @@ export default function PopularFinds() {
         {popular.map((product) => (
           <Link
             key={product.id}
-            href="/products"
+            href={`/products/${product.id}`}
             className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20"
           >
             {/* Product image */}
