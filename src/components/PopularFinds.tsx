@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
-import products from "@/data/products.json";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import staticProducts from "@/data/products.json";
 
 const tierColors: Record<string, string> = {
   budget: "bg-verified/10 text-verified",
@@ -10,40 +11,87 @@ const tierColors: Record<string, string> = {
   premium: "bg-danger/10 text-danger",
 };
 
-const popular = (() => {
-  const withPrice = products.filter((p) => p.price_cny != null);
-  // Sort by views desc (products with most views first), then take top 8
-  const sorted = [...withPrice].sort((a, b) => {
-    const viewsA = (a as { views?: number }).views ?? 0;
-    const viewsB = (b as { views?: number }).views ?? 0;
-    return viewsB - viewsA;
-  });
-  // If all views are 0 (no data yet), fall back to the original static order
-  const hasViews = sorted.some((p) => ((p as { views?: number }).views ?? 0) > 0);
-  return hasViews ? sorted.slice(0, 8) : withPrice.slice(0, 8);
-})();
+interface PopularProduct {
+  id: number;
+  name: string;
+  brand: string;
+  price_cny: number | null;
+  price_usd: number | null;
+  tier: string;
+  image: string;
+  views: number;
+}
 
 export default function PopularFinds() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [popular, setPopular] = useState<PopularProduct[]>([]);
+
+  useEffect(() => {
+    async function fetchTrending() {
+      try {
+        // Fetch top 8 by views with price
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, brand, price_cny, price_usd, tier, image, views")
+          .not("price_cny", "is", null)
+          .order("views", { ascending: false })
+          .limit(8);
+
+        if (error) throw error;
+
+        // If all views are 0, shuffle so it's not always the same
+        const hasViews = data?.some((p) => (p.views ?? 0) > 0);
+        if (data && !hasViews) {
+          for (let i = data.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [data[i], data[j]] = [data[j], data[i]];
+          }
+        }
+
+        if (data && data.length > 0) {
+          setPopular(data as PopularProduct[]);
+        } else {
+          throw new Error("No data");
+        }
+      } catch {
+        // Fallback to static JSON
+        const withPrice = staticProducts.filter((p) => p.price_cny != null);
+        setPopular(
+          withPrice.slice(0, 8).map((p) => ({
+            id: p.id,
+            name: p.name,
+            brand: p.brand,
+            price_cny: p.price_cny,
+            price_usd: p.price_usd,
+            tier: p.tier,
+            image: p.image,
+            views: 0,
+          }))
+        );
+      }
+    }
+    fetchTrending();
+  }, []);
 
   const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return;
-    const amount = 256; // card width + gap
+    const amount = 256;
     scrollRef.current.scrollBy({
       left: dir === "left" ? -amount : amount,
       behavior: "smooth",
     });
   };
 
+  if (popular.length === 0) return null;
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="font-heading text-2xl font-bold text-white">
-          Popular finds
+          Trending now
         </h2>
         <div className="flex items-center gap-3">
-          {/* Desktop arrows */}
           <div className="hidden gap-2 sm:flex">
             <button
               onClick={() => scroll("left")}
@@ -110,6 +158,16 @@ export default function PopularFinds() {
                   </span>
                 </div>
               )}
+              {/* View count badge */}
+              {product.views > 0 && (
+                <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white/70 backdrop-blur-sm">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {product.views}
+                </span>
+              )}
             </div>
 
             <div className="p-4">
@@ -131,7 +189,7 @@ export default function PopularFinds() {
                   </span>
                 )}
                 <span
-                  className={`ml-auto rounded-pill px-2 py-0.5 text-[10px] font-medium ${tierColors[product.tier]}`}
+                  className={`ml-auto rounded-pill px-2 py-0.5 text-[10px] font-medium ${tierColors[product.tier] ?? ""}`}
                 >
                   {product.tier}
                 </span>
