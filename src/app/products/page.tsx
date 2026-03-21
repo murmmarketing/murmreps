@@ -64,18 +64,13 @@ const tabs: { value: Tab; label: string }[] = [
   { value: "new", label: "\u2B50 New This Week" },
 ];
 
-// Seeded hash for deterministic "trending" sort when views are all 0
-function seededHash(id: number, seed: number): number {
-  return Math.sin(id * 2654435761 + seed * 1013904223) % 1;
-}
-
-// Compute the set of top-20 trending product IDs (by views, fallback to seeded random)
-function computeTrendingIds(seed: number): Set<string> {
+// Compute the set of top-20 trending product IDs (by views desc, id asc as tiebreaker)
+function computeTrendingIds(): Set<string> {
   const sorted = [...products].sort((a, b) => {
     const viewsA = (a as { views?: number }).views ?? 0;
     const viewsB = (b as { views?: number }).views ?? 0;
     if (viewsB !== viewsA) return viewsB - viewsA;
-    return seededHash(a.id, seed) - seededHash(b.id, seed);
+    return a.id - b.id;
   });
   return new Set(sorted.slice(0, 20).map((p) => String(p.id)));
 }
@@ -143,11 +138,8 @@ export default function ProductsPage() {
     (minPrice ? 1 : 0) +
     (maxPrice ? 1 : 0);
 
-  const [seed] = useState(() => Math.random());
-  const [trendingSeed] = useState(() => Math.random() * 1000);
-
   // Pre-compute trending IDs for badge display
-  const trendingIds = useMemo(() => computeTrendingIds(trendingSeed), [trendingSeed]);
+  const trendingIds = useMemo(() => computeTrendingIds(), []);
 
   const handleTabChange = useCallback((tab: Tab) => {
     setActiveTab(tab);
@@ -191,12 +183,12 @@ export default function ProductsPage() {
 
     // Apply tab-specific sorting
     if (activeTab === "trending") {
-      // Sort by views desc, fallback to seeded random for deterministic order
+      // Sort by views desc, id ascending as tiebreaker
       result.sort((a, b) => {
         const viewsA = (a as { views?: number }).views ?? 0;
         const viewsB = (b as { views?: number }).views ?? 0;
         if (viewsB !== viewsA) return viewsB - viewsA;
-        return seededHash(a.id, trendingSeed) - seededHash(b.id, trendingSeed);
+        return a.id - b.id;
       });
     } else if (activeTab === "new") {
       // Sort by created_at desc, prefer products from last 7 days
@@ -217,18 +209,20 @@ export default function ProductsPage() {
       } else if (sort === "price-desc") {
         result.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
       } else if (sort === "popular") {
-        result.sort((a, b) => a.name.localeCompare(b.name));
-      } else {
         result.sort((a, b) => {
-          const ha = Math.sin(parseInt(String(a.id)) * 9301 + seed * 49297) % 1;
-          const hb = Math.sin(parseInt(String(b.id)) * 9301 + seed * 49297) % 1;
-          return ha - hb;
+          const viewsA = (a as { views?: number }).views ?? 0;
+          const viewsB = (b as { views?: number }).views ?? 0;
+          if (viewsB !== viewsA) return viewsB - viewsA;
+          return a.id - b.id;
         });
+      } else {
+        // Default "random" sort: order by id ascending for consistent ordering
+        result.sort((a, b) => a.id - b.id);
       }
     }
 
     return result;
-  }, [search, category, tier, quality, sort, minPrice, maxPrice, seed, activeTab, trendingSeed]);
+  }, [search, category, tier, quality, sort, minPrice, maxPrice, activeTab]);
 
   const tmpFilteredCount = useMemo(() => {
     let result = [...products];
