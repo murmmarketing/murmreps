@@ -229,17 +229,25 @@ export default function ProductsPage() {
         return a.id - b.id;
       });
     } else if (activeTab === "new") {
-      // Sort by created_at desc, prefer products from last 7 days
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const cutoff = sevenDaysAgo.toISOString();
+      // Filter to products added recently, expanding window if needed
+      const now = new Date();
+      const cutoff7 = new Date(now); cutoff7.setDate(cutoff7.getDate() - 7);
+      const cutoff14 = new Date(now); cutoff14.setDate(cutoff14.getDate() - 14);
+      const cutoff30 = new Date(now); cutoff30.setDate(cutoff30.getDate() - 30);
 
-      result.sort((a, b) => {
-        const aRecent = (a.created_at ?? "") >= cutoff ? 1 : 0;
-        const bRecent = (b.created_at ?? "") >= cutoff ? 1 : 0;
-        if (bRecent !== aRecent) return bRecent - aRecent;
-        return (b.created_at ?? "").localeCompare(a.created_at ?? "");
-      });
+      const filtered7 = result.filter((p) => (p.created_at ?? "") >= cutoff7.toISOString());
+      if (filtered7.length >= 24) {
+        result = filtered7;
+      } else {
+        const filtered14 = result.filter((p) => (p.created_at ?? "") >= cutoff14.toISOString());
+        if (filtered14.length >= 24) {
+          result = filtered14;
+        } else {
+          result = result.filter((p) => (p.created_at ?? "") >= cutoff30.toISOString());
+        }
+      }
+
+      result.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
     } else {
       // "all" tab: use existing sort logic from filters
       if (sort === "price-asc") {
@@ -365,6 +373,22 @@ export default function ProductsPage() {
           </button>
         ))}
       </div>
+
+      {/* New This Week label */}
+      {activeTab === "new" && filtered.length > 0 && (
+        <p className="mt-4 text-sm font-medium text-accent">
+          {(() => {
+            const now = new Date();
+            const cutoff7 = new Date(now); cutoff7.setDate(cutoff7.getDate() - 7);
+            const count7 = filtered.filter((p) => (p.created_at ?? "") >= cutoff7.toISOString()).length;
+            if (count7 >= 24) return "Added in the last 7 days";
+            const cutoff14 = new Date(now); cutoff14.setDate(cutoff14.getDate() - 14);
+            const count14 = filtered.filter((p) => (p.created_at ?? "") >= cutoff14.toISOString()).length;
+            if (count14 >= 24) return "Added in the last 14 days";
+            return "Added in the last 30 days";
+          })()}
+        </p>
+      )}
 
       {/* Result count */}
       <div className="mt-5 flex items-center justify-between">

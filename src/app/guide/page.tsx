@@ -405,6 +405,7 @@ export default function GuidePage() {
       if (index >= 0 && index < total) {
         setCurrent(index);
         contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
     [total]

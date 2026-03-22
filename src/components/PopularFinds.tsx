@@ -49,13 +49,13 @@ export default function PopularFinds() {
         }
 
         if (data && data.length > 0) {
-          setPopular(data as PopularProduct[]);
+          setPopular((data as PopularProduct[]).filter((p) => !!p.image));
         } else {
           throw new Error("No data");
         }
       } catch {
         // Fallback to static JSON
-        const withPrice = staticProducts.filter((p) => p.price_cny != null);
+        const withPrice = staticProducts.filter((p) => p.price_cny != null && !!p.image);
         setPopular(
           withPrice.slice(0, 8).map((p) => ({
             id: p.id,

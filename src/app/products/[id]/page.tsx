@@ -392,7 +392,7 @@ export default function ProductDetailPage() {
                 ? "Buy this item through an agent:"
                 : "Sign up with an agent:"}
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {agents.map((agent) => {
                 const url = hasLink
                   ? agent.buildUrl(product.source_link)

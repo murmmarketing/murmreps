@@ -38,7 +38,7 @@ export default function ConverterPage() {
         agents
       </p>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-8 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <svg
             className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted"

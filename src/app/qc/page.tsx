@@ -33,6 +33,16 @@ const qcAgents = [
     buildUrl: (url: string) =>
       `https://www.lovegobuy.com/product?url=${encodeURIComponent(url)}`,
   },
+  {
+    name: "JoyaGoo",
+    buildUrl: (url: string) =>
+      `https://joyagoo.com/product?url=${encodeURIComponent(url)}`,
+  },
+  {
+    name: "SugarGoo",
+    buildUrl: (url: string) =>
+      `https://www.sugargoo.com/index/item/index.html?tp=taobao&searchLk=${encodeURIComponent(url)}`,
+  },
 ];
 
 export default function QCPage() {

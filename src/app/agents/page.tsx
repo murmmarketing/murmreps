@@ -146,7 +146,7 @@ export default function AgentsPage() {
                     </span>
                     {agent.pick && (
                       <span className="rounded-pill bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">
-                        \u2B50 Our pick
+                        {"⭐ Our pick"}
                       </span>
                     )}
                   </div>
@@ -198,7 +198,7 @@ export default function AgentsPage() {
               </h3>
               {agent.pick && (
                 <span className="rounded-pill bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">
-                  \u2B50 Our pick
+                  {"⭐ Our pick"}
                 </span>
               )}
               <span className="ml-auto text-sm text-warning">
