@@ -338,21 +338,41 @@ export default function ProductsPage() {
       </div>
 
       {/* Category pills */}
-      <div className="scrollbar-hide -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
-        {categoryPills.map((c) => (
-          <button
-            key={c}
-            onClick={() => setCategory(c)}
-            className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
-              category === c
-                ? "bg-accent text-white"
-                : "bg-[#141414] text-text-secondary hover:text-white"
-            }`}
-          >
-            {c}
-          </button>
-        ))}
+      <div className="relative mt-4">
+        <div className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
+          {categoryPills.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
+                category === c
+                  ? "bg-accent text-white"
+                  : "bg-[#141414] text-text-secondary hover:text-white"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        {/* Gradient fade on right edge for mobile */}
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0a0a] to-transparent lg:hidden" />
       </div>
+
+      {/* Search context pill */}
+      {category !== "All Categories" && search && (
+        <div className="mt-4 flex items-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.1)] bg-[#141414] px-3 py-1 text-[13px] text-text-secondary">
+            Searching in: {category}
+            <button
+              onClick={() => setCategory("All Categories")}
+              className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-accent transition-colors hover:bg-accent/20"
+              aria-label="Clear category filter"
+            >
+              &times;
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Tab bar */}
       <div className="mt-4 flex gap-6 border-b border-[rgba(255,255,255,0.06)]">

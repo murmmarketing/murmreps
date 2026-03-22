@@ -80,29 +80,6 @@ export default function NewsPage() {
               <p className="mt-4 text-sm leading-relaxed text-text-secondary">
                 {post.content}
               </p>
-
-              {/* Link */}
-              {post.link && (
-                <Link
-                  href={post.link}
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent transition-colors hover:text-accent/80"
-                >
-                  Read more
-                  <svg
-                    className="h-3.5 w-3.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                    />
-                  </svg>
-                </Link>
-              )}
             </article>
           ))}
         </div>

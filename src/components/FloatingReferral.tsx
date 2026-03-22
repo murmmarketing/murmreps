@@ -2,7 +2,7 @@
 
 export default function FloatingReferral() {
   return (
-    <div className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-2 lg:flex">
+    <div className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-2 md:flex">
       {/* TikTok */}
       <a
         href="https://tiktok.com/@murmreps"

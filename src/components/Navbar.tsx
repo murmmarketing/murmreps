@@ -146,9 +146,6 @@ export default function Navbar() {
           <DesktopLink href="/products" active={pathname === "/products"}>
             Products
           </DesktopLink>
-          <DesktopLink href="/deals" active={pathname === "/deals"}>
-            Deals
-          </DesktopLink>
           <DesktopLink href="/news" active={pathname === "/news"}>
             News
           </DesktopLink>

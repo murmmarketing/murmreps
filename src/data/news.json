@@ -15,7 +15,7 @@
     "author": "Murm",
     "date": "2026-03-14",
     "tags": ["new products"],
-    "link": "/products"
+    "link": null
   },
   {
     "id": "3",
@@ -24,7 +24,7 @@
     "author": "Murm",
     "date": "2026-03-12",
     "tags": ["update"],
-    "link": "/agents"
+    "link": null
   },
   {
     "id": "4",
@@ -33,15 +33,6 @@
     "author": "Murm",
     "date": "2026-03-10",
     "tags": ["announcement"],
-    "link": "/guide"
-  },
-  {
-    "id": "5",
-    "title": "Deals page coming soon",
-    "content": "We are working on a dedicated deals page with limited-time promotions, discount codes, and flash sales from top sellers. Stay tuned for curated deals updated weekly.",
-    "author": "Murm",
-    "date": "2026-03-08",
-    "tags": ["update"],
-    "link": "/deals"
+    "link": null
   }
 ]

@@ -137,9 +137,32 @@ export default function ProductDetailPage() {
   const saved = wishlist.has(pid);
   const stats = productStats.get(pid);
   const hasLink = !!product.source_link;
-  const similar = (products as unknown as Product[])
-    .filter((p) => p.category === product.category && String(p.id) !== pid)
-    .slice(0, 4);
+  // Improved similar products: prefer same brand, then fill with same category
+  const similar = (() => {
+    const allProducts = products as unknown as Product[];
+    const sameBrand = allProducts.filter(
+      (p) => p.brand === product.brand && String(p.id) !== pid
+    );
+    const sameCategory = allProducts.filter(
+      (p) => p.category === product.category && String(p.id) !== pid && p.brand !== product.brand
+    );
+    // Shuffle helper
+    const shuffle = <T,>(arr: T[]): T[] => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+    if (sameBrand.length >= 4) {
+      return shuffle(sameBrand).slice(0, 4);
+    }
+    const shuffledBrand = shuffle(sameBrand);
+    const remaining = 4 - shuffledBrand.length;
+    const shuffledCategory = shuffle(sameCategory).slice(0, remaining);
+    return [...shuffledBrand, ...shuffledCategory];
+  })();
 
   // Build the list of all images for the gallery
   const allImages: string[] =
@@ -175,26 +198,18 @@ export default function ProductDetailPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      {/* Back link */}
-      <Link
-        href="/products"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-secondary transition-colors hover:text-white"
-      >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 19.5L8.25 12l7.5-7.5"
-          />
-        </svg>
-        Back to products
-      </Link>
+      {/* Breadcrumbs */}
+      <nav className="mb-6 flex items-center gap-1.5 text-sm text-text-secondary">
+        <Link href="/products" className="transition-colors hover:text-white">
+          Products
+        </Link>
+        <span className="text-[#6C757D]">/</span>
+        <Link href={`/products?category=${encodeURIComponent(product?.category ?? "")}`} className="transition-colors hover:text-white">
+          {product?.category ?? ""}
+        </Link>
+        <span className="text-[#6C757D]">/</span>
+        <span className="text-white">{product?.name ?? "Not found"}</span>
+      </nav>
 
       {/* Two column layout */}
       <div className="mt-2 grid gap-8 lg:grid-cols-[55%_1fr]">
