@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWishlistCount } from "@/lib/useWishlist";
 
 const toolsLinks = [
@@ -101,6 +101,17 @@ export default function Navbar() {
   const wishlistCount = useWishlistCount();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Sync navbar search input from URL when on /products
+  useEffect(() => {
+    if (pathname === "/products") {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) setNavSearch(q);
+    } else {
+      setNavSearch("");
+    }
+  }, [pathname]);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] bg-[#0a0a0a]">

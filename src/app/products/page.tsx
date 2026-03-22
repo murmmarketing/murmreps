@@ -132,7 +132,18 @@ function ProductsPageInner() {
   useEffect(() => {
     setSearch(urlQuery);
   }, [urlQuery]);
-  const [category, setCategory] = useState<Category>("All Categories");
+
+  // Initialize category from URL ?category= parameter
+  const urlCategory = searchParams.get("category") || "All Categories";
+  const [category, setCategory] = useState<Category>(
+    categoryPills.includes(urlCategory as Category) ? (urlCategory as Category) : "All Categories"
+  );
+
+  // Sync category state when URL ?category= param changes
+  useEffect(() => {
+    const validCategory = categoryPills.includes(urlCategory as Category) ? (urlCategory as Category) : "All Categories";
+    setCategory(validCategory);
+  }, [urlCategory]);
   const [tier, setTier] = useState<Tier>("all");
   const [quality, setQuality] = useState<Quality>("all");
   const [sort, setSort] = useState<Sort>("random");
@@ -177,18 +188,14 @@ function ProductsPageInner() {
     setTmpMaxPrice("");
   };
 
-  // Sync search query to URL without full page reload
+  // Sync search and category to URL without full page reload
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (search) {
-      params.set("q", search);
-    } else {
-      params.delete("q");
-    }
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (category && category !== "All Categories") params.set("category", category);
     const qs = params.toString();
-    const newUrl = qs ? `/products?${qs}` : "/products";
-    window.history.replaceState({}, "", newUrl);
-  }, [search]);
+    window.history.replaceState({}, "", `/products${qs ? "?" + qs : ""}`);
+  }, [search, category]);
 
   useEffect(() => {
     if (filterOpen) {
