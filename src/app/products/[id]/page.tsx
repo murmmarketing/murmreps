@@ -8,6 +8,7 @@ import { agents } from "@/lib/agents";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 import { supabase } from "@/lib/supabase";
+import { trackEvent } from "@/lib/track";
 
 interface ProductVariant {
   name: string;
@@ -77,6 +78,7 @@ export default function ProductDetailPage() {
     if (!params.id) return;
     viewIncrementedRef.current = true;
     supabase.rpc('increment_views', { product_id: Number(params.id) }).then(() => {});
+    trackEvent('product_view', { product_id: Number(params.id) });
   }, [params.id]);
 
   const qcPhotos: QCPhotoSet[] = product ? ((product as Product).qc_photos || []) : [];
@@ -401,6 +403,7 @@ export default function ProductDetailPage() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackEvent('agent_click', { product_id: Number(product.id), agent_name: agent.name })}
                     className="flex items-center justify-center gap-2 rounded-btn border border-subtle bg-[#141414] px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.1)]"
                   >
                     {agent.name}

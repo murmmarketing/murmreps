@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { trackEvent } from "@/lib/track";
 
 const STORAGE_KEY = "murmreps-wishlist";
 
@@ -29,11 +30,15 @@ export function useWishlist() {
 
   const toggle = useCallback((id: string) => {
     setIds((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id];
+      const isAdding = !prev.includes(id);
+      const next = isAdding
+        ? [...prev, id]
+        : prev.filter((i) => i !== id);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       window.dispatchEvent(new Event("wishlist-change"));
+      if (isAdding) {
+        trackEvent('wishlist_add', { product_id: Number(id) });
+      }
       return next;
     });
   }, []);

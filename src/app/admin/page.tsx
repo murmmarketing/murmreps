@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 
 interface Product {
   id: number;
@@ -385,6 +386,12 @@ export default function AdminPage() {
             >
               + Add Product
             </button>
+            <Link
+              href="/admin/analytics"
+              className="rounded-lg border border-white/10 bg-[#1a1a1a] px-4 py-2 text-sm text-[#9CA3AF] transition-colors hover:text-white"
+            >
+              Analytics
+            </Link>
             <button
               onClick={() => setShowBulk(true)}
               className="rounded-lg border border-white/10 bg-[#1a1a1a] px-4 py-2 text-sm text-[#9CA3AF] transition-colors hover:text-white"

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import products from "@/data/products.json";
+import { trackEvent } from "@/lib/track";
 
 const quickActions = [
   {
@@ -77,6 +78,17 @@ export default function SearchModal() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  // Track searches with debounce
+  const searchTrackTimeout = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!query.trim()) return;
+    clearTimeout(searchTrackTimeout.current);
+    searchTrackTimeout.current = setTimeout(() => {
+      trackEvent('search', { metadata: { query: query.trim() } });
+    }, 800);
+    return () => clearTimeout(searchTrackTimeout.current);
+  }, [query]);
 
   const results = query.trim()
     ? products

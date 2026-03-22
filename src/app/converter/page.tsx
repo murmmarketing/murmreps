@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { agents } from "@/lib/agents";
+import { trackEvent } from "@/lib/track";
 
 export default function ConverterPage() {
   const [url, setUrl] = useState("");
@@ -9,7 +10,16 @@ export default function ConverterPage() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   const handleConvert = () => {
-    if (url.trim()) setConverted(true);
+    if (url.trim()) {
+      setConverted(true);
+      // Detect platform from URL for analytics
+      let source = "unknown";
+      const lower = url.toLowerCase();
+      if (lower.includes("weidian.com")) source = "weidian";
+      else if (lower.includes("taobao.com") || lower.includes("tmall.com")) source = "taobao";
+      else if (lower.includes("1688.com")) source = "1688";
+      trackEvent('converter_use', { metadata: { source } });
+    }
   };
 
   const copyToClipboard = (text: string, idx: number) => {
