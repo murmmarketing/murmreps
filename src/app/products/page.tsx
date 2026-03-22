@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import staticProducts from "@/data/products.json";
 import { supabase } from "@/lib/supabase";
 import { useWishlist } from "@/lib/useWishlist";
@@ -77,6 +78,15 @@ function computeTrendingIds(products: typeof staticProducts): Set<string> {
 }
 
 export default function ProductsPage() {
+  return (
+    <Suspense>
+      <ProductsPageInner />
+    </Suspense>
+  );
+}
+
+function ProductsPageInner() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState(staticProducts);
   const [, setLoading] = useState(true);
 
@@ -114,7 +124,14 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
-  const [search, setSearch] = useState("");
+  // Initialize search from URL ?q= parameter and sync when it changes
+  const urlQuery = searchParams.get("q") || "";
+  const [search, setSearch] = useState(urlQuery);
+
+  // Sync search state when URL ?q= param changes (e.g. navbar navigation)
+  useEffect(() => {
+    setSearch(urlQuery);
+  }, [urlQuery]);
   const [category, setCategory] = useState<Category>("All Categories");
   const [tier, setTier] = useState<Tier>("all");
   const [quality, setQuality] = useState<Quality>("all");
@@ -159,6 +176,19 @@ export default function ProductsPage() {
     setTmpMinPrice("");
     setTmpMaxPrice("");
   };
+
+  // Sync search query to URL without full page reload
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (search) {
+      params.set("q", search);
+    } else {
+      params.delete("q");
+    }
+    const qs = params.toString();
+    const newUrl = qs ? `/products?${qs}` : "/products";
+    window.history.replaceState({}, "", newUrl);
+  }, [search]);
 
   useEffect(() => {
     if (filterOpen) {
@@ -301,29 +331,11 @@ export default function ProductsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      {/* Search bar + Filters */}
-      <div className="flex gap-3">
-        <div className="relative flex-1">
-          <svg
-            className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search brands, items..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-12 w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141414] pl-12 pr-4 text-sm text-white placeholder-text-muted outline-none transition-colors focus:border-accent/50"
-          />
-        </div>
+      {/* Filters button */}
+      <div className="flex justify-end">
         <button
           onClick={openFilters}
-          className="relative flex h-12 shrink-0 items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-5 text-sm font-medium text-white transition-all hover:border-accent/30"
+          className="relative flex h-10 shrink-0 items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 text-sm font-medium text-white transition-all hover:border-accent/30"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
@@ -338,7 +350,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Category pills */}
-      <div className="relative mt-4">
+      <div className="relative mt-3">
         <div className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
           {categoryPills.map((c) => (
             <button

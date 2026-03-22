@@ -155,9 +155,7 @@ export default function SearchModal() {
                 <button
                   key={product.id}
                   onClick={() =>
-                    navigateTo(
-                      `/products?search=${encodeURIComponent(product.name)}`
-                    )
+                    navigateTo(`/products/${product.id}`)
                   }
                   className="flex w-full items-center gap-3 rounded-btn px-3 py-2.5 text-left transition-colors duration-150 hover:bg-accent/10"
                 >

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useWishlistCount } from "@/lib/useWishlist";
 
@@ -97,8 +97,10 @@ function openSearchModal() {
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [navSearch, setNavSearch] = useState("");
   const wishlistCount = useWishlistCount();
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] bg-[#0a0a0a]">
@@ -115,13 +117,20 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Center search trigger */}
-        <button
-          onClick={openSearchModal}
-          className="mx-4 flex h-9 w-[280px] shrink-0 items-center gap-2 rounded-btn border border-[rgba(255,255,255,0.1)] bg-[#141414] px-3 transition-colors duration-200 hover:border-[rgba(255,255,255,0.2)]"
+        {/* Center search input */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (navSearch.trim()) {
+              router.push(`/products?q=${encodeURIComponent(navSearch.trim())}`);
+            } else {
+              router.push("/products");
+            }
+          }}
+          className="mx-4 flex h-9 w-[280px] shrink-0 items-center gap-2 rounded-btn border border-[rgba(255,255,255,0.1)] bg-[#141414] px-3 transition-colors duration-200 focus-within:border-accent/50 hover:border-[rgba(255,255,255,0.2)]"
         >
           <svg
-            className="h-4 w-4 text-text-muted"
+            className="h-4 w-4 shrink-0 text-text-muted"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -133,13 +142,21 @@ export default function Navbar() {
               d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
             />
           </svg>
-          <span className="flex-1 text-left text-[13px] text-text-muted">
-            Search items...
-          </span>
-          <kbd className="flex items-center rounded-[4px] border border-[rgba(255,255,255,0.15)] px-1.5 py-0.5 font-sans text-[11px] leading-none text-[#6C757D]">
+          <input
+            type="text"
+            value={navSearch}
+            onChange={(e) => setNavSearch(e.target.value)}
+            placeholder="Search items..."
+            className="flex-1 bg-transparent text-[13px] text-white placeholder-text-muted outline-none"
+          />
+          <button
+            type="button"
+            onClick={openSearchModal}
+            className="flex items-center rounded-[4px] border border-[rgba(255,255,255,0.15)] px-1.5 py-0.5 font-sans text-[11px] leading-none text-[#6C757D] hover:text-white transition-colors"
+          >
             ⌘K
-          </kbd>
-        </button>
+          </button>
+        </form>
 
         {/* Nav links */}
         <div className="flex items-center gap-5">
@@ -276,8 +293,8 @@ export default function Navbar() {
         </Link>
 
         {/* Center search icon */}
-        <button
-          onClick={openSearchModal}
+        <Link
+          href="/products"
           className="flex h-9 w-9 items-center justify-center rounded-btn text-[#9CA3AF] transition-colors hover:text-white"
           aria-label="Search"
         >
@@ -294,7 +311,7 @@ export default function Navbar() {
               d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
             />
           </svg>
-        </button>
+        </Link>
 
         {/* Right: heart + hamburger */}
         <div className="flex items-center gap-3">
