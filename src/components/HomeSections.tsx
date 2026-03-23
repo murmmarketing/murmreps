@@ -91,6 +91,9 @@ export default function HomeSections() {
       {/* For You */}
       <ProductRow title="For You" products={forYouProducts} viewMoreHref="/products" />
 
+      {/* Recently Added */}
+      <ProductRow title="Recently Added" products={recentProducts} viewMoreHref="/products" />
+
       {/* Brand rows */}
       {brandRows.map(({ brand, products }) => (
         <ProductRow
@@ -100,9 +103,6 @@ export default function HomeSections() {
           viewMoreHref={`/products?q=${encodeURIComponent(brand)}`}
         />
       ))}
-
-      {/* Recently Added */}
-      <ProductRow title="Recently Added" products={recentProducts} viewMoreHref="/products" />
     </div>
   );
 }
