@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PopularFinds from "@/components/PopularFinds";
+import HomeSections from "@/components/HomeSections";
 import Typewriter from "@/components/Typewriter";
 
 export const metadata: Metadata = {
@@ -118,6 +119,11 @@ export default function Home() {
 
       {/* Popular finds carousel */}
       <PopularFinds />
+
+      {/* Editorial brand rows & curated sections */}
+      <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6">
+        <HomeSections />
+      </section>
 
       {/* Bento features */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
