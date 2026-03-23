@@ -85,10 +85,10 @@ export default function Home() {
                 Explore products
               </Link>
               <Link
-                href="/converter"
+                href="/guide"
                 className="inline-flex h-12 items-center rounded-btn border border-accent px-8 font-heading text-sm font-semibold text-accent transition-all duration-200 hover:bg-accent/10"
               >
-                Link converter
+                Tutorial
               </Link>
             </div>
           </div>
