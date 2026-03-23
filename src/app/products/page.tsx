@@ -11,8 +11,6 @@ import { useProductStats } from "@/lib/useProductStats";
 type Tier = "all" | "budget" | "mid" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
 type Sort = "random" | "popular" | "price-asc" | "price-desc";
-type Tab = "all" | "trending" | "new";
-
 const categoryPills = [
   "All Categories",
   // Footwear
@@ -58,12 +56,6 @@ const sortOptions: { value: Sort; label: string; icon: string }[] = [
   { value: "popular", label: "Most Popular", icon: "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   { value: "price-asc", label: "Price \u2191", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" },
   { value: "price-desc", label: "Price \u2193", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" },
-];
-
-const tabs: { value: Tab; label: string }[] = [
-  { value: "all", label: "All Products" },
-  { value: "trending", label: "\uD83D\uDD25 Trending" },
-  { value: "new", label: "\u2B50 New This Week" },
 ];
 
 // Compute the set of top-20 trending product IDs (by views desc, id asc as tiebreaker)
@@ -151,7 +143,6 @@ function ProductsPageInner() {
   const [maxPrice, setMaxPrice] = useState("");
   const [visible, setVisible] = useState(24);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>("all");
 
   const [tmpTier, setTmpTier] = useState<Tier>(tier);
   const [tmpQuality, setTmpQuality] = useState<Quality>(quality);
@@ -216,11 +207,6 @@ function ProductsPageInner() {
   // Pre-compute trending IDs for badge display
   const trendingIds = useMemo(() => computeTrendingIds(products), [products]);
 
-  const handleTabChange = useCallback((tab: Tab) => {
-    setActiveTab(tab);
-    setVisible(24);
-  }, []);
-
   const filtered = useMemo(() => {
     setVisible(24);
     let result = [...products];
@@ -256,56 +242,30 @@ function ProductsPageInner() {
       if (!isNaN(max)) result = result.filter((p) => p.price_cny != null && p.price_cny <= max);
     }
 
-    // Apply tab-specific sorting
-    if (activeTab === "trending") {
-      // Sort by views desc, id ascending as tiebreaker
+    // Apply sort
+    if (sort === "price-asc") {
+      result.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
+    } else if (sort === "price-desc") {
+      result.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
+    } else if (sort === "popular") {
       result.sort((a, b) => {
         const viewsA = (a as { views?: number }).views ?? 0;
         const viewsB = (b as { views?: number }).views ?? 0;
         if (viewsB !== viewsA) return viewsB - viewsA;
         return a.id - b.id;
       });
-    } else if (activeTab === "new") {
-      // Filter to products added recently, expanding window if needed
-      const now = new Date();
-      const cutoff7 = new Date(now); cutoff7.setDate(cutoff7.getDate() - 7);
-      const cutoff14 = new Date(now); cutoff14.setDate(cutoff14.getDate() - 14);
-      const cutoff30 = new Date(now); cutoff30.setDate(cutoff30.getDate() - 30);
-
-      const filtered7 = result.filter((p) => (p.created_at ?? "") >= cutoff7.toISOString());
-      if (filtered7.length >= 24) {
-        result = filtered7;
-      } else {
-        const filtered14 = result.filter((p) => (p.created_at ?? "") >= cutoff14.toISOString());
-        if (filtered14.length >= 24) {
-          result = filtered14;
-        } else {
-          result = result.filter((p) => (p.created_at ?? "") >= cutoff30.toISOString());
-        }
-      }
-
-      result.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
     } else {
-      // "all" tab: use existing sort logic from filters
-      if (sort === "price-asc") {
-        result.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
-      } else if (sort === "price-desc") {
-        result.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
-      } else if (sort === "popular") {
-        result.sort((a, b) => {
-          const viewsA = (a as { views?: number }).views ?? 0;
-          const viewsB = (b as { views?: number }).views ?? 0;
-          if (viewsB !== viewsA) return viewsB - viewsA;
-          return a.id - b.id;
-        });
-      } else {
-        // Default "random" sort: order by id ascending for consistent ordering
-        result.sort((a, b) => a.id - b.id);
-      }
+      // Default: sort by views descending (most popular first)
+      result.sort((a, b) => {
+        const viewsA = (a as { views?: number }).views ?? 0;
+        const viewsB = (b as { views?: number }).views ?? 0;
+        if (viewsB !== viewsA) return viewsB - viewsA;
+        return a.id - b.id;
+      });
     }
 
     return result;
-  }, [search, category, tier, quality, sort, minPrice, maxPrice, activeTab, products]);
+  }, [search, category, tier, quality, sort, minPrice, maxPrice, products]);
 
   const tmpFilteredCount = useMemo(() => {
     let result = [...products];
@@ -391,42 +351,6 @@ function ProductsPageInner() {
             </button>
           </span>
         </div>
-      )}
-
-      {/* Tab bar */}
-      <div className="mt-4 flex gap-6 border-b border-[rgba(255,255,255,0.06)]">
-        {tabs.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => handleTabChange(tab.value)}
-            className={`relative pb-3 text-sm font-medium transition-colors ${
-              activeTab === tab.value
-                ? "text-white"
-                : "text-[#9CA3AF] hover:text-white"
-            }`}
-          >
-            {tab.label}
-            {activeTab === tab.value && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#FE4205]" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* New This Week label */}
-      {activeTab === "new" && filtered.length > 0 && (
-        <p className="mt-4 text-sm font-medium text-accent">
-          {(() => {
-            const now = new Date();
-            const cutoff7 = new Date(now); cutoff7.setDate(cutoff7.getDate() - 7);
-            const count7 = filtered.filter((p) => (p.created_at ?? "") >= cutoff7.toISOString()).length;
-            if (count7 >= 24) return "Added in the last 7 days";
-            const cutoff14 = new Date(now); cutoff14.setDate(cutoff14.getDate() - 14);
-            const count14 = filtered.filter((p) => (p.created_at ?? "") >= cutoff14.toISOString()).length;
-            if (count14 >= 24) return "Added in the last 14 days";
-            return "Added in the last 30 days";
-          })()}
-        </p>
       )}
 
       {/* Result count */}
