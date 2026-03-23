@@ -4,47 +4,52 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { usePreferences } from "@/lib/usePreferences";
 
-const agentOptions = [
-  { key: "kakobuy", label: "KakoBuy", recommended: true },
-  { key: "superbuy", label: "Superbuy", recommended: false },
-  { key: "cnfans", label: "CnFans", recommended: false },
-  { key: "mulebuy", label: "MuleBuy", recommended: false },
-  { key: "acbuy", label: "ACBuy", recommended: false },
-  { key: "lovegobuy", label: "LoveGoBuy", recommended: false },
-  { key: "joyagoo", label: "JoyaGoo", recommended: false },
-  { key: "sugargoo", label: "SugarGoo", recommended: false },
-];
+const agentReferralUrls: Record<string, string> = {
+  kakobuy: "https://ikako.vip/r/6gkjt",
+  superbuy: "https://www.superbuy.com/en/page/partner/?partnercode=Eg87dv",
+  cnfans: "https://cnfans.com/?ref=17439797",
+  mulebuy: "https://mulebuy.com/?ref=201054809",
+  acbuy: "https://www.acbuy.com/?code=RJLAUE",
+  lovegobuy: "https://www.lovegobuy.com/?invite_code=5C3H94",
+  joyagoo: "https://joyagoo.com/register?ref=300914828",
+  sugargoo: "https://www.sugargoo.com",
+};
+
+const agentNames: Record<string, string> = {
+  kakobuy: "KakoBuy",
+  superbuy: "Superbuy",
+  cnfans: "CnFans",
+  mulebuy: "MuleBuy",
+  acbuy: "ACBuy",
+  lovegobuy: "LoveGoBuy",
+  joyagoo: "JoyaGoo",
+  sugargoo: "SugarGoo",
+};
 
 const currencyOptions = [
   { code: "EUR", symbol: "\u20AC" },
   { code: "USD", symbol: "$" },
-  { code: "CNY", symbol: "\u00A5" },
   { code: "GBP", symbol: "\u00A3" },
+  { code: "CNY", symbol: "\u00A5" },
   { code: "AUD", symbol: "A$" },
   { code: "CAD", symbol: "C$" },
   { code: "PLN", symbol: "z\u0142" },
-  { code: "CHF", symbol: "CHF" },
+  { code: "CHF", symbol: "Fr" },
+  { code: "CZK", symbol: "K\u010D" },
 ];
 
-const languageOptions = [
-  { code: "en", label: "English", flag: "\uD83C\uDDEC\uD83C\uDDE7" },
-  { code: "nl", label: "Nederlands", flag: "\uD83C\uDDF3\uD83C\uDDF1" },
-  { code: "de", label: "Deutsch", flag: "\uD83C\uDDE9\uD83C\uDDEA" },
-  { code: "fr", label: "Fran\u00E7ais", flag: "\uD83C\uDDEB\uD83C\uDDF7" },
-  { code: "es", label: "Espa\u00F1ol", flag: "\uD83C\uDDEA\uD83C\uDDF8" },
-  { code: "pl", label: "Polski", flag: "\uD83C\uDDF5\uD83C\uDDF1" },
-];
+const otherAgents = ["superbuy", "cnfans", "mulebuy", "acbuy", "lovegobuy", "joyagoo", "sugargoo"];
 
 export default function WelcomePopup() {
   const { prefs, setPrefs } = usePreferences();
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [step, setStep] = useState(1);
+  const [stepOpacity, setStepOpacity] = useState(1);
 
-  // Local state for selections before saving
-  const [agent, setAgent] = useState(prefs.preferred_agent);
-  const [currency, setCurrency] = useState(prefs.preferred_currency);
-  const [language, setLanguage] = useState(prefs.preferred_language);
+  const [selectedAgent, setSelectedAgent] = useState("kakobuy");
+  const [selectedCurrency, setSelectedCurrency] = useState("EUR");
 
   useEffect(() => {
     if (prefs.preferences_set) return;
@@ -52,33 +57,33 @@ export default function WelcomePopup() {
 
     const timer = setTimeout(() => {
       setVisible(true);
-      // Trigger animation after mount
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setAnimateIn(true);
         });
       });
-    }, 1000);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [prefs.preferences_set, pathname]);
 
-  const handleSave = () => {
+  function saveAndClose() {
     setPrefs({
-      preferred_agent: agent,
-      preferred_currency: currency,
-      preferred_language: language,
+      preferred_agent: selectedAgent,
+      preferred_currency: selectedCurrency,
       preferences_set: true,
     });
     setAnimateIn(false);
     setTimeout(() => setVisible(false), 300);
-  };
+  }
 
-  const handleClose = () => {
-    setPrefs({ preferences_set: true });
-    setAnimateIn(false);
-    setTimeout(() => setVisible(false), 300);
-  };
+  function goToStep(next: number) {
+    setStepOpacity(0);
+    setTimeout(() => {
+      setStep(next);
+      setStepOpacity(1);
+    }, 150);
+  }
 
   if (!visible) return null;
 
@@ -86,117 +91,232 @@ export default function WelcomePopup() {
     <div
       className="fixed inset-0 z-[90] flex items-center justify-center p-4"
       style={{
-        backgroundColor: animateIn ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0)",
+        backgroundColor: animateIn ? "rgba(0,0,0,0.75)" : "rgba(0,0,0,0)",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
         transition: "background-color 0.3s ease",
       }}
-      onClick={handleClose}
+      onClick={saveAndClose}
     >
       <div
-        className="relative w-full max-w-[480px] max-h-[90vh] overflow-y-auto rounded-2xl bg-[#141414] p-8"
+        className="relative w-[calc(100%-32px)] max-w-[460px] max-h-[90vh] overflow-y-auto rounded-[20px] p-6"
         style={{
+          backgroundColor: "#0A0A0A",
+          boxShadow: "0 0 60px rgba(254,66,5,0.08)",
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(20px)",
-          transition: "opacity 0.3s ease, transform 0.3s ease",
+          transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={handleClose}
-          className="absolute right-4 top-4 text-[#6C757D] transition-colors hover:text-white"
-          aria-label="Close"
+        {/* Orange glow line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-[1px] rounded-t-[20px]"
+          style={{
+            background: "linear-gradient(to right, transparent, #FE4205, transparent)",
+          }}
+        />
+
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          {[1, 2, 3].map((s) => (
+            <div
+              key={s}
+              className="rounded-full"
+              style={{
+                width: step === s ? 28 : 8,
+                height: 8,
+                backgroundColor: step === s ? "#FE4205" : "rgba(255,255,255,0.12)",
+                transition: "width 0.3s ease, background-color 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Step content with fade transition */}
+        <div
+          style={{
+            opacity: stepOpacity,
+            transition: "opacity 0.15s ease",
+          }}
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* Header */}
-        <h2 className="font-heading text-2xl font-bold text-white">
-          Welcome to MurmReps! {"\uD83C\uDF89"}
-        </h2>
-        <p className="mt-1 text-sm text-[#9CA3AF]">
-          Set your preferences for the best experience.
-        </p>
-
-        {/* Section 1: Agent */}
-        <div className="mt-6">
-          <label className="text-xs font-semibold uppercase tracking-[1px] text-[#FE4205]">
-            Choose Your Agent
-          </label>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {agentOptions.map((a) => (
-              <button
-                key={a.key}
-                onClick={() => setAgent(a.key)}
-                className={`relative rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                  agent === a.key
-                    ? "border border-[#FE4205] bg-[rgba(254,66,5,0.1)] text-white"
-                    : "border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] text-[#9CA3AF] hover:border-[rgba(255,255,255,0.2)]"
-                }`}
+          {/* Step 1: Choose Agent */}
+          {step === 1 && (
+            <div>
+              <h2
+                className="text-xl text-white"
+                style={{ fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)", fontWeight: 700 }}
               >
-                {a.label}
-                {a.recommended && (
-                  <span className="mt-0.5 block text-[10px] text-[#FE4205]">
-                    {"\u2B50"} Recommended
+                Quick setup
+              </h2>
+              <p className="mt-1 text-sm text-[#9CA3AF]">
+                Choose your agent and currency to personalize pricing and links.
+              </p>
+
+              {/* KakoBuy featured card */}
+              <button
+                onClick={() => setSelectedAgent("kakobuy")}
+                className="mt-5 w-full rounded-xl p-4 text-left transition-colors"
+                style={{
+                  backgroundColor: selectedAgent === "kakobuy" ? "rgba(254,66,5,0.08)" : "#141414",
+                  border: selectedAgent === "kakobuy"
+                    ? "1px solid #FE4205"
+                    : "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-white">KakoBuy</span>
+                  <span
+                    className="rounded-full px-2 py-0.5 text-white"
+                    style={{ fontSize: 10, backgroundColor: "#FE4205" }}
+                  >
+                    Best option
                   </span>
-                )}
+                </div>
+                <p className="mt-1 text-xs text-[#9CA3AF]">
+                  Cheapest, fastest and most reliable.
+                </p>
               </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Section 2: Currency */}
-        <div className="mt-6">
-          <label className="text-xs font-semibold uppercase tracking-[1px] text-[#FE4205]">
-            Choose Your Currency
-          </label>
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {currencyOptions.map((c) => (
+              {/* Other agents grid */}
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {otherAgents.map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedAgent(key)}
+                    className="rounded-xl p-3 text-sm font-medium text-white transition-colors"
+                    style={{
+                      backgroundColor: selectedAgent === key ? "rgba(254,66,5,0.08)" : "#141414",
+                      border: selectedAgent === key
+                        ? "1px solid #FE4205"
+                        : "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    {agentNames[key]}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next button */}
               <button
-                key={c.code}
-                onClick={() => setCurrency(c.code)}
-                className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                  currency === c.code
-                    ? "bg-[#FE4205] text-white"
-                    : "bg-[#1a1a1a] text-[#9CA3AF] hover:text-white"
-                }`}
+                onClick={() => goToStep(2)}
+                className="mt-6 h-12 w-full rounded-xl bg-[#FE4205] text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)]"
+                style={{ fontWeight: 700 }}
               >
-                {c.symbol} {c.code}
+                Next
               </button>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
 
-        {/* Section 3: Language */}
-        <div className="mt-6">
-          <label className="text-xs font-semibold uppercase tracking-[1px] text-[#FE4205]">
-            Choose Your Language
-          </label>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {languageOptions.map((l) => (
+          {/* Step 2: Choose Currency */}
+          {step === 2 && (
+            <div>
+              <h2
+                className="text-xl text-white"
+                style={{ fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)", fontWeight: 700 }}
+              >
+                Choose your currency
+              </h2>
+              <p className="mt-1 text-sm text-[#9CA3AF]">
+                Select how prices are displayed across the site.
+              </p>
+
+              {/* 3x3 currency grid */}
+              <div className="mt-5 grid grid-cols-3 gap-2">
+                {currencyOptions.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => setSelectedCurrency(c.code)}
+                    className="rounded-xl p-3 text-center transition-colors"
+                    style={{
+                      backgroundColor: selectedCurrency === c.code ? "rgba(254,66,5,0.08)" : "#141414",
+                      border: selectedCurrency === c.code
+                        ? "1px solid #FE4205"
+                        : "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <div className="text-lg text-white">{c.symbol}</div>
+                    <div className="text-xs text-[#9CA3AF]">{c.code}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Back + Next row */}
+              <div className="mt-6 flex items-center gap-3">
+                <button
+                  onClick={() => goToStep(1)}
+                  className="text-sm text-[#9CA3AF] transition-colors hover:text-white"
+                >
+                  &larr; Back
+                </button>
+                <button
+                  onClick={() => goToStep(3)}
+                  className="flex-1 h-12 rounded-xl bg-[#FE4205] text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)]"
+                  style={{ fontWeight: 700 }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Register CTA */}
+          {step === 3 && (
+            <div>
+              <h2
+                className="text-xl text-white"
+                style={{ fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)", fontWeight: 700 }}
+              >
+                One last step
+              </h2>
+              <p className="mt-1 text-sm text-[#9CA3AF]">
+                Support MurmReps by signing up with our recommended agent — it&apos;s free and helps us keep building.
+              </p>
+
+              {/* Selected agent card */}
+              <div
+                className="mt-5 rounded-xl p-4 text-center"
+                style={{
+                  backgroundColor: "#141414",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <span className="text-base font-medium text-white">
+                  {agentNames[selectedAgent] || selectedAgent}
+                </span>
+              </div>
+
+              {/* Register CTA */}
               <button
-                key={l.code}
-                onClick={() => setLanguage(l.code)}
-                className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                  language === l.code
-                    ? "border border-[#FE4205] bg-[rgba(254,66,5,0.1)] text-white"
-                    : "border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] text-[#9CA3AF] hover:border-[rgba(255,255,255,0.2)]"
-                }`}
+                onClick={() => {
+                  window.open(agentReferralUrls[selectedAgent] || "#", "_blank");
+                  saveAndClose();
+                }}
+                className="mt-5 h-12 w-full rounded-xl bg-[#FE4205] text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)]"
+                style={{ fontWeight: 700 }}
               >
-                <span className="mr-1">{l.flag}</span> {l.label}
+                Register on {agentNames[selectedAgent] || selectedAgent}
               </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          className="mt-8 h-12 w-full rounded-xl bg-[#FE4205] text-base font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)]"
-        >
-          Save Preferences &amp; Continue
-        </button>
+              {/* Skip link */}
+              <p
+                className="mt-4 text-center text-sm cursor-pointer"
+                style={{ color: "#6C757D" }}
+                onClick={saveAndClose}
+              >
+                Skip and don&apos;t support 💔
+              </p>
+
+              {/* Back link */}
+              <p
+                className="mt-3 text-center text-xs text-[#9CA3AF] cursor-pointer"
+                onClick={() => goToStep(2)}
+              >
+                &larr; Back
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
