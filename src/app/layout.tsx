@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingReferral from "@/components/FloatingReferral";
 import SearchModal from "@/components/SearchModal";
+import ClientProviders from "@/components/ClientProviders";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -64,12 +65,14 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} font-body bg-void text-text-primary antialiased`}
       >
-        <ReferralBanner />
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <FloatingReferral />
-        <SearchModal />
+        <ClientProviders>
+          <ReferralBanner />
+          <Navbar />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <FloatingReferral />
+          <SearchModal />
+        </ClientProviders>
       </body>
     </html>
   );
