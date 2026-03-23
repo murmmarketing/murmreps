@@ -5,6 +5,7 @@ import { agents, parseSourceLink } from "@/lib/agents";
 import { trackEvent } from "@/lib/track";
 import { supabase, type Product } from "@/lib/supabase";
 import { usePreferences } from "@/lib/usePreferences";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 /* ── sparkle positions ── */
 const sparkles = [
@@ -20,6 +21,14 @@ const sparkles = [
 
 export default function ConverterPage() {
   const { formatPrice } = usePreferences();
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    setIsDesktop(window.innerWidth >= 768);
+    const h = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+
   const [url, setUrl] = useState("");
   const [converted, setConverted] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -94,6 +103,9 @@ export default function ConverterPage() {
               "radial-gradient(ellipse at 50% 30%, rgba(254,66,5,0.12) 0%, transparent 60%), #0a0a0a",
           }}
         >
+          {/* Aurora WebGL background — desktop only */}
+          {isDesktop && <AuroraBackground />}
+
           {/* sparkle dots */}
           {sparkles.map((s, i) => (
             <span
