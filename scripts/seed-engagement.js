@@ -60,7 +60,7 @@ async function fetchAllProducts() {
   while (true) {
     const { data, error } = await supabase
       .from('products')
-      .select('id, brand')
+      .select('id, brand, views')
       .range(from, from + pageSize - 1);
     if (error) { console.error('Fetch error:', error.message); break; }
     if (!data || data.length === 0) break;
@@ -94,6 +94,28 @@ async function seedViews(products) {
     );
   }
   console.log(`Updated views for ${products.length} products`);
+}
+
+// ---------- Part 1b: Seed likes and dislikes ----------
+
+async function seedLikesDislikes(products) {
+  const updates = products.map(p => {
+    const views = p.views || rand(50, 300);
+    const likes = Math.floor(views * (0.03 + Math.random() * 0.05));
+    const dislikes = Math.floor(views * (0.005 + Math.random() * 0.005));
+    return { id: p.id, likes, dislikes };
+  });
+
+  // Batch update 100 at a time
+  for (let i = 0; i < updates.length; i += 100) {
+    const batch = updates.slice(i, i + 100);
+    await Promise.all(
+      batch.map(u =>
+        supabase.from('products').update({ likes: u.likes, dislikes: u.dislikes }).eq('id', u.id)
+      )
+    );
+  }
+  console.log(`Updated likes/dislikes for ${products.length} products`);
 }
 
 // ---------- Part 2: Seed analytics events ----------
@@ -274,6 +296,9 @@ async function main() {
 
   console.log('Seeding views...');
   await seedViews(products);
+
+  console.log('Seeding likes/dislikes...');
+  await seedLikesDislikes(products);
 
   console.log('Seeding analytics events...');
   await seedAnalytics(products);

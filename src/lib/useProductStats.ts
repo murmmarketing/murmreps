@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 
-const STORAGE_KEY = "murmreps-product-stats";
-const SYNC_EVENT = "product-stats-change";
+const VOTED_KEY = "murmreps-voted";
 
 type UserVote = "like" | "dislike" | null;
 
@@ -14,84 +14,96 @@ interface ProductStat {
   userVote: UserVote;
 }
 
-type StatsMap = Record<string, ProductStat>;
-
-function getStored(): StatsMap {
-  if (typeof window === "undefined") return {};
+function getVotedSet(): Set<string> {
+  if (typeof window === "undefined") return new Set();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const raw = localStorage.getItem(VOTED_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
   } catch {
-    return {};
+    return new Set();
   }
 }
 
-function getOrDefault(stats: StatsMap, id: string): ProductStat {
-  return stats[id] ?? { likes: 0, dislikes: 0, views: 0, userVote: null };
+function persistVotedSet(set: Set<string>) {
+  localStorage.setItem(VOTED_KEY, JSON.stringify(Array.from(set)));
 }
 
-function persist(stats: StatsMap) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-  window.dispatchEvent(new Event(SYNC_EVENT));
-}
-
+/**
+ * Hook that reads likes/dislikes/views from Supabase product data,
+ * tracks user votes in localStorage, and calls Supabase RPCs for votes.
+ */
 export function useProductStats() {
-  const [stats, setStats] = useState<StatsMap>({});
+  const [voted, setVoted] = useState<Set<string>>(new Set());
+  const [optimistic, setOptimistic] = useState<Record<string, { likes: number; dislikes: number }>>({});
 
   useEffect(() => {
-    setStats(getStored());
-
-    const sync = () => setStats(getStored());
-    window.addEventListener(SYNC_EVENT, sync);
-    window.addEventListener("storage", (e) => {
-      if (e.key === STORAGE_KEY) sync();
-    });
-    return () => {
-      window.removeEventListener(SYNC_EVENT, sync);
-    };
+    setVoted(getVotedSet());
   }, []);
 
-  const vote = useCallback((id: string, type: "like" | "dislike") => {
-    setStats((prev) => {
-      const next = { ...prev };
-      const stat = { ...getOrDefault(next, id) };
-
-      if (stat.userVote === type) {
-        // Toggle off
-        if (type === "like") stat.likes = Math.max(0, stat.likes - 1);
-        else stat.dislikes = Math.max(0, stat.dislikes - 1);
-        stat.userVote = null;
-      } else {
-        // Remove opposite vote if exists
-        if (stat.userVote === "like") stat.likes = Math.max(0, stat.likes - 1);
-        if (stat.userVote === "dislike") stat.dislikes = Math.max(0, stat.dislikes - 1);
-        // Add new vote
-        if (type === "like") stat.likes += 1;
-        else stat.dislikes += 1;
-        stat.userVote = type;
-      }
-
-      next[id] = stat;
-      persist(next);
-      return next;
-    });
-  }, []);
-
-  const addView = useCallback((id: string) => {
-    setStats((prev) => {
-      const next = { ...prev };
-      const stat = { ...getOrDefault(next, id) };
-      stat.views += 1;
-      next[id] = stat;
-      persist(next);
-      return next;
-    });
-  }, []);
-
-  const get = useCallback(
-    (id: string): ProductStat => getOrDefault(stats, id),
-    [stats]
+  const getUserVote = useCallback(
+    (id: string): UserVote => {
+      if (voted.has(`${id}-like`)) return "like";
+      if (voted.has(`${id}-dislike`)) return "dislike";
+      return null;
+    },
+    [voted]
   );
 
-  return { get, vote, addView };
+  const get = useCallback(
+    (id: string, product?: { views?: number; likes?: number; dislikes?: number }): ProductStat => {
+      const base = {
+        views: product?.views ?? 0,
+        likes: product?.likes ?? 0,
+        dislikes: product?.dislikes ?? 0,
+      };
+      const opt = optimistic[id];
+      return {
+        views: base.views,
+        likes: base.likes + (opt?.likes ?? 0),
+        dislikes: base.dislikes + (opt?.dislikes ?? 0),
+        userVote: getUserVote(id),
+      };
+    },
+    [optimistic, getUserVote]
+  );
+
+  const vote = useCallback(
+    async (id: string, type: "like" | "dislike") => {
+      const currentVote = getUserVote(id);
+
+      // If already voted this way, do nothing (no toggle to keep it simple with server counts)
+      if (currentVote === type) return;
+
+      // Update localStorage
+      const newVoted = new Set(Array.from(voted));
+      if (currentVote) {
+        newVoted.delete(`${id}-${currentVote}`);
+      }
+      newVoted.add(`${id}-${type}`);
+      setVoted(newVoted);
+      persistVotedSet(newVoted);
+
+      // Optimistic update
+      setOptimistic((prev) => {
+        const cur = prev[id] ?? { likes: 0, dislikes: 0 };
+        return {
+          ...prev,
+          [id]: {
+            likes: cur.likes + (type === "like" ? 1 : 0),
+            dislikes: cur.dislikes + (type === "dislike" ? 1 : 0),
+          },
+        };
+      });
+
+      // Call Supabase RPC
+      if (type === "like") {
+        await supabase.rpc("increment_likes", { product_id: Number(id) });
+      } else {
+        await supabase.rpc("increment_dislikes", { product_id: Number(id) });
+      }
+    },
+    [voted, getUserVote]
+  );
+
+  return { get, vote };
 }

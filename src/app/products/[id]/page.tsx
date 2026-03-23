@@ -41,6 +41,9 @@ interface Product {
   weight_g?: number | null;
   dimensions?: string | null;
   delivery_days?: number | null;
+  views?: number;
+  likes?: number;
+  dislikes?: number;
 }
 
 const tierColors: Record<string, string> = {
@@ -57,12 +60,26 @@ const qualityBadgeStyles: Record<string, string> = {
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const product = (products as unknown as Product[]).find(
+  const staticProduct = (products as unknown as Product[]).find(
     (p) => String(p.id) === String(params.id)
   );
+  const [product, setProduct] = useState<Product | undefined>(staticProduct);
   const wishlist = useWishlist();
   const productStats = useProductStats();
   const [imgError, setImgError] = useState(false);
+
+  // Fetch fresh product data from Supabase (for up-to-date likes/dislikes/views)
+  useEffect(() => {
+    if (!params.id) return;
+    supabase
+      .from("products")
+      .select("*")
+      .eq("id", Number(params.id))
+      .single()
+      .then(({ data }) => {
+        if (data) setProduct(data as unknown as Product);
+      });
+  }, [params.id]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -135,7 +152,7 @@ export default function ProductDetailPage() {
 
   const pid = String(product.id);
   const saved = wishlist.has(pid);
-  const stats = productStats.get(pid);
+  const stats = productStats.get(pid, product as { views?: number; likes?: number; dislikes?: number });
   const hasLink = !!product.source_link;
   // Improved similar products: prefer same brand, then fill with same category
   const similar = (() => {

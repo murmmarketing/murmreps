@@ -520,7 +520,7 @@ function ProductsPageInner() {
           const pid = String(product.id);
           const saved = wishlist.has(pid);
           const displayBrand = product.brand === "Various" ? "Unbranded" : product.brand;
-          const s = productStats.get(pid);
+          const s = productStats.get(pid, product as { views?: number; likes?: number; dislikes?: number });
           const isTrending = trendingIds.has(pid);
           return (
             <div

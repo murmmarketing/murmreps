@@ -37,6 +37,9 @@ export interface Product {
   dimensions: string | null;
   verified: boolean;
   qc_rating: number | null;
+  views: number;
+  likes: number;
+  dislikes: number;
   created_at: string;
   updated_at: string;
 }

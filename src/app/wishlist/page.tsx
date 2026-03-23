@@ -124,7 +124,6 @@ export default function WishlistPage() {
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={() => {
-                    productStats.addView(String(product.id));
                     setSelectedProduct(product);
                   }}
                   className="flex-1 rounded-btn bg-accent py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"
@@ -176,7 +175,7 @@ export default function WishlistPage() {
       <BuyModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
-        stats={selectedProduct ? productStats.get(String(selectedProduct.id)) : undefined}
+        stats={selectedProduct ? productStats.get(String(selectedProduct.id), selectedProduct as { views?: number; likes?: number; dislikes?: number }) : undefined}
       />
     </div>
   );
