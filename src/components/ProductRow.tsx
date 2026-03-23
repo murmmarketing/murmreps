@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePreferences } from "@/lib/usePreferences";
-import { ShineBorder } from "@/components/ui/shine-border";
 
 interface Product {
   id: number;
@@ -102,12 +101,9 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
 
   const premiumIds = useMemo(() => {
     const ids = new Set<number>();
-    let count = 0;
     for (const p of products) {
-      if (count >= 12) break;
       if (p.tier === "premium" || (p.views != null && p.views > 500)) {
         ids.add(p.id);
-        count++;
       }
     }
     return ids;
@@ -197,12 +193,13 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
         >
           {products.map((product) => {
             const isPremium = premiumIds.has(product.id);
-            const card = (
+            return (
             <Link
+              key={String(product.id)}
               href={`/products/${product.id}`}
               onClick={handleCardClick}
               draggable={false}
-              className="group/card w-[220px] min-w-[220px] flex-shrink-0 snap-start overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(254,66,5,0.2)]"
+              className={`group/card w-[220px] min-w-[220px] flex-shrink-0 snap-start overflow-hidden rounded-xl bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 ${isPremium ? "premium-card" : "border border-[rgba(255,255,255,0.06)] hover:border-[rgba(254,66,5,0.2)]"}`}
             >
               {/* Image */}
               <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a0a]">
@@ -260,15 +257,6 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
                 </p>
               </div>
             </Link>
-            );
-            return isPremium ? (
-              <ShineBorder key={String(product.id)} borderRadius={12} borderWidth={1.5} duration={12} className="w-[220px] min-w-[220px] flex-shrink-0 snap-start">
-                {card}
-              </ShineBorder>
-            ) : (
-              <div key={String(product.id)} className="w-[220px] min-w-[220px] flex-shrink-0 snap-start">
-                {card}
-              </div>
             );
           })}
         </div>

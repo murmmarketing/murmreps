@@ -109,3 +109,13 @@ body {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(200%); }
 }
+
+.premium-card {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.premium-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 20px -4px rgba(255, 255, 255, 0.08), 0 0 6px -1px rgba(255, 255, 255, 0.06);
+}
