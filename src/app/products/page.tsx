@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import staticProducts from "@/data/products.json";
@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 import { usePreferences } from "@/lib/usePreferences";
+import { Pagination } from "@/components/ui/pagination";
 
 type Tier = "all" | "budget" | "mid" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
@@ -142,7 +143,8 @@ function ProductsPageInner() {
   const [sort, setSort] = useState<Sort>("random");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [visible, setVisible] = useState(24);
+  const PRODUCTS_PER_PAGE = 24;
+  const [currentPage, setCurrentPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const [tmpTier, setTmpTier] = useState<Tier>(tier);
@@ -210,7 +212,7 @@ function ProductsPageInner() {
   const trendingIds = useMemo(() => computeTrendingIds(products), [products]);
 
   const filtered = useMemo(() => {
-    setVisible(24);
+    setCurrentPage(1);
     let result = [...products];
 
     if (search) {
@@ -291,9 +293,7 @@ function ProductsPageInner() {
     return result.length;
   }, [search, category, tmpTier, tmpQuality, tmpMinPrice, tmpMaxPrice, products]);
 
-  const paginated = filtered.slice(0, visible);
-  const hasMore = visible < filtered.length;
-  const loadMore = useCallback(() => setVisible((v) => v + 24), []);
+  const paginated = filtered.slice((currentPage - 1) * PRODUCTS_PER_PAGE, currentPage * PRODUCTS_PER_PAGE);
 
   const pillActive = "bg-accent text-white";
   const pillInactive = "bg-[#1a1a1a] text-text-secondary border border-[rgba(255,255,255,0.1)] hover:border-accent/40";
@@ -556,17 +556,18 @@ function ProductsPageInner() {
         })}
       </div>
 
-      {/* Load more */}
-      {hasMore && (
-        <div className="mt-10 text-center">
-          <button
-            onClick={loadMore}
-            className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141414] px-10 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:border-accent/30 hover:text-accent"
-          >
-            Load more
-          </button>
-        </div>
-      )}
+      {/* Pagination */}
+      <div className="mt-10">
+        <Pagination
+          totalItems={filtered.length}
+          itemsPerPage={PRODUCTS_PER_PAGE}
+          currentPage={currentPage}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      </div>
 
       {filtered.length === 0 && (
         <div className="mt-16 text-center">

@@ -93,3 +93,19 @@ body {
 .animate-search-slide-up {
   animation: search-slide-up 150ms ease-out;
 }
+
+@property --shine-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes shine-spin {
+  from { --shine-angle: 0deg; }
+  to { --shine-angle: 360deg; }
+}
+
+@keyframes shimmer-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}

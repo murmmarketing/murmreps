@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePreferences } from "@/lib/usePreferences";
+import { ShineBorder } from "@/components/ui/shine-border";
 
 interface Product {
   id: number;
@@ -15,6 +16,7 @@ interface Product {
   views: number;
   likes: number;
   category?: string;
+  tier?: string;
 }
 
 interface ProductRowProps {
@@ -98,6 +100,19 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
     }
   };
 
+  const premiumIds = useMemo(() => {
+    const ids = new Set<number>();
+    let count = 0;
+    for (const p of products) {
+      if (count >= 12) break;
+      if (p.tier === "premium" || (p.views != null && p.views > 500)) {
+        ids.add(p.id);
+        count++;
+      }
+    }
+    return ids;
+  }, [products]);
+
   if (products.length === 0) return null;
 
   return (
@@ -180,9 +195,10 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
         >
-          {products.map((product) => (
+          {products.map((product) => {
+            const isPremium = premiumIds.has(product.id);
+            const card = (
             <Link
-              key={String(product.id)}
               href={`/products/${product.id}`}
               onClick={handleCardClick}
               draggable={false}
@@ -244,7 +260,17 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
                 </p>
               </div>
             </Link>
-          ))}
+            );
+            return isPremium ? (
+              <ShineBorder key={String(product.id)} borderRadius={12} borderWidth={1.5} duration={12} className="w-[220px] min-w-[220px] flex-shrink-0 snap-start">
+                {card}
+              </ShineBorder>
+            ) : (
+              <div key={String(product.id)} className="w-[220px] min-w-[220px] flex-shrink-0 snap-start">
+                {card}
+              </div>
+            );
+          })}
         </div>
 
         {/* Edge gradients */}
