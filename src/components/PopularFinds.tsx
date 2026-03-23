@@ -11,6 +11,7 @@ interface PopularProduct {
   brand: string;
   price_cny: number | null;
   price_usd: number | null;
+  price_eur: number | null;
   image: string;
   views: number;
   likes: number;
@@ -24,7 +25,7 @@ export default function PopularFinds() {
       try {
         const { data, error } = await supabase
           .from("products")
-          .select("id, name, brand, price_cny, price_usd, image, views, likes")
+          .select("id, name, brand, price_cny, price_usd, price_eur, image, views, likes")
           .not("price_cny", "is", null)
           .not("image", "eq", "")
           .not("image", "is", null)
@@ -50,6 +51,7 @@ export default function PopularFinds() {
             brand: p.brand,
             price_cny: p.price_cny,
             price_usd: p.price_usd,
+            price_eur: (p as unknown as { price_eur?: number | null }).price_eur ?? null,
             image: p.image,
             views: (p as unknown as { views?: number }).views ?? 0,
             likes: (p as unknown as { likes?: number }).likes ?? 0,

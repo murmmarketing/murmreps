@@ -9,6 +9,7 @@ import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 import { supabase } from "@/lib/supabase";
 import { trackEvent } from "@/lib/track";
+import { usePreferences } from "@/lib/usePreferences";
 
 interface ProductVariant {
   name: string;
@@ -66,6 +67,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | undefined>(staticProduct);
   const wishlist = useWishlist();
   const productStats = useProductStats();
+  const { formatPrice } = usePreferences();
   const [imgError, setImgError] = useState(false);
 
   // Fetch fresh product data from Supabase (for up-to-date likes/dislikes/views)
@@ -301,19 +303,9 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="mt-4">
             {product.price_cny != null ? (
-              <>
-                <span className="font-heading text-3xl font-bold text-accent">
-                  &yen;{product.price_cny}
-                </span>
-                <div className="mt-1 flex gap-3 text-sm text-text-muted">
-                  {product.price_usd != null && (
-                    <span>${product.price_usd}</span>
-                  )}
-                  {product.price_eur != null && (
-                    <span>&euro;{product.price_eur}</span>
-                  )}
-                </div>
-              </>
+              <span className="font-heading text-3xl font-bold text-accent">
+                {formatPrice(product)}
+              </span>
             ) : (
               <div>
                 <span className="font-heading text-2xl font-bold text-text-muted">
@@ -385,7 +377,7 @@ export default function ProductDetailPage() {
                   {variants[selectedVariant].name}
                   {variants[selectedVariant].price != null && (
                     <span className="ml-2 text-accent">
-                      &yen;{variants[selectedVariant].price}
+                      {formatPrice({ price_cny: variants[selectedVariant].price! })}
                     </span>
                   )}
                 </p>
@@ -577,7 +569,7 @@ export default function ProductDetailPage() {
                   <div className="mt-2 flex items-center gap-2">
                     <span className="font-heading text-base font-bold text-white">
                       {p.price_cny != null ? (
-                        <>&yen;{p.price_cny}</>
+                        formatPrice(p)
                       ) : (
                         <span className="text-sm text-text-muted">Multi</span>
                       )}

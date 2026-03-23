@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePreferences } from "@/lib/usePreferences";
 
 interface Product {
   id: number;
@@ -22,6 +23,7 @@ interface ProductRowProps {
 }
 
 export default function ProductRow({ title, products, viewMoreHref }: ProductRowProps) {
+  const { formatPrice } = usePreferences();
   if (products.length === 0) return null;
 
   return (
@@ -95,7 +97,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
               </h3>
               <p className="mt-1 text-[16px] font-bold text-white">
                 {product.price_cny != null ? (
-                  <>&yen;{product.price_cny}</>
+                  formatPrice(product)
                 ) : (
                   <span className="text-gray-500">Multi</span>
                 )}

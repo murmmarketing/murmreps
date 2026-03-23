@@ -53,10 +53,11 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     USD: { symbol: "$", rate: 0.14 },
     EUR: { symbol: "\u20AC", rate: 0.13 },
     GBP: { symbol: "\u00A3", rate: 0.11 },
-    AUD: { symbol: "A$", rate: 0.22 },
+    AUD: { symbol: "A$", rate: 0.21 },
     CAD: { symbol: "C$", rate: 0.19 },
     PLN: { symbol: "z\u0142", rate: 0.56 },
-    CHF: { symbol: "CHF ", rate: 0.12 },
+    CHF: { symbol: "Fr", rate: 0.12 },
+    CZK: { symbol: "Kč", rate: 3.20 },
   };
 
   const formatPrice = (product: PriceProduct): string => {

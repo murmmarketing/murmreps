@@ -7,6 +7,7 @@ import staticProducts from "@/data/products.json";
 import { supabase } from "@/lib/supabase";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
+import { usePreferences } from "@/lib/usePreferences";
 
 type Tier = "all" | "budget" | "mid" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
@@ -152,6 +153,7 @@ function ProductsPageInner() {
 
   const wishlist = useWishlist();
   const productStats = useProductStats();
+  const { formatPrice } = usePreferences();
 
   const openFilters = () => {
     setTmpTier(tier);
@@ -394,8 +396,8 @@ function ProductsPageInner() {
               <div>
                 <label className="text-xs font-semibold uppercase tracking-[1px] text-accent">Price Range</label>
                 <div className="mt-3 flex gap-3">
-                  <input type="number" placeholder="Min \u00A5" value={tmpMinPrice} onChange={(e) => setTmpMinPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
-                  <input type="number" placeholder="Max \u00A5" value={tmpMaxPrice} onChange={(e) => setTmpMaxPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
+                  <input type="number" placeholder="Min (CNY)" value={tmpMinPrice} onChange={(e) => setTmpMinPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
+                  <input type="number" placeholder="Max (CNY)" value={tmpMaxPrice} onChange={(e) => setTmpMaxPrice(e.target.value)} className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-text-muted outline-none focus:border-accent/50" />
                 </div>
               </div>
 
@@ -536,7 +538,7 @@ function ProductsPageInner() {
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Price</p>
                     {product.price_cny != null ? (
-                      <p className="font-heading text-base font-bold text-white">&yen;{product.price_cny}</p>
+                      <p className="font-heading text-base font-bold text-white">{formatPrice(product)}</p>
                     ) : (
                       <p className="font-heading text-base font-bold text-text-muted">Multi</p>
                     )}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import newsData from "@/data/news.json";
 import productsData from "@/data/products.json";
+import { usePreferences } from "@/lib/usePreferences";
 
 const tagColors: Record<string, { bg: string; text: string }> = {
   announcement: { bg: "bg-blue-500/15", text: "text-blue-400" },
@@ -22,6 +23,7 @@ function formatDate(dateStr: string) {
 const trendingProducts = productsData.slice(0, 5);
 
 export default function NewsPage() {
+  const { formatPrice } = usePreferences();
   const sorted = [...newsData].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -103,7 +105,7 @@ export default function NewsPage() {
                       {p.name}
                     </p>
                     <p className="text-xs text-text-muted">
-                      {p.price_cny != null ? <>&yen;{p.price_cny}</> : "Multi"}
+                      {formatPrice(p)}
                     </p>
                   </div>
                   <svg

@@ -6,6 +6,7 @@ import products from "@/data/products.json";
 import BuyModal from "@/components/BuyModal";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
+import { usePreferences } from "@/lib/usePreferences";
 
 const tierColors: Record<string, string> = {
   budget: "bg-verified/10 text-verified",
@@ -16,6 +17,7 @@ const tierColors: Record<string, string> = {
 export default function WishlistPage() {
   const wishlist = useWishlist();
   const productStats = useProductStats();
+  const { formatPrice } = usePreferences();
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[0] | null
   >(null);
@@ -104,21 +106,9 @@ export default function WishlistPage() {
               </span>
 
               <div className="mt-3">
-                {product.price_cny != null ? (
-                  <>
-                    <span className="font-heading text-xl font-bold text-white">
-                      &yen;{product.price_cny}
-                    </span>
-                    {product.price_usd != null && (
-                      <span className="ml-2 text-xs text-text-secondary">
-                        ${product.price_usd}
-                        {product.price_eur != null && <> / &euro;{product.price_eur}</>}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="font-heading text-lg font-bold text-text-muted">Multi</span>
-                )}
+                <span className="font-heading text-xl font-bold text-white">
+                  {formatPrice(product)}
+                </span>
               </div>
 
               <div className="mt-4 flex gap-2">

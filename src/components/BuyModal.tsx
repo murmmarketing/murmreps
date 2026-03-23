@@ -25,7 +25,7 @@ interface BuyModalProps {
 }
 
 export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
-  const { prefs } = usePreferences();
+  const { prefs, formatPrice } = usePreferences();
   if (!product) return null;
 
   // Sort agents so preferred agent comes first
@@ -59,13 +59,9 @@ export default function BuyModal({ product, onClose, stats }: BuyModalProps) {
                 </span>
               )}
             </div>
-            {product.price_cny != null ? (
-              <p className="mt-1 text-lg font-semibold text-accent">
-                ¥{product.price_cny}
-              </p>
-            ) : (
-              <p className="mt-1 text-lg font-semibold text-text-muted">Multi</p>
-            )}
+            <p className="mt-1 text-lg font-semibold text-accent">
+              {formatPrice(product)}
+            </p>
           </div>
           <button
             onClick={onClose}

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import products from "@/data/products.json";
 import { trackEvent } from "@/lib/track";
+import { usePreferences } from "@/lib/usePreferences";
 
 const quickActions = [
   {
@@ -49,6 +50,7 @@ export default function SearchModal() {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { formatPrice } = usePreferences();
 
   const close = useCallback(() => {
     setOpen(false);
@@ -167,7 +169,7 @@ export default function SearchModal() {
                       {product.name}
                     </p>
                     <p className="text-xs text-text-muted">
-                      {product.brand}{product.price_cny != null && <> &middot; &yen;{product.price_cny}</>}
+                      {product.brand}{product.price_cny != null && <> &middot; {formatPrice(product)}</>}
                     </p>
                   </div>
                   <svg

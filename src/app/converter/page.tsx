@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { agents, parseSourceLink } from "@/lib/agents";
 import { trackEvent } from "@/lib/track";
 import { supabase, type Product } from "@/lib/supabase";
+import { usePreferences } from "@/lib/usePreferences";
 
 /* ── sparkle positions ── */
 const sparkles = [
@@ -18,6 +19,7 @@ const sparkles = [
 ];
 
 export default function ConverterPage() {
+  const { formatPrice } = usePreferences();
   const [url, setUrl] = useState("");
   const [converted, setConverted] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -294,9 +296,9 @@ export default function ConverterPage() {
                   <p className="truncate text-sm font-semibold text-white">
                     {product.name}
                   </p>
-                  {product.price_usd != null && (
+                  {product.price_cny != null && (
                     <p className="mt-0.5 text-sm" style={{ color: "#FE4205" }}>
-                      ${product.price_usd.toFixed(2)}
+                      {formatPrice(product as { price_cny?: number | null; price_usd?: number | null; price_eur?: number | null })}
                     </p>
                   )}
                   {product.category && (
