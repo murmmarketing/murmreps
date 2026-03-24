@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useWishlist } from "@/lib/useWishlist";
 import { usePreferences } from "@/lib/usePreferences";
-import { girlsItemIds } from "@/data/girls-ids";
+// Girls products identified by collection = 'girls' in Supabase
 
 type Sort = "newest" | "popular" | "price-asc" | "price-desc";
 
@@ -89,27 +89,22 @@ function GirlsInner() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      // Supabase returns max 1000 rows per request — paginate to get all
+      // Fetch girls products using collection column
       const all: Product[] = [];
       let offset = 0;
-      const PAGE = 1000;
       while (true) {
         const { data } = await supabase
           .from("products")
           .select("*")
+          .eq("collection", "girls")
           .order("created_at", { ascending: false })
-          .range(offset, offset + PAGE - 1);
+          .range(offset, offset + 999);
         if (!data || data.length === 0) break;
         all.push(...data);
-        if (data.length < PAGE) break;
-        offset += PAGE;
+        if (data.length < 1000) break;
+        offset += 1000;
       }
-      const girls = all.filter((p: Product) => {
-        if (!p.source_link) return false;
-        const m = p.source_link.match(/itemID=(\d+)/i) || p.source_link.match(/[?&]id=(\d+)/);
-        return m && girlsItemIds.has(m[1]);
-      });
-      setProducts(girls);
+      setProducts(all);
       setLoading(false);
     })();
   }, []);
