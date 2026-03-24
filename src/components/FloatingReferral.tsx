@@ -50,7 +50,7 @@ export default function FloatingReferral() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Sign up for KakoBuy"
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-accent font-heading text-xs font-bold text-white transition-all duration-200 hover:scale-110 hover:shadow-[0_0_16px_rgba(254,66,5,0.4)]"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-accent font-heading text-xs font-bold text-white transition-all duration-200 hover:scale-110 hover:shadow-[0_0_16px_var(--accent-glow-strong)]"
       >
         KKB
       </a>

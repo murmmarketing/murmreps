@@ -211,7 +211,7 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#9CA3AF] transition-colors duration-200 hover:bg-[rgba(254,66,5,0.1)] hover:text-white"
+                    className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#9CA3AF] transition-colors duration-200 hover:bg-[var(--accent-hover-bg)] hover:text-white"
                   >
                     <svg
                       className="h-4 w-4 shrink-0"
