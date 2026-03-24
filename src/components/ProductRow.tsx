@@ -261,13 +261,13 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
           })}
         </div>
 
-        {/* Edge gradients */}
+        {/* Edge gradients — desktop only */}
         <div
-          className="pointer-events-none absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-[#0a0a0a] to-transparent transition-opacity"
+          className="pointer-events-none absolute left-0 top-0 hidden h-full w-12 bg-gradient-to-r from-[#0a0a0a] to-transparent transition-opacity md:block"
           style={{ opacity: canScrollLeft ? 1 : 0 }}
         />
         <div
-          className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-[#0a0a0a] to-transparent transition-opacity"
+          className="pointer-events-none absolute right-0 top-0 hidden h-full w-12 bg-gradient-to-l from-[#0a0a0a] to-transparent transition-opacity md:block"
           style={{ opacity: canScrollRight ? 1 : 0 }}
         />
       </div>
