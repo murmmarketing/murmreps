@@ -100,6 +100,7 @@ export default function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [navSearch, setNavSearch] = useState("");
   const wishlistCount = useWishlistCount();
+  const isGirls = pathname === "/girls";
   const pathname = usePathname();
   const router = useRouter();
 
@@ -122,7 +123,7 @@ export default function Navbar() {
         <Link href="/" className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/logo.png"
+            src={isGirls ? "/logo-pink.png" : "/logo.png"}
             alt="MurmReps"
             className="h-9 w-auto object-contain"
             loading="eager"
@@ -300,7 +301,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/logo.png"
+            src={isGirls ? "/logo-pink.png" : "/logo.png"}
             alt="MurmReps logo"
             className="h-7 w-auto object-contain"
             loading="eager"
