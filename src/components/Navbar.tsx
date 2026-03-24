@@ -100,8 +100,8 @@ export default function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [navSearch, setNavSearch] = useState("");
   const wishlistCount = useWishlistCount();
-  const isGirls = pathname === "/girls";
   const pathname = usePathname();
+  const isGirls = pathname === "/girls";
   const router = useRouter();
 
   // Sync navbar search input from URL when on /products

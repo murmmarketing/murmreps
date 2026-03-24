@@ -37,7 +37,12 @@ export default function Footer() {
               <img
                 src="/logo.png"
                 alt="MurmReps"
-                className="h-7 w-auto object-contain"
+                className="footer-logo-default h-7 w-auto object-contain"
+              />
+              <img
+                src="/logo-pink.png"
+                alt="MurmReps"
+                className="footer-logo-pink hidden h-7 w-auto object-contain"
               />
             </Link>
             <p className="mt-4 text-[13px] leading-relaxed text-text-secondary">
