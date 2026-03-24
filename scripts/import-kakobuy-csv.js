@@ -35,8 +35,23 @@ const TABS = [
   { name: "archive", file: "opium.csv", collection: "archive", label: "OPIUM/ARCHIVE" },
   { name: "ig-brands", file: "ig-brands.csv", collection: "ig-brands", label: "IG BRANDS" },
   { name: "reselling", file: "reselling.csv", collection: "reselling", label: "RESELLING" },
-  { name: "girls", file: "girls.csv", collection: "girls", label: "FOR GIRLS" },
+  { name: "girls", file: "girls.csv", collection: "girls", label: "FOR GIRLS (KakoBuy)" },
   { name: "main", file: "main.csv", collection: "main", label: "MAIN" },
+  // MuleBuy women's spreadsheet
+  { name: "mulebuy-girls", file: "mulebuy-girls.csv", collection: "girls", label: "MULEBUY GIRLS", catDefault: "T-Shirts" },
+  // Lia x Miki women's spreadsheet
+  { name: "w-tops", file: "W_TOPS.csv", collection: "girls", label: "W_TOPS", catDefault: "T-Shirts" },
+  { name: "w-outwear", file: "W_OUTWEAR.csv", collection: "girls", label: "W_OUTWEAR", catDefault: "Jackets" },
+  { name: "w-bottoms", file: "W_BOTTOMS.csv", collection: "girls", label: "W_BOTTOMS", catDefault: "Pants" },
+  { name: "w-shoes", file: "W_SHOES.csv", collection: "girls", label: "W_SHOES", catDefault: "Sneakers" },
+  { name: "w-bags", file: "W_BAGS.csv", collection: "girls", label: "W_BAGS", catDefault: "Bags" },
+  { name: "w-wallets", file: "W_WALLETS.csv", collection: "girls", label: "W_WALLETS", catDefault: "Wallets" },
+  { name: "w-jewelry", file: "W_JEWELRY.csv", collection: "girls", label: "W_JEWELRY", catDefault: "Necklaces" },
+  { name: "w-accessories", file: "W_ACCESSORIES.csv", collection: "girls", label: "W_ACCESSORIES", catDefault: "Keychains & Accessories" },
+  { name: "w-room-decor", file: "W_ROOM_DECOR.csv", collection: "girls", label: "W_ROOM_DECOR", catDefault: "Home & Decor" },
+  { name: "w-misc", file: "W_MISC.csv", collection: "girls", label: "W_MISC", catDefault: "T-Shirts" },
+  { name: "w-wartoothxx", file: "W_WARTOOTHXX.csv", collection: "girls", label: "W_WARTOOTHXX", catDefault: "T-Shirts" },
+  { name: "w-hypeg", file: "W_HYPEG.csv", collection: "girls", label: "W_HYPEG", catDefault: "T-Shirts" },
 ];
 
 // ── Simple CSV parser (handles quoted fields with commas) ──
@@ -209,9 +224,9 @@ function processTab(tab, existingIds) {
 
   // Find the header row (the one that has "RAW LINK" or "NAME" or "Item Name")
   let headerIdx = -1;
-  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+  for (let i = 0; i < Math.min(rows.length, 30); i++) {
     const joined = rows[i].join(",").toLowerCase();
-    if (joined.includes("raw link") || (joined.includes("name") && (joined.includes("link") || joined.includes("price")))) {
+    if (joined.includes("raw link") || joined.includes("product,image,price,link") || (joined.includes("name") && (joined.includes("link") || joined.includes("price")))) {
       headerIdx = i;
       break;
     }
@@ -223,7 +238,7 @@ function processTab(tab, existingIds) {
   }
 
   const headers = rows[headerIdx];
-  const nameCol = findCol(headers, "item name", "name");
+  const nameCol = findCol(headers, "item name", "product", "name");
   const rawLinkCol = findCol(headers, "raw link");
   const priceCol = findCol(headers, "price");
 
@@ -238,15 +253,49 @@ function processTab(tab, existingIds) {
     if (!row || row.length < 2) continue;
 
     let rawLink = rawLinkCol >= 0 ? (row[rawLinkCol] || "") : "";
-    // If no RAW LINK column or it's empty, try to decode from LINK (KakoBuy URL)
+    // If no RAW LINK column or it's empty, try to decode from LINK column
     if (!isValidSourceUrl(rawLink)) {
       const linkCol = findCol(headers, "link");
       const linkVal = linkCol >= 0 ? (row[linkCol] || "") : "";
+      // KakoBuy URL: decode url= param
       if (linkVal.includes("kakobuy.com") && linkVal.includes("url=")) {
         try {
           const u = new URL(linkVal);
           rawLink = decodeURIComponent(u.searchParams.get("url") || "");
         } catch {}
+      }
+      // MuleBuy URL: reconstruct from shop_type + id params
+      else if (linkVal.includes("mulebuy.com")) {
+        try {
+          const u = new URL(linkVal);
+          const id = u.searchParams.get("id");
+          const platform = (u.searchParams.get("platform") || u.searchParams.get("shop_type") || "").toLowerCase();
+          if (id && platform.includes("weidian")) rawLink = "https://weidian.com/item.html?itemID=" + id;
+          else if (id && platform.includes("taobao")) rawLink = "https://item.taobao.com/item.htm?id=" + id;
+          else if (id && platform.includes("1688")) rawLink = "https://detail.1688.com/offer/" + id + ".html";
+        } catch {}
+      }
+    }
+    // Also scan all columns for any weidian/taobao/1688 URL as last resort
+    if (!isValidSourceUrl(rawLink)) {
+      for (const cell of row) {
+        if (!cell) continue;
+        const urlMatch = cell.match(/https?:\/\/[^\s,"]*(weidian\.com|taobao\.com|1688\.com)[^\s,"]*/);
+        if (urlMatch) { rawLink = urlMatch[0]; break; }
+        // MuleBuy URL in any cell
+        if (cell.includes("mulebuy.com")) {
+          try {
+            const urlM = cell.match(/https?:\/\/[^\s,"]*mulebuy\.com[^\s,"]*/);
+            if (urlM) {
+              const u = new URL(urlM[0]);
+              const id = u.searchParams.get("id");
+              const platform = (u.searchParams.get("platform") || u.searchParams.get("shop_type") || "").toLowerCase();
+              if (id && platform.includes("weidian")) { rawLink = "https://weidian.com/item.html?itemID=" + id; break; }
+              else if (id && platform.includes("taobao")) { rawLink = "https://item.taobao.com/item.htm?id=" + id; break; }
+              else if (id && platform.includes("1688")) { rawLink = "https://detail.1688.com/offer/" + id + ".html"; break; }
+            }
+          } catch {}
+        }
       }
     }
     if (!isValidSourceUrl(rawLink)) continue;
@@ -273,7 +322,7 @@ function processTab(tab, existingIds) {
     products.push({
       name: name.slice(0, 500),
       brand: extractBrand(name),
-      category: categorize(name),
+      category: categorize(name) === "T-Shirts" && tab.catDefault ? tab.catDefault : categorize(name),
       price_cny: priceCny,
       price_usd: priceUsd,
       price_eur: priceEur,
