@@ -16,6 +16,7 @@ interface RowProduct {
   views: number;
   likes: number;
   category: string;
+  source_link?: string;
 }
 
 interface BrandRow {
@@ -32,15 +33,24 @@ export default function HomeSections() {
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch all products for brand grouping
-      const { data: all } = await supabase
-        .from("products")
-        .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
-        .not("image", "eq", "")
-        .not("image", "is", null)
-        .order("views", { ascending: false });
+      // Fetch all products (paginate past Supabase 1000-row limit)
+      const all: RowProduct[] = [];
+      let offset = 0;
+      while (true) {
+        const { data } = await supabase
+          .from("products")
+          .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
+          .not("image", "eq", "")
+          .not("image", "is", null)
+          .order("views", { ascending: false })
+          .range(offset, offset + 999);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < 1000) break;
+        offset += 1000;
+      }
 
-      if (!all) {
+      if (all.length === 0) {
         setLoading(false);
         return;
       }
@@ -73,7 +83,7 @@ export default function HomeSections() {
       // "For Her" — girls products
       const girls = all.filter((p) => {
         if (!p.image) return false;
-        const src = (p as Record<string, string>).source_link || "";
+        const src = p.source_link || "";
         const m = src.match(/itemID=(\d+)/i) || src.match(/[?&]id=(\d+)/);
         return m && girlsItemIds.has(m[1]);
       });

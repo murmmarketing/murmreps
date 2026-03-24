@@ -89,18 +89,27 @@ function GirlsInner() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (data) {
-        const girls = data.filter((p: Product) => {
-          if (!p.source_link) return false;
-          const m = p.source_link.match(/itemID=(\d+)/i) || p.source_link.match(/[?&]id=(\d+)/);
-          return m && girlsItemIds.has(m[1]);
-        });
-        setProducts(girls);
+      // Supabase returns max 1000 rows per request — paginate to get all
+      const all: Product[] = [];
+      let offset = 0;
+      const PAGE = 1000;
+      while (true) {
+        const { data } = await supabase
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .range(offset, offset + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < PAGE) break;
+        offset += PAGE;
       }
+      const girls = all.filter((p: Product) => {
+        if (!p.source_link) return false;
+        const m = p.source_link.match(/itemID=(\d+)/i) || p.source_link.match(/[?&]id=(\d+)/);
+        return m && girlsItemIds.has(m[1]);
+      });
+      setProducts(girls);
       setLoading(false);
     })();
   }, []);
