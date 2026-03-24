@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import FloatingReferral from "@/components/FloatingReferral";
 import SearchModal from "@/components/SearchModal";
 import ClientProviders from "@/components/ClientProviders";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} font-body bg-void text-text-primary antialiased`}
       >
+        <GoogleAnalytics />
         <ClientProviders>
           <ReferralBanner />
           <Navbar />
