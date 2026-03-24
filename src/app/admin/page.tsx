@@ -47,6 +47,7 @@ export default function AdminPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [tierFilter, setTierFilter] = useState("");
   const [sortCol, setSortCol] = useState("id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [loading, setLoading] = useState(false);
@@ -104,6 +105,7 @@ export default function AdminPage() {
       });
       if (search) params.set("search", search);
       if (categoryFilter) params.set("category", categoryFilter);
+      if (tierFilter) params.set("tier", tierFilter);
 
       const res = await fetch(`/api/admin/products?${params}`, {
         headers: { "x-admin-password": storedPassword },
@@ -123,7 +125,7 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, [storedPassword, page, sortCol, sortOrder, search, categoryFilter]);
+  }, [storedPassword, page, sortCol, sortOrder, search, categoryFilter, tierFilter]);
 
   useEffect(() => {
     if (authed) fetchProducts();
@@ -322,15 +324,6 @@ export default function AdminPage() {
     fetchProducts();
   };
 
-  // Category stats
-  const catCounts = products.reduce(
-    (acc, p) => {
-      acc[p.category] = (acc[p.category] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
   // =================== LOGIN SCREEN ===================
   if (!authed) {
     return (
@@ -365,45 +358,48 @@ export default function AdminPage() {
   }
 
   // =================== DASHBOARD ===================
+  const girlsCount = products.filter((p) =>
+    ["Girls Collection"].includes(p.category) || p.category.toLowerCase().includes("girl")
+  ).length;
+  const premiumCount = products.filter((p) => p.tier === "premium").length;
+  const startItem = (page - 1) * 50 + 1;
+  const endItem = Math.min(page * 50, total);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Top bar */}
-      <div className="border-b border-white/6 bg-[#141414] px-6 py-4">
+      {/* Header */}
+      <div className="border-b border-[rgba(255,255,255,0.06)] bg-[#141414] px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="font-heading text-xl font-bold">MurmReps Admin</h1>
-            <span className="rounded-full bg-[#FE4205]/10 px-3 py-1 text-xs text-[#FE4205]">
-              {total} products
-            </span>
-          </div>
+          <h1 className="font-heading text-xl font-bold tracking-tight">MurmReps Admin</h1>
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 resetForm();
                 setShowAdd(true);
               }}
-              className="rounded-lg bg-[#FE4205] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="rounded-lg bg-[#FE4205] px-4 py-2 text-sm font-semibold text-white transition-all duration-150 ease-in-out hover:opacity-90"
             >
               + Add Product
             </button>
             <Link
               href="/admin/analytics"
-              className="rounded-lg border border-white/10 bg-[#1a1a1a] px-4 py-2 text-sm text-[#9CA3AF] transition-colors hover:text-white"
+              className="rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-sm text-[#9CA3AF] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.2)] hover:text-white"
             >
               Analytics
             </Link>
             <button
               onClick={() => setShowBulk(true)}
-              className="rounded-lg border border-white/10 bg-[#1a1a1a] px-4 py-2 text-sm text-[#9CA3AF] transition-colors hover:text-white"
+              className="rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-sm text-[#9CA3AF] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.2)] hover:text-white"
             >
               Bulk Import
             </button>
+            <div className="mx-2 h-5 w-px bg-[rgba(255,255,255,0.08)]" />
             <button
               onClick={() => {
                 sessionStorage.removeItem("admin-auth");
                 setAuthed(false);
               }}
-              className="text-sm text-[#6B7280] hover:text-white"
+              className="text-sm text-[#6B7280] transition-colors duration-150 hover:text-white"
             >
               Logout
             </button>
@@ -411,73 +407,101 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Stats bar */}
-      <div className="border-b border-white/6 px-6 py-4">
-        <div className="flex gap-6">
-          <div className="rounded-lg border border-white/6 bg-[#141414] px-5 py-3">
-            <div className="text-xs text-[#6B7280]">Total</div>
-            <div className="text-lg font-bold">{total}</div>
+      {/* Stats Cards */}
+      <div className="px-6 py-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5" style={{ borderLeft: "4px solid #FE4205" }}>
+            <div className="text-2xl font-bold">{total}</div>
+            <div className="mt-1 text-xs text-[#9CA3AF]">Total Products</div>
           </div>
-          {CATEGORIES.map((cat) => (
-            <div
-              key={cat}
-              className="rounded-lg border border-white/6 bg-[#141414] px-5 py-3"
-            >
-              <div className="text-xs text-[#6B7280]">{cat}</div>
-              <div className="text-lg font-bold">{catCounts[cat] || 0}</div>
-            </div>
-          ))}
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5" style={{ borderLeft: "4px solid #E8518D" }}>
+            <div className="text-2xl font-bold">{girlsCount}</div>
+            <div className="mt-1 text-xs text-[#9CA3AF]">Girls Collection</div>
+          </div>
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5" style={{ borderLeft: "4px solid #F59E0B" }}>
+            <div className="text-2xl font-bold">{premiumCount}</div>
+            <div className="mt-1 text-xs text-[#9CA3AF]">Premium Tier</div>
+          </div>
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5" style={{ borderLeft: "4px solid #60A5FA" }}>
+            <div className="text-2xl font-bold">{CATEGORIES.length}</div>
+            <div className="mt-1 text-xs text-[#9CA3AF]">Categories</div>
+          </div>
         </div>
       </div>
 
-      {/* Search + Filters */}
-      <div className="flex items-center gap-4 border-b border-white/6 px-6 py-4">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search products..."
-          className="flex-1 rounded-lg border border-white/10 bg-[#141414] px-4 py-2 text-sm text-white placeholder:text-[#6B7280] focus:border-[#FE4205] focus:outline-none"
-        />
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setCategoryFilter("");
+      {/* Filters */}
+      <div className="border-b border-[rgba(255,255,255,0.06)] px-6 pb-5">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="relative flex-1">
+            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder={`Search ${total} products...`}
+              className="h-10 w-full rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] pl-10 pr-4 text-sm text-white placeholder:text-[#6B7280] transition-colors duration-150 focus:border-[#FE4205] focus:outline-none"
+            />
+          </div>
+          <select
+            value={categoryFilter}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
               setPage(1);
             }}
-            className={`rounded-lg px-3 py-2 text-sm ${!categoryFilter ? "bg-[#FE4205] text-white" : "bg-[#1a1a1a] text-[#9CA3AF] hover:text-white"}`}
+            className="h-10 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] px-3 text-sm text-[#9CA3AF] transition-colors duration-150 focus:border-[#FE4205] focus:outline-none"
           >
-            All
-          </button>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setCategoryFilter(cat);
-                setPage(1);
-              }}
-              className={`rounded-lg px-3 py-2 text-sm ${categoryFilter === cat ? "bg-[#FE4205] text-white" : "bg-[#1a1a1a] text-[#9CA3AF] hover:text-white"}`}
-            >
-              {cat}
-            </button>
-          ))}
+            <option value="">All Categories</option>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+          <select
+            value={tierFilter}
+            onChange={(e) => {
+              setTierFilter(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] px-3 text-sm text-[#9CA3AF] transition-colors duration-150 focus:border-[#FE4205] focus:outline-none"
+          >
+            <option value="">All Tiers</option>
+            {TIERS.map((t) => (
+              <option key={t} value={t}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </option>
+            ))}
+          </select>
+          <select
+            value={`${sortCol}-${sortOrder}`}
+            onChange={(e) => {
+              const [col, order] = e.target.value.split("-");
+              setSortCol(col);
+              setSortOrder(order as "asc" | "desc");
+              setPage(1);
+            }}
+            className="h-10 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] px-3 text-sm text-[#9CA3AF] transition-colors duration-150 focus:border-[#FE4205] focus:outline-none"
+          >
+            <option value="id-asc">ID (Asc)</option>
+            <option value="id-desc">ID (Desc)</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="price_cny-asc">Price (Low)</option>
+            <option value="price_cny-desc">Price (High)</option>
+            <option value="created_at-desc">Newest First</option>
+            <option value="created_at-asc">Oldest First</option>
+          </select>
         </div>
-        {selected.size > 0 && (
-          <button
-            onClick={bulkDelete}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-          >
-            Delete {selected.size}
-          </button>
-        )}
       </div>
 
       {/* Product Table */}
       <div className="overflow-x-auto px-6">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/6 text-left text-xs uppercase text-[#6B7280]">
-              <th className="px-3 py-3">
+            <tr className="bg-[#1A1A1A] text-left" style={{ fontSize: "11px", letterSpacing: "0.05em" }}>
+              <th className="px-3 py-3 font-medium uppercase text-[#6C757D]">
                 <input
                   type="checkbox"
                   checked={
@@ -493,14 +517,14 @@ export default function AdminPage() {
                 { key: "name", label: "Name" },
                 { key: "brand", label: "Brand" },
                 { key: "category", label: "Category" },
-                { key: "price_cny", label: "Price ¥" },
+                { key: "price_cny", label: "Price" },
                 { key: "tier", label: "Tier" },
                 { key: "created_at", label: "Created" },
               ].map((col) => (
                 <th
                   key={col.key}
                   onClick={() => col.key !== "image" && handleSort(col.key)}
-                  className={`px-3 py-3 ${col.key !== "image" ? "cursor-pointer hover:text-white" : ""}`}
+                  className={`px-3 py-3 font-medium uppercase text-[#6C757D] ${col.key !== "image" ? "cursor-pointer transition-colors duration-150 hover:text-white" : ""}`}
                 >
                   {col.label}
                   {sortCol === col.key && (
@@ -510,29 +534,41 @@ export default function AdminPage() {
                   )}
                 </th>
               ))}
-              <th className="px-3 py-3">Actions</th>
+              <th className="px-3 py-3 font-medium uppercase text-[#6C757D]">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={10} className="px-3 py-12 text-center text-[#6B7280]">
-                  Loading...
+                <td colSpan={10} className="px-3 py-20 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <svg className="h-8 w-8 animate-spin text-[#FE4205]" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span className="text-sm text-[#6B7280]">Loading products...</span>
+                  </div>
                 </td>
               </tr>
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-3 py-12 text-center text-[#6B7280]">
-                  No products found
+                <td colSpan={10} className="px-3 py-20 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <svg className="h-12 w-12 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span className="text-sm text-[#6B7280]">No products found</span>
+                    <span className="text-xs text-[#4B5563]">Try adjusting your search or filters</span>
+                  </div>
                 </td>
               </tr>
             ) : (
               products.map((p, i) => (
                 <tr
                   key={p.id}
-                  className={`border-b border-white/4 transition-colors hover:bg-white/[0.02] ${i % 2 === 1 ? "bg-white/[0.01]" : ""}`}
+                  className={`border-b border-[rgba(255,255,255,0.04)] transition-colors duration-150 hover:bg-[#1A1A1A] ${i % 2 === 1 ? "bg-[#161616]" : "bg-[#141414]"}`}
                 >
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5">
                     <input
                       type="checkbox"
                       checked={selected.has(p.id)}
@@ -540,78 +576,87 @@ export default function AdminPage() {
                       className="accent-[#FE4205]"
                     />
                   </td>
-                  <td className="px-3 py-2 text-[#6B7280]">{p.id}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5 text-xs text-[#6C757D]">{p.id}</td>
+                  <td className="px-3 py-2.5">
                     {p.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={p.image}
                         alt=""
-                        className="h-10 w-10 rounded-lg bg-[#0a0a0a] object-contain"
+                        className="h-11 w-11 rounded-lg bg-[#0a0a0a] object-cover"
                       />
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1a1a1a] text-[10px] text-[#6B7280]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#1a1a1a] text-[10px] text-[#6B7280]">
                         N/A
                       </div>
                     )}
                   </td>
-                  <td className="max-w-[200px] truncate px-3 py-2 font-medium">
+                  <td className="max-w-[250px] truncate px-3 py-2.5 text-[14px] font-medium">
                     {p.name}
                   </td>
-                  <td className="px-3 py-2 text-[#9CA3AF]">{p.brand}</td>
-                  <td className="px-3 py-2">
-                    <span className="rounded-md bg-[#1a1a1a] px-2 py-1 text-xs">
+                  <td className="px-3 py-2.5 text-[13px] text-[#9CA3AF]">{p.brand}</td>
+                  <td className="px-3 py-2.5">
+                    <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] px-2.5 py-0.5 text-[12px]">
                       {p.category}
                     </span>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5">
                     {p.price_cny != null ? (
-                      <span className="text-[#FE4205]">¥{p.price_cny}</span>
+                      <span className="font-semibold text-[#FE4205]">¥{p.price_cny}</span>
                     ) : (
-                      <span className="text-[#6B7280]">—</span>
+                      <span className="text-[#6B7280]">--</span>
                     )}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5">
                     {p.tier && (
                       <span
-                        className={`rounded-md px-2 py-1 text-xs ${
+                        className={`rounded-md px-2 py-0.5 text-xs font-medium ${
                           p.tier === "premium"
-                            ? "bg-green-900/30 text-green-400"
+                            ? "bg-[rgba(146,64,14,0.2)] text-[#F59E0B]"
                             : p.tier === "mid"
-                              ? "bg-amber-900/30 text-amber-400"
-                              : "bg-gray-800 text-gray-400"
+                              ? "bg-[rgba(30,58,95,0.2)] text-[#60A5FA]"
+                              : "bg-[rgba(55,65,81,0.2)] text-[#9CA3AF]"
                         }`}
                       >
                         {p.tier}
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-xs text-[#6B7280]">
+                  <td className="px-3 py-2.5 text-[12px] text-[#6C757D]">
                     {p.created_at
                       ? new Date(p.created_at).toLocaleDateString()
-                      : "—"}
+                      : "--"}
                   </td>
-                  <td className="px-3 py-2">
-                    <div className="flex gap-2">
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEdit(p)}
-                        className="rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-[#9CA3AF] hover:text-white"
+                        className="rounded-md p-1.5 text-[#6B7280] transition-colors duration-150 hover:bg-[rgba(255,255,255,0.06)] hover:text-[#FE4205]"
+                        title="Edit"
                       >
-                        Edit
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                       </button>
                       <button
                         onClick={() => setDeleteProduct(p)}
-                        className="rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-red-400 hover:text-red-300"
+                        className="rounded-md p-1.5 text-[#6B7280] transition-colors duration-150 hover:bg-[rgba(255,255,255,0.06)] hover:text-red-400"
+                        title="Delete"
                       >
-                        Del
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                       <a
                         href={`/products/${p.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-[#6B7280] hover:text-white"
+                        className="rounded-md p-1.5 text-[#6B7280] transition-colors duration-150 hover:bg-[rgba(255,255,255,0.06)] hover:text-white"
+                        title="View"
                       >
-                        ↗
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                       </a>
                     </div>
                   </td>
@@ -623,27 +668,40 @@ export default function AdminPage() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between border-t border-white/6 px-6 py-4">
+      <div className="flex items-center justify-between border-t border-[rgba(255,255,255,0.06)] px-6 py-4">
         <span className="text-sm text-[#6B7280]">
-          Page {page} of {totalPages} ({total} products)
+          Showing {total > 0 ? startItem : 0}-{endItem} of {total}
         </span>
         <div className="flex gap-2">
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
-            className="rounded-lg border border-white/10 bg-[#141414] px-4 py-2 text-sm text-[#9CA3AF] disabled:opacity-30"
+            className="rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#141414] px-4 py-2 text-sm text-[#9CA3AF] transition-all duration-150 hover:border-[rgba(255,255,255,0.2)] hover:text-white disabled:pointer-events-none disabled:opacity-30"
           >
-            ← Prev
+            Prev
           </button>
           <button
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="rounded-lg border border-white/10 bg-[#141414] px-4 py-2 text-sm text-[#9CA3AF] disabled:opacity-30"
+            className="rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#141414] px-4 py-2 text-sm text-[#9CA3AF] transition-all duration-150 hover:border-[rgba(255,255,255,0.2)] hover:text-white disabled:pointer-events-none disabled:opacity-30"
           >
-            Next →
+            Next
           </button>
         </div>
       </div>
+
+      {/* Bulk Actions Floating Bar */}
+      {selected.size > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between bg-[#1A1A1A] border-t border-[rgba(255,255,255,0.1)] px-6 py-3 shadow-lg animate-[slideUp_150ms_ease-out]">
+          <span className="text-sm font-medium text-white">{selected.size} selected</span>
+          <button
+            onClick={bulkDelete}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red-700"
+          >
+            Delete Selected
+          </button>
+        </div>
+      )}
 
       {/* =================== ADD / EDIT MODAL =================== */}
       {(showAdd || editProduct) && (
