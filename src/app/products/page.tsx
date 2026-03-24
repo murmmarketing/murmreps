@@ -28,7 +28,7 @@ const categoryPills = [
   // Jewelry
   "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
   // Other
-  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories",
+  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories", "Trading Cards",
 ] as const;
 
 type Category = (typeof categoryPills)[number];

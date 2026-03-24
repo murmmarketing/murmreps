@@ -29,7 +29,7 @@ const CATEGORIES = [
   "Pants", "Jeans", "Shorts", "Tracksuits",
   "Bags", "Wallets", "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Phone Cases", "Socks & Underwear",
   "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
-  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories",
+  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories", "Trading Cards",
 ];
 const TIERS = ["budget", "mid", "premium"];
 const QUALITIES = ["best", "good", "budget"];

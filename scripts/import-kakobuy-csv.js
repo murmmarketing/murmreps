@@ -199,6 +199,7 @@ function categorize(name) {
   if (/\b(ring)\b/i.test(n) && !/earring/i.test(n)) return "Rings";
   if (/\b(perfume|cologne|fragrance)/i.test(n)) return "Perfumes";
   if (/\b(keychain|lighter|pin|badge)/i.test(n)) return "Keychains & Accessories";
+  if (/\b(trading card|pokemon|pokémon|yugioh|one piece card|opcg|psa|tcg|collectible card)/i.test(n)) return "Trading Cards";
   return "T-Shirts";
 }
 
