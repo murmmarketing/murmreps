@@ -735,6 +735,20 @@ export default function AdminPage() {
                 />
               </div>
 
+              {form.image && (
+                <div className="flex justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.image}
+                    alt="Product preview"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    onLoad={(e) => { (e.target as HTMLImageElement).style.display = 'block'; }}
+                    className="rounded-lg"
+                    style={{ maxWidth: 180, maxHeight: 180, objectFit: 'contain', border: '1px solid rgba(255,255,255,0.1)', marginBottom: 12 }}
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
