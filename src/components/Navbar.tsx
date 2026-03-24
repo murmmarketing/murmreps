@@ -76,6 +76,7 @@ const toolsLinks = [
 
 const allMobileLinks = [
   { href: "/products", label: "Products" },
+  { href: "/girls", label: "For Her" },
   { href: "/deals", label: "Deals" },
   { href: "/news", label: "News" },
   { href: "/guide", label: "Tutorials" },
@@ -173,6 +174,9 @@ export default function Navbar() {
         <div className="flex items-center gap-5">
           <DesktopLink href="/products" active={pathname === "/products"}>
             Products
+          </DesktopLink>
+          <DesktopLink href="/girls" active={pathname === "/girls"}>
+            For Her
           </DesktopLink>
           <DesktopLink href="/news" active={pathname === "/news"}>
             News

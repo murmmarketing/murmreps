@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import ProductRow from "./ProductRow";
+import { girlsItemIds } from "@/data/girls-ids";
 
 interface RowProduct {
   id: number;
@@ -26,6 +27,7 @@ export default function HomeSections() {
   const [brandRows, setBrandRows] = useState<BrandRow[]>([]);
   const [recentProducts, setRecentProducts] = useState<RowProduct[]>([]);
   const [forYouProducts, setForYouProducts] = useState<RowProduct[]>([]);
+  const [girlsProducts, setGirlsProducts] = useState<RowProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function HomeSections() {
       // Fetch all products for brand grouping
       const { data: all } = await supabase
         .from("products")
-        .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category")
+        .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
         .not("image", "eq", "")
         .not("image", "is", null)
         .order("views", { ascending: false });
@@ -68,6 +70,15 @@ export default function HomeSections() {
       const shuffled = [...all].sort(() => Math.random() - 0.5);
       setForYouProducts(shuffled.filter(p => p.price_cny != null).slice(0, 8));
 
+      // "For Her" — girls products
+      const girls = all.filter((p) => {
+        if (!p.image) return false;
+        const src = (p as Record<string, string>).source_link || "";
+        const m = src.match(/itemID=(\d+)/i) || src.match(/[?&]id=(\d+)/);
+        return m && girlsItemIds.has(m[1]);
+      });
+      setGirlsProducts(girls.slice(0, 8));
+
       // "Recently Added"
       const { data: recent } = await supabase
         .from("products")
@@ -93,6 +104,11 @@ export default function HomeSections() {
 
       {/* Recently Added */}
       <ProductRow title="Recently Added" products={recentProducts} viewMoreHref="/products" />
+
+      {/* For Her */}
+      {girlsProducts.length > 0 && (
+        <ProductRow title="For Her ✨" products={girlsProducts} viewMoreHref="/girls" />
+      )}
 
       {/* Brand rows */}
       {brandRows.map(({ brand, products }) => (
