@@ -146,9 +146,11 @@ export default function Footer() {
           <p className="text-xs text-text-muted">
             &copy; 2026 MurmReps. All rights reserved.
           </p>
-          <p className="text-xs text-text-muted">
-            Educational purposes only. MurmReps does not sell products.
-          </p>
+          <div className="flex items-center gap-4 text-xs text-text-muted">
+            <span>Educational purposes only. MurmReps does not sell products.</span>
+            <Link href="/terms" className="transition-colors hover:text-white">Terms</Link>
+            <Link href="/privacy" className="transition-colors hover:text-white">Privacy</Link>
+          </div>
         </div>
       </div>
     </footer>
