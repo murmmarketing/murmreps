@@ -59,18 +59,7 @@ interface MetaAPIResponse {
   campaigns?: CampaignRow[];
 }
 
-interface ContentRow {
-  id: string;
-  title: string;
-  platform: string;
-  type: string;
-  views: number;
-  likes: number;
-  comments: number;
-  shares: number;
-  engagement: number;
-  date: string;
-}
+
 
 /* ─── constants ─── */
 const PLATFORMS: { id: Platform; label: string; icon: string; color: string }[] = [
