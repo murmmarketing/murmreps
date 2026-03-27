@@ -382,6 +382,12 @@ export default function AdminPage() {
               + Add Product
             </button>
             <Link
+              href="/admin/marketing"
+              className="rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-sm text-[#9CA3AF] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.2)] hover:text-white"
+            >
+              Marketing
+            </Link>
+            <Link
               href="/admin/analytics"
               className="rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-sm text-[#9CA3AF] transition-all duration-150 ease-in-out hover:border-[rgba(255,255,255,0.2)] hover:text-white"
             >
