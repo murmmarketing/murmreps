@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 
 /* ─── types ─── */
@@ -16,20 +16,47 @@ type Platform = "overview" | "meta" | "instagram" | "tiktok" | "ga4";
 interface KPI {
   label: string;
   value: string;
-  delta?: number; // % change vs previous period
-  prefix?: string;
-  suffix?: string;
+  delta?: number;
 }
 
 interface CampaignRow {
   name: string;
   spend: number;
   impressions: number;
+  reach: number;
   clicks: number;
   ctr: number;
   cpc: number;
   conversions: number;
+}
+
+interface DailyRow {
+  date: string;
+  spend: number;
+  impressions: number;
+  reach: number;
+  clicks: number;
+}
+
+interface MetaSummary {
+  spend: number;
+  impressions: number;
+  reach: number;
+  clicks: number;
+  ctr: number;
+  cpc: number;
+  purchases: number;
+  revenue: number;
   roas: number;
+  linkClicks: number;
+}
+
+interface MetaAPIResponse {
+  connected: boolean;
+  error?: string;
+  summary?: MetaSummary;
+  daily?: DailyRow[];
+  campaigns?: CampaignRow[];
 }
 
 interface ContentRow {
@@ -46,12 +73,12 @@ interface ContentRow {
 }
 
 /* ─── constants ─── */
-const PLATFORMS: { id: Platform; label: string; icon: string; color: string; connected: boolean }[] = [
-  { id: "overview", label: "Overview", icon: "grid", color: "#FE4205", connected: true },
-  { id: "meta", label: "Meta Ads", icon: "meta", color: "#1877F2", connected: false },
-  { id: "instagram", label: "Instagram", icon: "instagram", color: "#E1306C", connected: false },
-  { id: "tiktok", label: "TikTok", icon: "tiktok", color: "#FF0050", connected: false },
-  { id: "ga4", label: "Analytics", icon: "chart", color: "#4285F4", connected: true },
+const PLATFORMS: { id: Platform; label: string; icon: string; color: string }[] = [
+  { id: "overview", label: "Overview", icon: "grid", color: "#FE4205" },
+  { id: "meta", label: "Meta Ads", icon: "meta", color: "#1877F2" },
+  { id: "instagram", label: "Instagram", icon: "instagram", color: "#E1306C" },
+  { id: "tiktok", label: "TikTok", icon: "tiktok", color: "#FF0050" },
+  { id: "ga4", label: "Analytics", icon: "chart", color: "#4285F4" },
 ];
 
 const DATE_RANGES = [
@@ -124,103 +151,11 @@ function fmt(n: number, opts?: { prefix?: string; suffix?: string; decimals?: nu
   return `${prefix}${n.toLocaleString()}${suffix}`;
 }
 
-/* ─── demo data generator ─── */
-function generateDemoData(days: number) {
-  const now = new Date();
-  const daily: { date: string; spend: number; impressions: number; reach: number; clicks: number; revenue: number }[] = [];
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split("T")[0];
-    const base = 80 + Math.random() * 60;
-    daily.push({
-      date: dateStr,
-      spend: Math.round(base * (0.8 + Math.random() * 0.4) * 100) / 100,
-      impressions: Math.round(base * 150 + Math.random() * 5000),
-      reach: Math.round(base * 100 + Math.random() * 3000),
-      clicks: Math.round(base * 3 + Math.random() * 80),
-      revenue: Math.round(base * (1.5 + Math.random() * 2) * 100) / 100,
-    });
-  }
-
-  const totalSpend = daily.reduce((s, d) => s + d.spend, 0);
-  const totalImpressions = daily.reduce((s, d) => s + d.impressions, 0);
-  const totalReach = daily.reduce((s, d) => s + d.reach, 0);
-  const totalClicks = daily.reduce((s, d) => s + d.clicks, 0);
-  const totalRevenue = daily.reduce((s, d) => s + d.revenue, 0);
-
-  const campaigns: CampaignRow[] = [
-    { name: "MurmReps - Sneakers Retarget", spend: totalSpend * 0.3, impressions: totalImpressions * 0.25, clicks: totalClicks * 0.28, ctr: 2.1, cpc: 0.42, conversions: Math.round(totalClicks * 0.28 * 0.04), roas: 3.8 },
-    { name: "MurmReps - Brand Awareness EU", spend: totalSpend * 0.25, impressions: totalImpressions * 0.35, clicks: totalClicks * 0.2, ctr: 1.2, cpc: 0.58, conversions: Math.round(totalClicks * 0.2 * 0.02), roas: 2.1 },
-    { name: "MurmReps - Chrome Hearts Lookalike", spend: totalSpend * 0.2, impressions: totalImpressions * 0.2, clicks: totalClicks * 0.25, ctr: 2.8, cpc: 0.35, conversions: Math.round(totalClicks * 0.25 * 0.05), roas: 4.2 },
-    { name: "MurmReps - Girls Collection", spend: totalSpend * 0.15, impressions: totalImpressions * 0.12, clicks: totalClicks * 0.18, ctr: 3.1, cpc: 0.31, conversions: Math.round(totalClicks * 0.18 * 0.06), roas: 5.1 },
-    { name: "MurmReps - New Arrivals DPA", spend: totalSpend * 0.1, impressions: totalImpressions * 0.08, clicks: totalClicks * 0.09, ctr: 1.8, cpc: 0.48, conversions: Math.round(totalClicks * 0.09 * 0.03), roas: 2.9 },
-  ];
-
-  const kpis: KPI[] = [
-    { label: "Ad Spend", value: fmt(totalSpend, { prefix: "\u20AC", decimals: 0 }), delta: 12.3 },
-    { label: "ROAS", value: fmt(totalRevenue / totalSpend, { suffix: "x", decimals: 1 }), delta: 8.2 },
-    { label: "Impressions", value: fmt(totalImpressions), delta: 5.4 },
-    { label: "Reach", value: fmt(totalReach), delta: -2.1 },
-    { label: "Link Clicks", value: fmt(totalClicks), delta: 15.7 },
-    { label: "CTR", value: fmt((totalClicks / totalImpressions) * 100, { suffix: "%", decimals: 2 }), delta: 9.8 },
-  ];
-
-  return { daily, campaigns, kpis, totalSpend, totalRevenue };
-}
-
-function generateIGDemo(): ContentRow[] {
-  const types = ["Reel", "Post", "Carousel", "Reel", "Reel", "Post"];
-  const titles = [
-    "Chrome Hearts haul unboxing",
-    "LV Trainer on feet review",
-    "Top 5 budget sneakers under \u20AC30",
-    "Girls collection reveal",
-    "How to QC like a pro",
-    "New arrivals this week",
-  ];
-  return titles.map((t, i) => ({
-    id: `ig_${i}`,
-    title: t,
-    platform: "instagram",
-    type: types[i],
-    views: Math.round(8000 + Math.random() * 50000),
-    likes: Math.round(200 + Math.random() * 3000),
-    comments: Math.round(10 + Math.random() * 200),
-    shares: Math.round(5 + Math.random() * 150),
-    engagement: parseFloat((2 + Math.random() * 6).toFixed(1)),
-    date: new Date(Date.now() - i * 86400000 * 3).toISOString().split("T")[0],
-  }));
-}
-
-function generateTikTokDemo(): ContentRow[] {
-  const titles = [
-    "rep vs retail Chrome Hearts",
-    "POV: your haul just arrived",
-    "rating my sneaker rotation",
-    "find on murmreps.com",
-    "budget designer haul",
-  ];
-  return titles.map((t, i) => ({
-    id: `tt_${i}`,
-    title: t,
-    platform: "tiktok",
-    type: "Video",
-    views: Math.round(15000 + Math.random() * 200000),
-    likes: Math.round(500 + Math.random() * 15000),
-    comments: Math.round(20 + Math.random() * 500),
-    shares: Math.round(10 + Math.random() * 300),
-    engagement: parseFloat((3 + Math.random() * 8).toFixed(1)),
-    date: new Date(Date.now() - i * 86400000 * 2).toISOString().split("T")[0],
-  }));
-}
-
 /* ─── main component ─── */
 export default function MarketingDashboard() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
-  const [, setStoredPassword] = useState("");
+  const [storedPassword, setStoredPassword] = useState("");
 
   const [platform, setPlatform] = useState<Platform>("overview");
   const [rangeDays, setRangeDays] = useState(30);
@@ -233,10 +168,13 @@ export default function MarketingDashboard() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartInstances = useRef<Record<string, any>>({});
 
-  // Data
-  const [metaData, setMetaData] = useState<ReturnType<typeof generateDemoData> | null>(null);
-  const [igData, setIgData] = useState<ContentRow[]>([]);
-  const [ttData, setTtData] = useState<ContentRow[]>([]);
+  // Real data from API
+  const [metaConnected, setMetaConnected] = useState<boolean | null>(null); // null = loading
+  const [metaError, setMetaError] = useState<string | null>(null);
+  const [metaSummary, setMetaSummary] = useState<MetaSummary | null>(null);
+  const [metaDaily, setMetaDaily] = useState<DailyRow[]>([]);
+  const [metaCampaigns, setMetaCampaigns] = useState<CampaignRow[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Auth
   useEffect(() => {
@@ -270,17 +208,63 @@ export default function MarketingDashboard() {
     };
   }, [authed]);
 
-  // Generate data when range changes
-  useEffect(() => {
-    if (!authed) return;
-    setMetaData(generateDemoData(rangeDays));
-    setIgData(generateIGDemo());
-    setTtData(generateTikTokDemo());
-  }, [authed, rangeDays]);
+  // Fetch REAL Meta Ads data from API
+  const fetchMetaData = useCallback(async () => {
+    if (!storedPassword) return;
+    setLoading(true);
+    setMetaError(null);
+    try {
+      const res = await fetch(`/api/admin/meta?days=${rangeDays}`, {
+        headers: { "x-admin-password": storedPassword },
+      });
+      const data: MetaAPIResponse = await res.json();
 
-  // Render charts
+      if (!data.connected) {
+        setMetaConnected(false);
+        setMetaSummary(null);
+        setMetaDaily([]);
+        setMetaCampaigns([]);
+      } else if (data.error) {
+        setMetaConnected(true);
+        setMetaError(data.error);
+        setMetaSummary(null);
+        setMetaDaily([]);
+        setMetaCampaigns([]);
+      } else {
+        setMetaConnected(true);
+        setMetaSummary(data.summary || null);
+        setMetaDaily(data.daily || []);
+        setMetaCampaigns(data.campaigns || []);
+      }
+    } catch (err) {
+      setMetaConnected(false);
+      setMetaError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [storedPassword, rangeDays]);
+
   useEffect(() => {
-    if (!chartReady || !window.Chart || !metaData) return;
+    if (authed && storedPassword) {
+      fetchMetaData();
+    }
+  }, [authed, storedPassword, rangeDays, fetchMetaData]);
+
+  // Build KPIs from real data
+  const kpis: KPI[] = metaSummary
+    ? [
+        { label: "Ad Spend", value: fmt(metaSummary.spend, { prefix: "€", decimals: 0 }) },
+        { label: "ROAS", value: fmt(metaSummary.roas, { suffix: "x", decimals: 1 }) },
+        { label: "Impressions", value: fmt(metaSummary.impressions) },
+        { label: "Reach", value: fmt(metaSummary.reach) },
+        { label: "Link Clicks", value: fmt(metaSummary.linkClicks) },
+        { label: "CTR", value: fmt(metaSummary.ctr, { suffix: "%", decimals: 2 }) },
+      ]
+    : [];
+
+  // Render charts from real data
+  useEffect(() => {
+    if (!chartReady || !window.Chart || metaDaily.length === 0) return;
 
     const Chart = window.Chart;
     Object.values(chartInstances.current).forEach((c) => c?.destroy());
@@ -289,32 +273,21 @@ export default function MarketingDashboard() {
     const gridColor = "rgba(255,255,255,0.05)";
     const tickColor = "#6B7280";
 
-    // Spend + Revenue chart
+    // Spend chart
     if (spendChartRef.current && (platform === "overview" || platform === "meta")) {
       chartInstances.current.spend = new Chart(spendChartRef.current, {
         type: "line",
         data: {
-          labels: metaData.daily.map((d) => {
+          labels: metaDaily.map((d) => {
             const dt = new Date(d.date);
             return `${dt.getDate()}/${dt.getMonth() + 1}`;
           }),
           datasets: [
             {
               label: "Ad Spend",
-              data: metaData.daily.map((d) => d.spend),
+              data: metaDaily.map((d) => d.spend),
               borderColor: "#1877F2",
               backgroundColor: "rgba(24,119,242,0.08)",
-              fill: true,
-              tension: 0.35,
-              pointRadius: 0,
-              pointHoverRadius: 4,
-              borderWidth: 2,
-            },
-            {
-              label: "Revenue",
-              data: metaData.daily.map((d) => d.revenue),
-              borderColor: "#10B981",
-              backgroundColor: "rgba(16,185,129,0.08)",
               fill: true,
               tension: 0.35,
               pointRadius: 0,
@@ -338,10 +311,7 @@ export default function MarketingDashboard() {
           scales: {
             x: { ticks: { color: tickColor, maxTicksLimit: 10 }, grid: { color: gridColor } },
             y: {
-              ticks: {
-                color: tickColor,
-                callback: (v: number) => "\u20AC" + v.toFixed(0),
-              },
+              ticks: { color: tickColor, callback: (v: number) => "€" + v.toFixed(0) },
               grid: { color: gridColor },
               beginAtZero: true,
             },
@@ -355,20 +325,20 @@ export default function MarketingDashboard() {
       chartInstances.current.reach = new Chart(reachChartRef.current, {
         type: "bar",
         data: {
-          labels: metaData.daily.map((d) => {
+          labels: metaDaily.map((d) => {
             const dt = new Date(d.date);
             return `${dt.getDate()}/${dt.getMonth() + 1}`;
           }),
           datasets: [
             {
               label: "Impressions",
-              data: metaData.daily.map((d) => d.impressions),
+              data: metaDaily.map((d) => d.impressions),
               backgroundColor: "rgba(254,66,5,0.6)",
               borderRadius: 3,
             },
             {
               label: "Reach",
-              data: metaData.daily.map((d) => d.reach),
+              data: metaDaily.map((d) => d.reach),
               backgroundColor: "rgba(254,66,5,0.25)",
               borderRadius: 3,
             },
@@ -389,7 +359,7 @@ export default function MarketingDashboard() {
           scales: {
             x: { ticks: { color: tickColor, maxTicksLimit: 10 }, grid: { color: gridColor }, stacked: false },
             y: {
-              ticks: { color: tickColor, callback: (v: number) => (v >= 1000 ? (v / 1000).toFixed(0) + "K" : v) },
+              ticks: { color: tickColor, callback: (v: number) => (v >= 1000 ? (v / 1000).toFixed(0) + "K" : String(v)) },
               grid: { color: gridColor },
               beginAtZero: true,
             },
@@ -402,17 +372,17 @@ export default function MarketingDashboard() {
       Object.values(chartInstances.current).forEach((c) => c?.destroy());
       chartInstances.current = {};
     };
-  }, [chartReady, metaData, platform]);
+  }, [chartReady, metaDaily, platform]);
 
   // Sort campaigns
-  const sortedCampaigns = metaData?.campaigns.slice().sort((a, b) => {
+  const sortedCampaigns = metaCampaigns.slice().sort((a, b) => {
     switch (campaignSort) {
-      case "roas": return b.roas - a.roas;
+      case "roas": return (b as unknown as { roas: number }).roas - (a as unknown as { roas: number }).roas;
       case "ctr": return b.ctr - a.ctr;
       case "clicks": return b.clicks - a.clicks;
       default: return b.spend - a.spend;
     }
-  }) || [];
+  });
 
   /* ─── auth screen ─── */
   if (!authed) {
@@ -476,49 +446,83 @@ export default function MarketingDashboard() {
     </div>
   );
 
-  /* ─── content leaderboard ─── */
-  const ContentTable = ({ rows, platformName }: { rows: ContentRow[]; platformName: string }) => (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Top {platformName} Content</h3>
-        <span className="text-xs text-gray-500">Last {rangeDays} days</span>
+  /* ─── content placeholder ─── */
+  const ContentPlaceholder = ({ platformName }: { platformName: string }) => (
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-12 text-center">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(255,255,255,0.04)]">
+        <svg className="h-6 w-6 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 20V10M12 20V4M6 20v-6" strokeLinecap="round" />
+        </svg>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[rgba(255,255,255,0.06)] text-left text-xs text-gray-500">
-              <th className="pb-3 pr-4">#</th>
-              <th className="pb-3 pr-4">Content</th>
-              <th className="pb-3 pr-4">Type</th>
-              <th className="pb-3 pr-4 text-right">Views</th>
-              <th className="pb-3 pr-4 text-right">Likes</th>
-              <th className="pb-3 pr-4 text-right">Comments</th>
-              <th className="pb-3 pr-4 text-right">Shares</th>
-              <th className="pb-3 text-right">Eng %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.sort((a, b) => b.views - a.views).map((row, i) => (
-              <tr key={row.id} className="border-b border-[rgba(255,255,255,0.03)] transition-colors hover:bg-[#FE4205]/5">
-                <td className="py-3 pr-4 text-gray-500">{i + 1}</td>
-                <td className="py-3 pr-4 text-white">{row.title}</td>
-                <td className="py-3 pr-4">
-                  <span className="rounded-full bg-[rgba(255,255,255,0.06)] px-2 py-0.5 text-xs text-gray-400">
-                    {row.type}
-                  </span>
-                </td>
-                <td className="py-3 pr-4 text-right text-white">{row.views.toLocaleString()}</td>
-                <td className="py-3 pr-4 text-right text-gray-300">{row.likes.toLocaleString()}</td>
-                <td className="py-3 pr-4 text-right text-gray-400">{row.comments.toLocaleString()}</td>
-                <td className="py-3 pr-4 text-right text-gray-400">{row.shares.toLocaleString()}</td>
-                <td className="py-3 text-right font-medium text-[#FE4205]">{row.engagement}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <p className="text-sm text-gray-500">Connect {platformName} to see content performance data</p>
     </div>
   );
+
+  /* ─── status badge helper ─── */
+  const StatusBadge = ({ connected, label }: { connected: boolean | null; label: string }) => (
+    <span className="flex items-center gap-1.5 text-xs text-gray-400">
+      <span className={`h-2 w-2 rounded-full ${connected === true ? "bg-emerald-400" : connected === null ? "bg-yellow-400 animate-pulse" : "bg-gray-600"}`} />
+      {label}
+    </span>
+  );
+
+  /* ─── No data empty state ─── */
+  const EmptyMetaState = () => (
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-12 text-center">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1877F2]/10">
+        <PlatformIcon type="meta" className="h-7 w-7 text-[#1877F2]" />
+      </div>
+      {metaConnected === false ? (
+        <>
+          <h3 className="text-lg font-semibold text-white">Meta Ads Not Connected</h3>
+          <p className="mt-2 text-sm text-gray-400">
+            Add <code className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-xs text-gray-300">META_ACCESS_TOKEN</code> and{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-xs text-gray-300">META_AD_ACCOUNT_ID</code> to your environment variables on Vercel.
+          </p>
+          <div className="mt-6 text-left mx-auto max-w-sm">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Quick setup</p>
+            <ol className="space-y-2 text-sm text-gray-400">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">1</span>
+                Go to business.facebook.com → Business Settings → System Users
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">2</span>
+                Generate a token with <strong className="text-gray-300">ads_read</strong> permission
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">3</span>
+                Add both env vars in Vercel → Settings → Environment Variables
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">4</span>
+                Redeploy to apply changes
+              </li>
+            </ol>
+          </div>
+        </>
+      ) : metaError ? (
+        <>
+          <h3 className="text-lg font-semibold text-white">Meta API Error</h3>
+          <p className="mt-2 text-sm text-red-400">{metaError}</p>
+          <p className="mt-2 text-xs text-gray-500">Check that your access token is valid and has ads_read permission.</p>
+          <button
+            onClick={fetchMetaData}
+            className="mt-4 rounded-lg bg-[#1877F2] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Retry
+          </button>
+        </>
+      ) : (
+        <>
+          <h3 className="text-lg font-semibold text-white">No Ad Data</h3>
+          <p className="mt-2 text-sm text-gray-400">No ad data found for the last {rangeDays} days. Make sure you have active or recent campaigns.</p>
+        </>
+      )}
+    </div>
+  );
+
+  const hasMetaData = metaConnected === true && metaSummary !== null && !metaError;
 
   /* ─── main render ─── */
   return (
@@ -527,9 +531,21 @@ export default function MarketingDashboard() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold text-white">Marketing Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500">MurmReps — all platforms in one view</p>
+          <p className="mt-1 text-sm text-gray-500">MurmReps — real-time platform analytics</p>
         </div>
         <div className="flex items-center gap-3">
+          {loading && (
+            <span className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-[#FE4205]" />
+              Fetching data...
+            </span>
+          )}
+          <button
+            onClick={fetchMetaData}
+            className="rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#141414] px-4 py-2 text-sm text-gray-400 transition-colors hover:text-white"
+          >
+            Refresh
+          </button>
           <Link
             href="/admin/analytics"
             className="rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#141414] px-4 py-2 text-sm text-gray-400 transition-colors hover:text-white"
@@ -547,23 +563,29 @@ export default function MarketingDashboard() {
 
       {/* Platform tabs */}
       <div className="mb-6 flex items-center gap-1 overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0e0e0e] p-1">
-        {PLATFORMS.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => setPlatform(p.id)}
-            className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-              platform === p.id
-                ? "bg-[#1a1a1a] text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-300"
-            }`}
-          >
-            <PlatformIcon type={p.icon} className="h-4 w-4" />
-            {p.label}
-            {!p.connected && p.id !== "overview" && (
-              <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
-            )}
-          </button>
-        ))}
+        {PLATFORMS.map((p) => {
+          const isConnected = p.id === "overview" || p.id === "ga4" || (p.id === "meta" && metaConnected === true);
+          return (
+            <button
+              key={p.id}
+              onClick={() => setPlatform(p.id)}
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                platform === p.id
+                  ? "bg-[#1a1a1a] text-white shadow-sm"
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              <PlatformIcon type={p.icon} className="h-4 w-4" />
+              {p.label}
+              {!isConnected && p.id !== "overview" && (
+                <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" title="Not connected" />
+              )}
+              {isConnected && p.id !== "overview" && (
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" title="Connected" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Date range pills */}
@@ -580,158 +602,159 @@ export default function MarketingDashboard() {
           </button>
         ))}
         <span className="ml-auto text-xs text-gray-500">
-          Showing last {rangeDays} days
+          Last {rangeDays} days{hasMetaData ? " • Live data" : ""}
         </span>
       </div>
 
-      {/* ─── OVERVIEW TAB ─── */}
-      {(platform === "overview" || platform === "meta") && metaData && (
+      {/* ─── OVERVIEW / META TAB ─── */}
+      {(platform === "overview" || platform === "meta") && (
         <>
-          {/* KPI Cards */}
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {metaData.kpis.map((kpi) => (
-              <div
-                key={kpi.label}
-                className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4"
-              >
-                <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{kpi.label}</p>
-                <p className="mt-2 text-xl font-bold text-white sm:text-2xl">{kpi.value}</p>
-                {kpi.delta !== undefined && (
-                  <p className={`mt-1 text-xs font-medium ${kpi.delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                    <ArrowIcon up={kpi.delta >= 0} />{" "}
-                    {Math.abs(kpi.delta).toFixed(1)}% vs prev
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Charts row */}
-          <div className="mb-6 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
-              <h3 className="mb-1 text-sm font-semibold text-white">Spend vs Revenue</h3>
-              <p className="mb-4 text-xs text-gray-500">Daily ad spend and attributed revenue</p>
-              <div className="h-[280px]">
-                <canvas ref={spendChartRef} />
-              </div>
+          {loading && metaConnected === null ? (
+            /* Loading skeleton */
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4">
+                  <div className="h-3 w-16 rounded bg-[rgba(255,255,255,0.06)]" />
+                  <div className="mt-3 h-7 w-20 rounded bg-[rgba(255,255,255,0.06)]" />
+                </div>
+              ))}
             </div>
-            <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
-              <h3 className="mb-1 text-sm font-semibold text-white">Impressions & Reach</h3>
-              <p className="mb-4 text-xs text-gray-500">Daily ad delivery metrics</p>
-              <div className="h-[280px]">
-                <canvas ref={reachChartRef} />
-              </div>
-            </div>
-          </div>
-
-          {/* Campaigns table */}
-          <div className="mb-6 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">Campaigns</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Sort by:</span>
-                {(["spend", "roas", "ctr", "clicks"] as const).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setCampaignSort(s)}
-                    className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                      campaignSort === s ? "bg-[#FE4205]/20 text-[#FE4205]" : "text-gray-500 hover:text-gray-300"
-                    }`}
+          ) : hasMetaData ? (
+            <>
+              {/* KPI Cards — REAL DATA */}
+              <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {kpis.map((kpi) => (
+                  <div
+                    key={kpi.label}
+                    className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4"
                   >
-                    {s.toUpperCase()}
-                  </button>
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{kpi.label}</p>
+                    <p className="mt-2 text-xl font-bold text-white sm:text-2xl">{kpi.value}</p>
+                    {kpi.delta !== undefined && (
+                      <p className={`mt-1 text-xs font-medium ${kpi.delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        <ArrowIcon up={kpi.delta >= 0} />{" "}
+                        {Math.abs(kpi.delta).toFixed(1)}% vs prev
+                      </p>
+                    )}
+                  </div>
                 ))}
               </div>
+
+              {/* Charts row — REAL DATA */}
+              <div className="mb-6 grid gap-4 lg:grid-cols-2">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
+                  <h3 className="mb-1 text-sm font-semibold text-white">Daily Ad Spend</h3>
+                  <p className="mb-4 text-xs text-gray-500">Real spend data from Meta Ads</p>
+                  <div className="h-[280px]">
+                    <canvas ref={spendChartRef} />
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
+                  <h3 className="mb-1 text-sm font-semibold text-white">Impressions & Reach</h3>
+                  <p className="mb-4 text-xs text-gray-500">Real delivery metrics from Meta Ads</p>
+                  <div className="h-[280px]">
+                    <canvas ref={reachChartRef} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Campaigns table — REAL DATA */}
+              {sortedCampaigns.length > 0 && (
+                <div className="mb-6 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white">Campaigns</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Sort by:</span>
+                      {(["spend", "ctr", "clicks"] as const).map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setCampaignSort(s)}
+                          className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                            campaignSort === s ? "bg-[#FE4205]/20 text-[#FE4205]" : "text-gray-500 hover:text-gray-300"
+                          }`}
+                        >
+                          {s.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[rgba(255,255,255,0.06)] text-left text-xs text-gray-500">
+                          <th className="pb-3 pr-4">#</th>
+                          <th className="pb-3 pr-4">Campaign</th>
+                          <th className="pb-3 pr-4 text-right">Spend</th>
+                          <th className="pb-3 pr-4 text-right">Impr.</th>
+                          <th className="pb-3 pr-4 text-right">Reach</th>
+                          <th className="pb-3 pr-4 text-right">Clicks</th>
+                          <th className="pb-3 pr-4 text-right">CTR</th>
+                          <th className="pb-3 text-right">CPC</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedCampaigns.map((c, i) => (
+                          <tr key={c.name} className="border-b border-[rgba(255,255,255,0.03)] transition-colors hover:bg-[#FE4205]/5">
+                            <td className="py-3 pr-4 text-gray-500">{i + 1}</td>
+                            <td className="py-3 pr-4 text-white">{c.name}</td>
+                            <td className="py-3 pr-4 text-right text-white">€{c.spend.toFixed(2)}</td>
+                            <td className="py-3 pr-4 text-right text-gray-300">{fmt(c.impressions)}</td>
+                            <td className="py-3 pr-4 text-right text-gray-300">{fmt(c.reach)}</td>
+                            <td className="py-3 pr-4 text-right text-gray-300">{fmt(c.clicks)}</td>
+                            <td className="py-3 pr-4 text-right text-gray-400">{c.ctr.toFixed(2)}%</td>
+                            <td className="py-3 text-right text-gray-400">€{c.cpc.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <EmptyMetaState />
+          )}
+
+          {/* Content placeholders for unconnected platforms */}
+          {platform === "overview" && (
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <ContentPlaceholder platformName="Instagram" />
+              <ContentPlaceholder platformName="TikTok" />
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[rgba(255,255,255,0.06)] text-left text-xs text-gray-500">
-                    <th className="pb-3 pr-4">#</th>
-                    <th className="pb-3 pr-4">Campaign</th>
-                    <th className="pb-3 pr-4 text-right">Spend</th>
-                    <th className="pb-3 pr-4 text-right">Impr.</th>
-                    <th className="pb-3 pr-4 text-right">Clicks</th>
-                    <th className="pb-3 pr-4 text-right">CTR</th>
-                    <th className="pb-3 pr-4 text-right">CPC</th>
-                    <th className="pb-3 pr-4 text-right">Conv.</th>
-                    <th className="pb-3 text-right">ROAS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedCampaigns.map((c, i) => (
-                    <tr key={c.name} className="border-b border-[rgba(255,255,255,0.03)] transition-colors hover:bg-[#FE4205]/5">
-                      <td className="py-3 pr-4 text-gray-500">{i + 1}</td>
-                      <td className="py-3 pr-4 text-white">{c.name}</td>
-                      <td className="py-3 pr-4 text-right text-white">{"\u20AC"}{c.spend.toFixed(0)}</td>
-                      <td className="py-3 pr-4 text-right text-gray-300">{fmt(c.impressions)}</td>
-                      <td className="py-3 pr-4 text-right text-gray-300">{fmt(c.clicks)}</td>
-                      <td className="py-3 pr-4 text-right text-gray-400">{c.ctr.toFixed(1)}%</td>
-                      <td className="py-3 pr-4 text-right text-gray-400">{"\u20AC"}{c.cpc.toFixed(2)}</td>
-                      <td className="py-3 pr-4 text-right text-white">{c.conversions}</td>
-                      <td className={`py-3 text-right font-semibold ${c.roas >= 3 ? "text-emerald-400" : c.roas >= 2 ? "text-yellow-400" : "text-red-400"}`}>
-                        {c.roas.toFixed(1)}x
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          )}
         </>
       )}
 
       {/* ─── INSTAGRAM TAB ─── */}
       {platform === "instagram" && (
-        <div className="space-y-6">
-          <ConnectCard
-            name="Instagram"
-            icon="instagram"
-            color="#E1306C"
-            instructions={[
-              "Go to developers.facebook.com and create a Business app",
-              "Add the Instagram Graph API product",
-              "Generate a User Access Token with instagram_basic + pages_show_list",
-              "Exchange for a long-lived token (60 days)",
-              "Add INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_USER_ID to your .env",
-            ]}
-          />
-          {/* Show demo data below */}
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/40 backdrop-blur-[2px]">
-              <span className="rounded-full bg-black/70 px-4 py-2 text-sm font-medium text-white">
-                Connect Instagram to see live data
-              </span>
-            </div>
-            <ContentTable rows={igData} platformName="Instagram" />
-          </div>
-        </div>
+        <ConnectCard
+          name="Instagram"
+          icon="instagram"
+          color="#E1306C"
+          instructions={[
+            "Go to developers.facebook.com and create a Business app",
+            "Add the Instagram Graph API product",
+            "Generate a User Access Token with instagram_basic + pages_show_list",
+            "Exchange for a long-lived token (60 days)",
+            "Add INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_USER_ID to your Vercel env vars",
+          ]}
+        />
       )}
 
       {/* ─── TIKTOK TAB ─── */}
       {platform === "tiktok" && (
-        <div className="space-y-6">
-          <ConnectCard
-            name="TikTok"
-            icon="tiktok"
-            color="#FF0050"
-            instructions={[
-              "Go to developers.tiktok.com and create an app",
-              "Add TikTok Login Kit and Video List permissions",
-              "Generate access token with user.info.basic + video.list scopes",
-              "Add TIKTOK_ACCESS_TOKEN to your .env",
-              "For TikTok Ads: add TIKTOK_ADS_TOKEN and TIKTOK_ADVERTISER_ID",
-            ]}
-          />
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/40 backdrop-blur-[2px]">
-              <span className="rounded-full bg-black/70 px-4 py-2 text-sm font-medium text-white">
-                Connect TikTok to see live data
-              </span>
-            </div>
-            <ContentTable rows={ttData} platformName="TikTok" />
-          </div>
-        </div>
+        <ConnectCard
+          name="TikTok"
+          icon="tiktok"
+          color="#FF0050"
+          instructions={[
+            "Go to developers.tiktok.com and create an app",
+            "Add TikTok Login Kit and Video List permissions",
+            "Generate access token with user.info.basic + video.list scopes",
+            "Add TIKTOK_ACCESS_TOKEN to your Vercel env vars",
+            "For TikTok Ads: add TIKTOK_ADS_TOKEN and TIKTOK_ADVERTISER_ID",
+          ]}
+        />
       )}
 
       {/* ─── GA4 TAB ─── */}
@@ -750,7 +773,7 @@ export default function MarketingDashboard() {
               </div>
             </div>
             <p className="mt-4 text-sm text-gray-400">
-              Basic page tracking is active. To pull analytics data into this dashboard, you need to set up the GA4 Data API:
+              Basic page tracking is active via the gtag snippet. To pull GA4 data into this dashboard programmatically, set up the GA4 Data API:
             </p>
             <ol className="mt-3 space-y-1.5 text-sm text-gray-400">
               <li className="flex items-start gap-2">
@@ -767,12 +790,11 @@ export default function MarketingDashboard() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">4</span>
-                Add GA4_PROPERTY_ID and GOOGLE_SERVICE_ACCOUNT_KEY to .env
+                Add GA4_PROPERTY_ID and GOOGLE_SERVICE_ACCOUNT_KEY to Vercel env vars
               </li>
             </ol>
           </div>
 
-          {/* GA site stats from existing analytics */}
           <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
             <h3 className="mb-4 text-sm font-semibold text-white">Site Analytics</h3>
             <p className="text-sm text-gray-400">
@@ -786,35 +808,23 @@ export default function MarketingDashboard() {
         </div>
       )}
 
-      {/* ─── overview bottom: content tables ─── */}
-      {platform === "overview" && (
-        <div className="space-y-6">
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/40 backdrop-blur-[2px]">
-              <span className="rounded-full bg-black/70 px-4 py-2 text-sm font-medium text-white">
-                Connect platforms for live content data
-              </span>
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2">
-              <ContentTable rows={igData} platformName="Instagram" />
-              <ContentTable rows={ttData} platformName="TikTok" />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Footer status bar */}
       <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-[rgba(255,255,255,0.06)] pt-4">
         <span className="text-xs text-gray-500">Platform status:</span>
-        {PLATFORMS.filter((p) => p.id !== "overview").map((p) => (
-          <span key={p.id} className="flex items-center gap-1.5 text-xs text-gray-400">
-            <span className={`h-2 w-2 rounded-full ${p.connected ? "bg-emerald-400" : "bg-gray-600"}`} />
-            {p.label}
+        <StatusBadge connected={metaConnected} label="Meta Ads" />
+        <StatusBadge connected={false} label="Instagram" />
+        <StatusBadge connected={false} label="TikTok" />
+        <StatusBadge connected={true} label="Analytics" />
+        {hasMetaData && (
+          <span className="ml-auto text-xs text-emerald-400/70">
+            Live data • last synced just now
           </span>
-        ))}
-        <span className="ml-auto text-xs text-gray-600">
-          Ad Account: act_3348721371949118
-        </span>
+        )}
+        {!hasMetaData && (
+          <span className="ml-auto text-xs text-gray-600">
+            Add META_ACCESS_TOKEN to Vercel to activate
+          </span>
+        )}
       </div>
     </div>
   );
