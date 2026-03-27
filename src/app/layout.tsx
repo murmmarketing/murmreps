@@ -54,6 +54,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  other: {
+    "tiktok-developers-site-verification": "zodwlhUHefQjobrHu0FJVDLkpfSvO5y8",
+  },
 };
 
 export default function RootLayout({
