@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   other: {
-    "tiktok-developers-site-verification": "zodwlhUHefQjobrHu0FJVDLkpfSvO5y8",
+    "tiktok-developers-site-verification": "AnS27eKEP3beb486LWNWpZSf9EtrZDhR",
   },
 };
 
