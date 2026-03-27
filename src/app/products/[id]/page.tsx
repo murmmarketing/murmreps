@@ -45,6 +45,7 @@ interface Product {
   views?: number;
   likes?: number;
   dislikes?: number;
+  collection?: string;
 }
 
 const tierColors: Record<string, string> = {
@@ -90,6 +91,16 @@ export default function ProductDetailPage() {
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [copied, setCopied] = useState(false);
   const viewIncrementedRef = useRef(false);
+
+  // Apply pink theme for girls collection products; defer until collection is known
+  const collection = product?.collection;
+  useEffect(() => {
+    if (collection === "girls") {
+      document.documentElement.setAttribute("data-theme", "pink");
+    } else if (collection !== undefined) {
+      document.documentElement.removeAttribute("data-theme");
+    }
+  }, [collection]);
 
   // Increment view count on page load (once per mount, safe in StrictMode)
   useEffect(() => {

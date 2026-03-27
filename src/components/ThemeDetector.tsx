@@ -9,7 +9,8 @@ export default function ThemeDetector() {
   useEffect(() => {
     if (pathname?.startsWith("/girls")) {
       document.documentElement.setAttribute("data-theme", "pink");
-    } else {
+    } else if (!pathname?.startsWith("/products/")) {
+      // Product detail pages manage their own theme based on collection
       document.documentElement.removeAttribute("data-theme");
     }
   }, [pathname]);
