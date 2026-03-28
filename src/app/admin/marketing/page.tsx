@@ -59,6 +59,32 @@ interface MetaAPIResponse {
   campaigns?: CampaignRow[];
 }
 
+interface TikTokProfile {
+  open_id: string;
+  display_name: string;
+  avatar_url: string;
+  bio_description: string;
+  profile_deep_link: string;
+  is_verified: boolean;
+  follower_count: number;
+  following_count: number;
+  likes_count: number;
+  video_count: number;
+}
+
+interface TikTokVideo {
+  id: string;
+  title: string;
+  video_description: string;
+  duration: number;
+  cover_image_url: string;
+  share_url: string;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  share_count: number;
+  create_time: number;
+}
 
 
 /* ─── constants ─── */
@@ -165,6 +191,14 @@ export default function MarketingDashboard() {
   const [metaCampaigns, setMetaCampaigns] = useState<CampaignRow[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // TikTok state
+  const [tiktokConnected, setTiktokConnected] = useState<boolean | null>(null);
+  const [tiktokProfile, setTiktokProfile] = useState<TikTokProfile | null>(null);
+  const [tiktokVideos, setTiktokVideos] = useState<TikTokVideo[]>([]);
+  const [tiktokError, setTiktokError] = useState<string | null>(null);
+  const [tiktokLoading, setTiktokLoading] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+
   // Auth
   useEffect(() => {
     const saved = sessionStorage.getItem("admin-auth");
@@ -238,6 +272,65 @@ export default function MarketingDashboard() {
       fetchMetaData();
     }
   }, [authed, storedPassword, rangeDays, fetchMetaData]);
+
+  // Fetch TikTok data
+  const fetchTikTokData = useCallback(async () => {
+    if (!storedPassword) return;
+    setTiktokLoading(true);
+    setTiktokError(null);
+    try {
+      const [profileRes, videosRes] = await Promise.all([
+        fetch("/api/tiktok/profile/", { headers: { "x-admin-password": storedPassword } }),
+        fetch("/api/tiktok/videos/", { headers: { "x-admin-password": storedPassword } }),
+      ]);
+
+      const profileData = await profileRes.json();
+      const videosData = await videosRes.json();
+
+      if (!profileData.connected) {
+        setTiktokConnected(false);
+        setTiktokProfile(null);
+        setTiktokVideos([]);
+      } else if (profileData.error) {
+        setTiktokConnected(true);
+        setTiktokError(profileData.error);
+      } else {
+        setTiktokConnected(true);
+        setTiktokProfile(profileData.profile || null);
+        setTiktokVideos(videosData.videos || []);
+      }
+    } catch (err) {
+      setTiktokConnected(false);
+      setTiktokError(String(err));
+    } finally {
+      setTiktokLoading(false);
+    }
+  }, [storedPassword]);
+
+  useEffect(() => {
+    if (authed && storedPassword) {
+      fetchTikTokData();
+    }
+  }, [authed, storedPassword, fetchTikTokData]);
+
+  // Handle TikTok disconnect
+  const handleTikTokDisconnect = async () => {
+    if (!confirm("Disconnect your TikTok account?")) return;
+    setDisconnecting(true);
+    try {
+      await fetch("/api/tiktok/disconnect/", {
+        method: "POST",
+        headers: { "x-admin-password": storedPassword },
+      });
+      setTiktokConnected(false);
+      setTiktokProfile(null);
+      setTiktokVideos([]);
+    } catch {
+      // ignore
+    } finally {
+      setDisconnecting(false);
+    }
+  };
 
   // Build KPIs from real data
   const kpis: KPI[] = metaSummary
@@ -553,7 +646,7 @@ export default function MarketingDashboard() {
       {/* Platform tabs */}
       <div className="mb-6 flex items-center gap-1 overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0e0e0e] p-1">
         {PLATFORMS.map((p) => {
-          const isConnected = p.id === "overview" || p.id === "ga4" || (p.id === "meta" && metaConnected === true);
+          const isConnected = p.id === "overview" || p.id === "ga4" || (p.id === "meta" && metaConnected === true) || (p.id === "tiktok" && tiktokConnected === true);
           return (
             <button
               key={p.id}
@@ -732,18 +825,240 @@ export default function MarketingDashboard() {
 
       {/* ─── TIKTOK TAB ─── */}
       {platform === "tiktok" && (
-        <ConnectCard
-          name="TikTok"
-          icon="tiktok"
-          color="#FF0050"
-          instructions={[
-            "Go to developers.tiktok.com and create an app",
-            "Add TikTok Login Kit and Video List permissions",
-            "Generate access token with user.info.basic + video.list scopes",
-            "Add TIKTOK_ACCESS_TOKEN to your Vercel env vars",
-            "For TikTok Ads: add TIKTOK_ADS_TOKEN and TIKTOK_ADVERTISER_ID",
-          ]}
-        />
+        <>
+          {tiktokLoading && tiktokConnected === null ? (
+            /* Loading skeleton */
+            <div className="space-y-6">
+              <div className="animate-pulse rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-[rgba(255,255,255,0.06)]" />
+                  <div className="space-y-2">
+                    <div className="h-5 w-32 rounded bg-[rgba(255,255,255,0.06)]" />
+                    <div className="h-3 w-48 rounded bg-[rgba(255,255,255,0.06)]" />
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="animate-pulse rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4">
+                    <div className="h-3 w-16 rounded bg-[rgba(255,255,255,0.06)]" />
+                    <div className="mt-3 h-7 w-20 rounded bg-[rgba(255,255,255,0.06)]" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : tiktokConnected && tiktokProfile ? (
+            <div className="space-y-6">
+              {/* Profile Card */}
+              <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {tiktokProfile.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={tiktokProfile.avatar_url}
+                        alt={tiktokProfile.display_name}
+                        className="h-16 w-16 rounded-full border-2 border-[#FF0050]/30 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FF0050]/10">
+                        <PlatformIcon type="tiktok" className="h-8 w-8 text-[#FF0050]" />
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-white">{tiktokProfile.display_name}</h3>
+                        {tiktokProfile.is_verified && (
+                          <svg className="h-5 w-5 text-[#20D5EC]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                          </svg>
+                        )}
+                      </div>
+                      {tiktokProfile.bio_description && (
+                        <p className="mt-1 max-w-md text-sm text-gray-400">{tiktokProfile.bio_description}</p>
+                      )}
+                      {tiktokProfile.profile_deep_link && (
+                        <a
+                          href={tiktokProfile.profile_deep_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-block text-xs text-[#FF0050] hover:underline"
+                        >
+                          View on TikTok &rarr;
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleTikTokDisconnect}
+                    disabled={disconnecting}
+                    className="rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-sm text-gray-400 transition-colors hover:border-red-500/30 hover:text-red-400"
+                  >
+                    {disconnecting ? "Disconnecting..." : "Disconnect"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { label: "Followers", value: fmt(tiktokProfile.follower_count) },
+                  { label: "Following", value: fmt(tiktokProfile.following_count) },
+                  { label: "Total Likes", value: fmt(tiktokProfile.likes_count) },
+                  { label: "Videos", value: fmt(tiktokProfile.video_count) },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{stat.label}</p>
+                    <p className="mt-2 text-xl font-bold text-white sm:text-2xl">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Video Performance Summary */}
+              {tiktokVideos.length > 0 && (
+                <>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {(() => {
+                      const totalViews = tiktokVideos.reduce((s, v) => s + v.view_count, 0);
+                      const totalLikes = tiktokVideos.reduce((s, v) => s + v.like_count, 0);
+                      const totalComments = tiktokVideos.reduce((s, v) => s + v.comment_count, 0);
+                      const avgViews = tiktokVideos.length > 0 ? totalViews / tiktokVideos.length : 0;
+                      return [
+                        { label: "Total Views", value: fmt(totalViews) },
+                        { label: "Total Likes", value: fmt(totalLikes) },
+                        { label: "Total Comments", value: fmt(totalComments) },
+                        { label: "Avg. Views / Video", value: fmt(Math.round(avgViews)) },
+                      ];
+                    })().map((stat) => (
+                      <div key={stat.label} className="rounded-xl border border-[#FF0050]/10 bg-[#FF0050]/5 p-4">
+                        <p className="text-[11px] font-medium uppercase tracking-wider text-[#FF0050]/60">{stat.label}</p>
+                        <p className="mt-2 text-xl font-bold text-white sm:text-2xl">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Videos Table */}
+                  <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-white">Recent Videos</h3>
+                      <span className="text-xs text-gray-500">{tiktokVideos.length} videos</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-[rgba(255,255,255,0.06)] text-left text-xs text-gray-500">
+                            <th className="pb-3 pr-4">#</th>
+                            <th className="pb-3 pr-4">Video</th>
+                            <th className="pb-3 pr-4 text-right">Views</th>
+                            <th className="pb-3 pr-4 text-right">Likes</th>
+                            <th className="pb-3 pr-4 text-right">Comments</th>
+                            <th className="pb-3 pr-4 text-right">Shares</th>
+                            <th className="pb-3 text-right">Posted</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tiktokVideos.map((video, i) => (
+                            <tr key={video.id} className="border-b border-[rgba(255,255,255,0.03)] transition-colors hover:bg-[#FF0050]/5">
+                              <td className="py-3 pr-4 text-gray-500">{i + 1}</td>
+                              <td className="py-3 pr-4">
+                                <div className="flex items-center gap-3">
+                                  {video.cover_image_url && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                      src={video.cover_image_url}
+                                      alt=""
+                                      className="h-10 w-8 shrink-0 rounded object-cover"
+                                    />
+                                  )}
+                                  <div className="min-w-0">
+                                    <a
+                                      href={video.share_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block truncate text-white hover:text-[#FF0050]"
+                                      title={video.video_description || video.title}
+                                    >
+                                      {video.title || video.video_description || "Untitled"}
+                                    </a>
+                                    {video.duration > 0 && (
+                                      <span className="text-xs text-gray-500">{Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, "0")}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 pr-4 text-right text-white">{fmt(video.view_count)}</td>
+                              <td className="py-3 pr-4 text-right text-gray-300">{fmt(video.like_count)}</td>
+                              <td className="py-3 pr-4 text-right text-gray-300">{fmt(video.comment_count)}</td>
+                              <td className="py-3 pr-4 text-right text-gray-300">{fmt(video.share_count)}</td>
+                              <td className="py-3 text-right text-gray-400">
+                                {new Date(video.create_time * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : tiktokConnected && tiktokError ? (
+            <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-12 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF0050]/10">
+                <PlatformIcon type="tiktok" className="h-7 w-7 text-[#FF0050]" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">TikTok API Error</h3>
+              <p className="mt-2 text-sm text-red-400">{tiktokError}</p>
+              <button
+                onClick={fetchTikTokData}
+                className="mt-4 rounded-lg bg-[#FF0050] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            /* Not connected — show connect button */
+            <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-8">
+              <div className="mx-auto max-w-md text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF0050]/10">
+                  <PlatformIcon type="tiktok" className="h-7 w-7 text-[#FF0050]" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Connect TikTok</h3>
+                <p className="mt-2 text-sm text-gray-400">
+                  Link your TikTok account to see your profile stats, video performance, and engagement metrics in real time.
+                </p>
+                <div className="mt-6 text-left">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">What you&apos;ll get</p>
+                  <ul className="space-y-2">
+                    {[
+                      "Follower count, likes, and profile stats",
+                      "Video performance — views, likes, comments, shares",
+                      "Content analytics to track what performs best",
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm text-gray-400">
+                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-[#FF0050]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <a
+                  href="/api/tiktok/auth/"
+                  className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#FF0050] px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  <PlatformIcon type="tiktok" className="h-4 w-4" />
+                  Connect TikTok Account
+                </a>
+                <p className="mt-4 text-xs text-gray-500">
+                  Requires <code className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-[10px] text-gray-300">TIKTOK_CLIENT_KEY</code> and{" "}
+                  <code className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-[10px] text-gray-300">TIKTOK_CLIENT_SECRET</code> in Vercel env vars.
+                </p>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* ─── GA4 TAB ─── */}
@@ -802,7 +1117,7 @@ export default function MarketingDashboard() {
         <span className="text-xs text-gray-500">Platform status:</span>
         <StatusBadge connected={metaConnected} label="Meta Ads" />
         <StatusBadge connected={false} label="Instagram" />
-        <StatusBadge connected={false} label="TikTok" />
+        <StatusBadge connected={tiktokConnected} label="TikTok" />
         <StatusBadge connected={true} label="Analytics" />
         {hasMetaData && (
           <span className="ml-auto text-xs text-emerald-400/70">
