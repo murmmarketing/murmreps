@@ -119,7 +119,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
         {viewMoreHref && (
           <Link
             href={viewMoreHref}
-            className="text-sm font-medium text-[#FE4205] transition-colors hover:text-[#FE4205]/80"
+            className="text-sm font-medium text-[var(--accent-hex)] transition-colors hover:opacity-80"
           >
             View More &rarr;
           </Link>
@@ -199,7 +199,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
               href={`/products/${product.id}`}
               onClick={handleCardClick}
               draggable={false}
-              className={`group/card w-[220px] min-w-[220px] flex-shrink-0 snap-start overflow-hidden rounded-xl bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 ${isPremium ? "premium-card" : "border border-[rgba(255,255,255,0.06)] hover:border-[rgba(254,66,5,0.2)]"}`}
+              className={`group/card w-[220px] min-w-[220px] flex-shrink-0 snap-start overflow-hidden rounded-xl bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 ${isPremium ? "premium-card" : "border border-[rgba(255,255,255,0.06)] hover:border-[var(--accent-glow)]"}`}
             >
               {/* Image */}
               <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a0a]">
