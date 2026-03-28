@@ -101,7 +101,7 @@ export default function Navbar() {
   const [navSearch, setNavSearch] = useState("");
   const wishlistCount = useWishlistCount();
   const pathname = usePathname();
-  const isGirls = pathname === "/girls";
+
   const router = useRouter();
 
   // Sync navbar search input from URL when on /products
@@ -123,9 +123,16 @@ export default function Navbar() {
         <Link href="/" className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={isGirls ? "/logo-pink.png" : "/logo.png"}
+            src="/logo.png"
             alt="MurmReps"
-            className="h-9 w-auto object-contain"
+            className="navbar-logo-default h-9 w-auto object-contain"
+            loading="eager"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-pink.png"
+            alt="MurmReps"
+            className="navbar-logo-pink hidden h-9 w-auto object-contain"
             loading="eager"
           />
         </Link>
@@ -301,9 +308,16 @@ export default function Navbar() {
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={isGirls ? "/logo-pink.png" : "/logo.png"}
+            src="/logo.png"
             alt="MurmReps logo"
-            className="h-7 w-auto object-contain"
+            className="navbar-logo-default h-7 w-auto object-contain"
+            loading="eager"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-pink.png"
+            alt="MurmReps logo"
+            className="navbar-logo-pink hidden h-7 w-auto object-contain"
             loading="eager"
           />
         </Link>

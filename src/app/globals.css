@@ -19,6 +19,8 @@
 }
 [data-theme="pink"] .footer-logo-default { display: none; }
 [data-theme="pink"] .footer-logo-pink { display: block; }
+[data-theme="pink"] .navbar-logo-default { display: none; }
+[data-theme="pink"] .navbar-logo-pink { display: block; }
 
 * {
   margin: 0;
