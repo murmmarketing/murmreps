@@ -59,6 +59,49 @@ interface MetaAPIResponse {
   campaigns?: CampaignRow[];
 }
 
+interface GA4Overview {
+  sessions: number;
+  totalUsers: number;
+  newUsers: number;
+  pageViews: number;
+  avgSessionDuration: number;
+  bounceRate: number;
+}
+
+interface GA4DailyRow {
+  date: string;
+  sessions: number;
+  users: number;
+  pageViews: number;
+}
+
+interface GA4Source {
+  source: string;
+  medium: string;
+  sessions: number;
+  users: number;
+}
+
+interface GA4Page {
+  path: string;
+  title: string;
+  views: number;
+  users: number;
+  avgDuration: number;
+}
+
+interface GA4Device {
+  device: string;
+  sessions: number;
+  users: number;
+}
+
+interface GA4Country {
+  country: string;
+  sessions: number;
+  users: number;
+}
+
 interface TikTokProfile {
   open_id: string;
   display_name: string;
@@ -180,6 +223,8 @@ export default function MarketingDashboard() {
   // Chart refs
   const spendChartRef = useRef<HTMLCanvasElement>(null);
   const reachChartRef = useRef<HTMLCanvasElement>(null);
+  const ga4SessionsChartRef = useRef<HTMLCanvasElement>(null);
+  const ga4PageViewsChartRef = useRef<HTMLCanvasElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartInstances = useRef<Record<string, any>>({});
 
@@ -198,6 +243,17 @@ export default function MarketingDashboard() {
   const [tiktokError, setTiktokError] = useState<string | null>(null);
   const [tiktokLoading, setTiktokLoading] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+
+  // GA4 state
+  const [ga4Connected, setGa4Connected] = useState<boolean | null>(null);
+  const [ga4Error, setGa4Error] = useState<string | null>(null);
+  const [ga4Overview, setGa4Overview] = useState<GA4Overview | null>(null);
+  const [ga4Daily, setGa4Daily] = useState<GA4DailyRow[]>([]);
+  const [ga4Sources, setGa4Sources] = useState<GA4Source[]>([]);
+  const [ga4Pages, setGa4Pages] = useState<GA4Page[]>([]);
+  const [ga4Devices, setGa4Devices] = useState<GA4Device[]>([]);
+  const [ga4Countries, setGa4Countries] = useState<GA4Country[]>([]);
+  const [ga4Loading, setGa4Loading] = useState(false);
 
   // Auth
   useEffect(() => {
@@ -332,6 +388,49 @@ export default function MarketingDashboard() {
     }
   };
 
+  // Fetch GA4 data
+  const fetchGA4Data = useCallback(async () => {
+    if (!storedPassword) return;
+    setGa4Loading(true);
+    setGa4Error(null);
+    try {
+      const res = await fetch(`/api/analytics/ga4?days=${rangeDays}`, {
+        headers: { "x-admin-password": storedPassword },
+      });
+      const data = await res.json();
+
+      if (!data.connected) {
+        setGa4Connected(false);
+        setGa4Error(data.error || null);
+        setGa4Overview(null);
+        setGa4Daily([]);
+        setGa4Sources([]);
+        setGa4Pages([]);
+        setGa4Devices([]);
+        setGa4Countries([]);
+      } else {
+        setGa4Connected(true);
+        setGa4Overview(data.overview || null);
+        setGa4Daily(data.daily || []);
+        setGa4Sources(data.sources || []);
+        setGa4Pages(data.pages || []);
+        setGa4Devices(data.devices || []);
+        setGa4Countries(data.countries || []);
+      }
+    } catch (err) {
+      setGa4Connected(false);
+      setGa4Error(String(err));
+    } finally {
+      setGa4Loading(false);
+    }
+  }, [storedPassword, rangeDays]);
+
+  useEffect(() => {
+    if (authed && storedPassword) {
+      fetchGA4Data();
+    }
+  }, [authed, storedPassword, rangeDays, fetchGA4Data]);
+
   // Build KPIs from real data
   const kpis: KPI[] = metaSummary
     ? [
@@ -455,6 +554,121 @@ export default function MarketingDashboard() {
       chartInstances.current = {};
     };
   }, [chartReady, metaDaily, platform]);
+
+  // Render GA4 charts
+  useEffect(() => {
+    if (!chartReady || !window.Chart || ga4Daily.length === 0 || platform !== "ga4") return;
+
+    const Chart = window.Chart;
+    // Destroy only GA4 chart instances
+    if (chartInstances.current.ga4Sessions) chartInstances.current.ga4Sessions.destroy();
+    if (chartInstances.current.ga4PageViews) chartInstances.current.ga4PageViews.destroy();
+
+    const gridColor = "rgba(255,255,255,0.05)";
+    const tickColor = "#6B7280";
+
+    const labels = ga4Daily.map((d) => {
+      const y = d.date.substring(0, 4);
+      const m = d.date.substring(4, 6);
+      const day = d.date.substring(6, 8);
+      const dt = new Date(`${y}-${m}-${day}`);
+      return `${dt.getDate()}/${dt.getMonth() + 1}`;
+    });
+
+    // Sessions & Users line chart
+    if (ga4SessionsChartRef.current) {
+      chartInstances.current.ga4Sessions = new Chart(ga4SessionsChartRef.current, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Sessions",
+              data: ga4Daily.map((d) => d.sessions),
+              borderColor: "#FE4205",
+              backgroundColor: "rgba(254,66,5,0.08)",
+              fill: true,
+              tension: 0.35,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              borderWidth: 2,
+            },
+            {
+              label: "Users",
+              data: ga4Daily.map((d) => d.users),
+              borderColor: "#4285F4",
+              backgroundColor: "rgba(66,133,244,0.08)",
+              fill: true,
+              tension: 0.35,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              align: "end",
+              labels: { color: tickColor, boxWidth: 12, padding: 16, font: { size: 11 } },
+            },
+          },
+          scales: {
+            x: { ticks: { color: tickColor, maxTicksLimit: 10 }, grid: { color: gridColor } },
+            y: {
+              ticks: { color: tickColor, callback: (v: number) => (v >= 1000 ? (v / 1000).toFixed(0) + "K" : String(v)) },
+              grid: { color: gridColor },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+
+    // Page Views bar chart
+    if (ga4PageViewsChartRef.current) {
+      chartInstances.current.ga4PageViews = new Chart(ga4PageViewsChartRef.current, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Page Views",
+              data: ga4Daily.map((d) => d.pageViews),
+              backgroundColor: "rgba(254,66,5,0.5)",
+              borderRadius: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              align: "end",
+              labels: { color: tickColor, boxWidth: 12, padding: 16, font: { size: 11 } },
+            },
+          },
+          scales: {
+            x: { ticks: { color: tickColor, maxTicksLimit: 10 }, grid: { color: gridColor } },
+            y: {
+              ticks: { color: tickColor, callback: (v: number) => (v >= 1000 ? (v / 1000).toFixed(0) + "K" : String(v)) },
+              grid: { color: gridColor },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+  }, [chartReady, ga4Daily, platform]);
 
   // Sort campaigns
   const sortedCampaigns = metaCampaigns.slice().sort((a, b) => {
@@ -646,7 +860,7 @@ export default function MarketingDashboard() {
       {/* Platform tabs */}
       <div className="mb-6 flex items-center gap-1 overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0e0e0e] p-1">
         {PLATFORMS.map((p) => {
-          const isConnected = p.id === "overview" || p.id === "ga4" || (p.id === "meta" && metaConnected === true) || (p.id === "tiktok" && tiktokConnected === true);
+          const isConnected = p.id === "overview" || (p.id === "ga4" && ga4Connected === true) || (p.id === "meta" && metaConnected === true) || (p.id === "tiktok" && tiktokConnected === true);
           return (
             <button
               key={p.id}
@@ -1063,53 +1277,263 @@ export default function MarketingDashboard() {
 
       {/* ─── GA4 TAB ─── */}
       {platform === "ga4" && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
-                <svg className="h-5 w-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+        <>
+          {ga4Loading && ga4Connected === null ? (
+            /* Loading skeleton */
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4">
+                    <div className="h-3 w-16 rounded bg-[rgba(255,255,255,0.06)]" />
+                    <div className="mt-3 h-7 w-20 rounded bg-[rgba(255,255,255,0.06)]" />
+                  </div>
+                ))}
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white">Google Analytics Connected</h3>
-                <p className="text-xs text-gray-400">Property ID: G-D3QBGSNWPV</p>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="animate-pulse rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
+                    <div className="h-4 w-32 rounded bg-[rgba(255,255,255,0.06)]" />
+                    <div className="mt-8 h-[280px] rounded bg-[rgba(255,255,255,0.03)]" />
+                  </div>
+                ))}
               </div>
             </div>
-            <p className="mt-4 text-sm text-gray-400">
-              Basic page tracking is active via the gtag snippet. To pull GA4 data into this dashboard programmatically, set up the GA4 Data API:
-            </p>
-            <ol className="mt-3 space-y-1.5 text-sm text-gray-400">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">1</span>
-                Go to console.cloud.google.com &rarr; enable Analytics Data API
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">2</span>
-                Create a service account &rarr; download JSON key
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">3</span>
-                Add the service account email as a viewer in your GA4 property
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">4</span>
-                Add GA4_PROPERTY_ID and GOOGLE_SERVICE_ACCOUNT_KEY to Vercel env vars
-              </li>
-            </ol>
-          </div>
+          ) : ga4Connected && ga4Overview ? (
+            <div className="space-y-6">
+              {/* Stat Cards */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {[
+                  { label: "Sessions", value: fmt(ga4Overview.sessions) },
+                  { label: "Users", value: fmt(ga4Overview.totalUsers) },
+                  { label: "New Users", value: fmt(ga4Overview.newUsers) },
+                  { label: "Page Views", value: fmt(ga4Overview.pageViews) },
+                  {
+                    label: "Avg Duration",
+                    value: (() => {
+                      const s = Math.round(ga4Overview.avgSessionDuration);
+                      const m = Math.floor(s / 60);
+                      const sec = s % 60;
+                      return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+                    })(),
+                  },
+                  { label: "Bounce Rate", value: `${(ga4Overview.bounceRate * 100).toFixed(1)}%` },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{stat.label}</p>
+                    <p className="mt-2 text-xl font-bold text-white sm:text-2xl">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
 
-          <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
-            <h3 className="mb-4 text-sm font-semibold text-white">Site Analytics</h3>
-            <p className="text-sm text-gray-400">
-              View your existing MurmReps site analytics (product views, searches, agent clicks) on the{" "}
-              <Link href="/admin/analytics" className="text-[#FE4205] hover:underline">
-                Site Analytics
-              </Link>{" "}
-              page.
-            </p>
-          </div>
-        </div>
+              {/* Charts Row */}
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
+                  <h3 className="mb-1 text-sm font-semibold text-white">Sessions & Users</h3>
+                  <p className="mb-4 text-xs text-gray-500">Daily trend from Google Analytics</p>
+                  <div className="h-[280px]">
+                    <canvas ref={ga4SessionsChartRef} />
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
+                  <h3 className="mb-1 text-sm font-semibold text-white">Page Views</h3>
+                  <p className="mb-4 text-xs text-gray-500">Daily page views from Google Analytics</p>
+                  <div className="h-[280px]">
+                    <canvas ref={ga4PageViewsChartRef} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tables Row — Top Pages + Traffic Sources */}
+              <div className="grid gap-4 lg:grid-cols-2">
+                {/* Top Pages */}
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white">Top Pages</h3>
+                    <span className="text-xs text-gray-500">{ga4Pages.length} pages</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[rgba(255,255,255,0.06)] text-left text-xs text-gray-500">
+                          <th className="pb-3 pr-4">Page</th>
+                          <th className="pb-3 pr-4 text-right">Views</th>
+                          <th className="pb-3 pr-4 text-right">Users</th>
+                          <th className="pb-3 text-right">Avg Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ga4Pages.map((page) => (
+                          <tr key={page.path} className="border-b border-[rgba(255,255,255,0.03)] transition-colors hover:bg-[#FE4205]/5">
+                            <td className="max-w-[200px] truncate py-3 pr-4 text-white" title={page.title || page.path}>
+                              {page.path}
+                            </td>
+                            <td className="py-3 pr-4 text-right text-white">{fmt(page.views)}</td>
+                            <td className="py-3 pr-4 text-right text-gray-300">{fmt(page.users)}</td>
+                            <td className="py-3 text-right text-gray-400">
+                              {(() => {
+                                const s = Math.round(page.avgDuration);
+                                const m = Math.floor(s / 60);
+                                const sec = s % 60;
+                                return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+                              })()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Traffic Sources */}
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white">Traffic Sources</h3>
+                    <span className="text-xs text-gray-500">{ga4Sources.length} sources</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[rgba(255,255,255,0.06)] text-left text-xs text-gray-500">
+                          <th className="pb-3 pr-4">Source / Medium</th>
+                          <th className="pb-3 pr-4 text-right">Sessions</th>
+                          <th className="pb-3 text-right">Users</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ga4Sources.map((src) => (
+                          <tr key={`${src.source}-${src.medium}`} className="border-b border-[rgba(255,255,255,0.03)] transition-colors hover:bg-[#FE4205]/5">
+                            <td className="py-3 pr-4 text-white">
+                              {src.source}{src.medium !== "(none)" ? ` / ${src.medium}` : ""}
+                            </td>
+                            <td className="py-3 pr-4 text-right text-white">{fmt(src.sessions)}</td>
+                            <td className="py-3 text-right text-gray-300">{fmt(src.users)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Row — Devices + Countries */}
+              <div className="grid gap-4 lg:grid-cols-2">
+                {/* Devices */}
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                  <h3 className="mb-4 text-sm font-semibold text-white">Devices</h3>
+                  <div className="space-y-3">
+                    {(() => {
+                      const totalSessions = ga4Devices.reduce((s, d) => s + d.sessions, 0);
+                      return ga4Devices.map((device) => {
+                        const pct = totalSessions > 0 ? (device.sessions / totalSessions) * 100 : 0;
+                        return (
+                          <div key={device.device}>
+                            <div className="mb-1 flex items-center justify-between text-sm">
+                              <span className="capitalize text-white">{device.device}</span>
+                              <span className="text-gray-400">{fmt(device.sessions)} ({pct.toFixed(1)}%)</span>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+                              <div
+                                className="h-full rounded-full bg-[#FE4205]"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Countries */}
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                  <h3 className="mb-4 text-sm font-semibold text-white">Top Countries</h3>
+                  <div className="space-y-2">
+                    {ga4Countries.map((country, i) => (
+                      <div key={country.country} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 text-right text-xs text-gray-500">{i + 1}</span>
+                          <span className="text-white">{country.country}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-gray-400">{fmt(country.sessions)} sessions</span>
+                          <span className="text-gray-500">{fmt(country.users)} users</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Link to site analytics */}
+              <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">Product Analytics</h3>
+                    <p className="mt-1 text-sm text-gray-400">
+                      View product views, searches, and agent clicks on the Site Analytics page.
+                    </p>
+                  </div>
+                  <Link
+                    href="/admin/analytics"
+                    className="rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#141414] px-4 py-2 text-sm text-gray-400 transition-colors hover:text-white"
+                  >
+                    Site Analytics &rarr;
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Not connected / Error state — show setup instructions */
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-12 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#4285F4]/10">
+                  <PlatformIcon type="chart" className="h-7 w-7 text-[#4285F4]" />
+                </div>
+                {ga4Error ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-white">Analytics API Error</h3>
+                    <p className="mt-2 text-sm text-red-400">{ga4Error}</p>
+                    <button
+                      onClick={fetchGA4Data}
+                      className="mt-4 rounded-lg bg-[#4285F4] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    >
+                      Retry
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold text-white">Google Analytics Not Connected</h3>
+                    <p className="mt-2 text-sm text-gray-400">
+                      Add <code className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-xs text-gray-300">GA4_PROPERTY_ID</code> and{" "}
+                      <code className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5 text-xs text-gray-300">GOOGLE_SERVICE_ACCOUNT_KEY</code> to your Vercel environment variables.
+                    </p>
+                  </>
+                )}
+                <div className="mt-6 mx-auto max-w-sm text-left">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Setup steps</p>
+                  <ol className="space-y-2 text-sm text-gray-400">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">1</span>
+                      Go to console.cloud.google.com &rarr; enable Analytics Data API
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">2</span>
+                      Create a service account &rarr; download JSON key
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">3</span>
+                      Add the service account email as a viewer in your GA4 property
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[rgba(255,255,255,0.06)] text-[9px] font-bold text-gray-500">4</span>
+                      Add GA4_PROPERTY_ID and GOOGLE_SERVICE_ACCOUNT_KEY to Vercel env vars
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Footer status bar */}
@@ -1118,7 +1542,7 @@ export default function MarketingDashboard() {
         <StatusBadge connected={metaConnected} label="Meta Ads" />
         <StatusBadge connected={false} label="Instagram" />
         <StatusBadge connected={tiktokConnected} label="TikTok" />
-        <StatusBadge connected={true} label="Analytics" />
+        <StatusBadge connected={ga4Connected} label="Analytics" />
         {hasMetaData && (
           <span className="ml-auto text-xs text-emerald-400/70">
             Live data • last synced just now
