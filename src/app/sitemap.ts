@@ -1,45 +1,37 @@
 import { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Static pages
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   const staticPages: MetadataRoute.Sitemap = [
     { url: "https://murmreps.com", lastModified: new Date(), changeFrequency: "daily", priority: 1 },
-    { url: "https://murmreps.com/products", lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: "https://murmreps.com/girls", lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: "https://murmreps.com/products", lastModified: new Date(), changeFrequency: "daily", priority: 0.8 },
     { url: "https://murmreps.com/verified", lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
-    { url: "https://murmreps.com/guide", lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
     { url: "https://murmreps.com/news", lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
+    { url: "https://murmreps.com/guide", lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
     { url: "https://murmreps.com/converter", lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: "https://murmreps.com/terms", lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
     { url: "https://murmreps.com/privacy", lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
   ];
 
-  // Dynamic product pages — paginate through all IDs
-  let allProducts: { id: number; created_at: string }[] = [];
-  let from = 0;
-  const PAGE = 1000;
-  while (true) {
-    const { data } = await supabase
-      .from("products")
-      .select("id, created_at")
-      .order("created_at", { ascending: false })
-      .range(from, from + PAGE - 1);
-    if (!data || data.length === 0) break;
-    allProducts = allProducts.concat(data);
-    if (data.length < PAGE) break;
-    from += PAGE;
-  }
+  // Fetch all product IDs — only need id and created_at
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, created_at")
+    .order("created_at", { ascending: false })
+    .limit(50000);
 
-  const productPages: MetadataRoute.Sitemap = allProducts.map((p) => ({
+  const productPages: MetadataRoute.Sitemap = (products || []).map((p) => ({
     url: `https://murmreps.com/products/${p.id}`,
     lastModified: new Date(p.created_at),
-    changeFrequency: "weekly",
+    changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
 
