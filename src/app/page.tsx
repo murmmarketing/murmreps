@@ -7,17 +7,17 @@ import HeroSection from "@/components/HeroSection";
 export const metadata: Metadata = {
   title: "MurmReps \u2014 Find the Best Reps, All in One Place",
   description:
-    "Browse 2000+ verified rep finds with QC reviews and buy links across 8 agents. Shoes, streetwear, bags, and jewelry all in one place.",
+    "Browse 8,000+ verified rep finds with QC reviews and buy links across 8 agents. Shoes, streetwear, bags, and jewelry all in one place.",
   openGraph: {
     title: "MurmReps \u2014 Find the Best Reps, All in One Place",
     description:
-      "Browse 2000+ verified rep finds with QC reviews and buy links across 8 agents.",
+      "Browse 8,000+ verified rep finds with QC reviews and buy links across 8 agents.",
     url: "/",
   },
   twitter: {
     title: "MurmReps \u2014 Find the Best Reps, All in One Place",
     description:
-      "Browse 2000+ verified rep finds with QC reviews and buy links across 8 agents.",
+      "Browse 8,000+ verified rep finds with QC reviews and buy links across 8 agents.",
   },
   alternates: { canonical: "/" },
 };
@@ -34,7 +34,7 @@ const jsonLd = {
     "https://tiktok.com/@murmreps",
   ],
   description:
-    "Find the best reps, all in one place. 2000+ verified products with QC reviews and buy links across 8 agents.",
+    "Find the best reps, all in one place. 8,000+ verified products with QC reviews and buy links across 8 agents.",
 };
 
 export default function Home() {
@@ -72,7 +72,7 @@ export default function Home() {
               </div>
               <h3 className="font-heading text-lg font-semibold text-white">Products</h3>
               <p className="mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
-                2000+ verified finds across shoes, streetwear, bags, and jewelry. See before you buy.
+                8,000+ verified finds across shoes, streetwear, bags, and jewelry. See before you buy.
               </p>
             </Link>
             <Link
@@ -150,7 +150,7 @@ export default function Home() {
                 <div>
                   <h3 className="font-heading text-base font-semibold text-white">Community</h3>
                   <p className="mt-1 text-sm leading-relaxed text-text-secondary">
-                    Join r/MurmReps and 2000+ rep enthusiasts
+                    Join r/MurmReps and 8,000+ rep enthusiasts
                   </p>
                 </div>
               </div>
