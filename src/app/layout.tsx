@@ -24,15 +24,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://murmreps.com"),
   title: {
-    default: "MurmReps \u2014 Find the Best Reps, All in One Place",
-    template: "%s",
+    default: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
+    template: "%s | MurmReps",
   },
   description:
-    "8,000+ verified products with honest QC reviews and buy links across 8 agents. Search reps for shoes, streetwear, bags, and jewelry.",
+    "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
+  keywords: "reps, replica fashion, rep finds, weidian finds, taobao finds, fashion reps, best reps, QC photos",
   openGraph: {
-    title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+    title: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
     description:
-      "8,000+ verified products with honest QC reviews and buy links across 8 agents.",
+      "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
     type: "website",
     siteName: "MurmReps",
     images: [
@@ -40,15 +41,16 @@ export const metadata: Metadata = {
         url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "MurmReps \u2014 Find the Best Reps, All in One Place",
+        alt: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+    site: "@murmreps",
+    title: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
     description:
-      "8,000+ verified products with honest QC reviews and buy links across 8 agents.",
+      "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
     images: ["/og-image.svg"],
   },
   alternates: {

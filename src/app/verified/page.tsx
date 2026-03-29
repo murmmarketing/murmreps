@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Murm Verified \u2014 Personally Reviewed Rep Finds | MurmReps",
+  title: "Verified Finds \u2014 QC Proven Products",
   description:
-    "Hand-picked rep items personally bought, received, and reviewed by the MurmReps team. Only the best quality makes the cut.",
+    "Quality-checked rep finds with real QC photos. Only the best verified products make this list.",
   openGraph: {
-    title: "Murm Verified \u2014 Personally Reviewed Rep Finds | MurmReps",
+    title: "Verified Finds \u2014 QC Proven Products | MurmReps",
     description:
-      "Hand-picked rep items personally bought, received, and reviewed by the MurmReps team.",
+      "Quality-checked rep finds with real QC photos. Only the best verified products make this list.",
     url: "/verified",
   },
   twitter: {
-    title: "Murm Verified \u2014 Personally Reviewed Rep Finds | MurmReps",
+    title: "Verified Finds \u2014 QC Proven Products | MurmReps",
     description:
-      "Hand-picked rep items personally bought, received, and reviewed by the MurmReps team.",
+      "Quality-checked rep finds with real QC photos. Only the best verified products make this list.",
   },
   alternates: { canonical: "/verified" },
 };

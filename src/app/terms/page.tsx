@@ -2,8 +2,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | MurmReps",
+  title: "Terms of Service",
   description: "Terms of Service for MurmReps — rep product discovery platform.",
+  robots: { index: true, follow: true },
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

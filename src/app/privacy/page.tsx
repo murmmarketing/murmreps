@@ -2,8 +2,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | MurmReps",
+  title: "Privacy Policy",
   description: "Privacy Policy for MurmReps — how we collect, use, and protect your data.",
+  robots: { index: true, follow: true },
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

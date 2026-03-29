@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "For Her — Women's Finds",
+  title: "For Her \u2014 Women's Rep Finds",
   description:
-    "Curated reps and finds for women — bags, accessories, shoes, clothing and more. Browse 500+ items from top brands.",
+    "1,800+ curated women's fashion finds \u2014 bags, shoes, jewelry, clothing. Handpicked from the best sellers with QC photos.",
+  keywords: "women reps, women fashion finds, rep bags, rep shoes, women weidian finds",
   openGraph: {
-    title: "For Her — MurmReps",
-    description: "Curated finds for women — bags, accessories, shoes, clothing and more.",
+    title: "For Her \u2014 Women's Rep Finds | MurmReps",
+    description:
+      "1,800+ curated women's fashion finds \u2014 bags, shoes, jewelry, clothing. Handpicked from the best sellers with QC photos.",
+    url: "/girls",
   },
+  twitter: {
+    title: "For Her \u2014 Women's Rep Finds | MurmReps",
+    description:
+      "1,800+ curated women's fashion finds \u2014 bags, shoes, jewelry, clothing.",
+  },
+  alternates: { canonical: "/girls" },
 };
 
 export default function GirlsLayout({ children }: { children: React.ReactNode }) {

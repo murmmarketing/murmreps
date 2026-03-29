@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "8,000+ Rep Finds \u2014 Shoes, Streetwear, Bags, Jewelry | MurmReps",
+  title: "All Products \u2014 8,000+ Rep Finds",
   description:
-    "Browse and filter 8,000+ curated rep products. Compare prices across tiers, check quality ratings, and buy through 8 trusted agents.",
+    "Browse 8,000+ verified rep finds across 35+ categories. Compare prices across 8 shopping agents. New products added daily.",
   openGraph: {
-    title: "8,000+ Rep Finds \u2014 Shoes, Streetwear, Bags, Jewelry | MurmReps",
+    title: "All Products \u2014 8,000+ Rep Finds | MurmReps",
     description:
-      "Browse and filter 8,000+ curated rep products with buy links across 8 agents.",
+      "Browse 8,000+ verified rep finds across 35+ categories. Compare prices across 8 shopping agents.",
     url: "/products",
   },
   twitter: {
-    title: "8,000+ Rep Finds \u2014 Shoes, Streetwear, Bags, Jewelry | MurmReps",
+    title: "All Products \u2014 8,000+ Rep Finds | MurmReps",
     description:
-      "Browse and filter 8,000+ curated rep products with buy links across 8 agents.",
+      "Browse 8,000+ verified rep finds across 35+ categories. Compare prices across 8 shopping agents.",
   },
   alternates: { canonical: "/products" },
 };

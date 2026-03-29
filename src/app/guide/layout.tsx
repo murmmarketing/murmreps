@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "How to Buy Reps in 2026 \u2014 Step-by-Step Beginner Guide | MurmReps",
+  title: "Tutorials \u2014 How to Buy Reps",
   description:
-    "Learn how to buy reps from Taobao and Weidian using an agent. 11-step interactive guide covering agents, QC photos, shipping, and tracking.",
+    "Step-by-step guides on buying reps through shopping agents. Learn how to use KakoBuy, Superbuy, CnFans and more.",
   openGraph: {
-    title: "How to Buy Reps in 2026 \u2014 Step-by-Step Beginner Guide | MurmReps",
+    title: "Tutorials \u2014 How to Buy Reps | MurmReps",
     description:
-      "11-step interactive guide to buying reps from Taobao and Weidian using an agent.",
+      "Step-by-step guides on buying reps through shopping agents. Learn how to use KakoBuy, Superbuy, CnFans and more.",
     url: "/guide",
   },
   twitter: {
-    title: "How to Buy Reps in 2026 \u2014 Step-by-Step Beginner Guide | MurmReps",
+    title: "Tutorials \u2014 How to Buy Reps | MurmReps",
     description:
-      "11-step interactive guide to buying reps from Taobao and Weidian using an agent.",
+      "Step-by-step guides on buying reps through shopping agents.",
   },
   alternates: { canonical: "/guide" },
 };

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "News & Updates — Community Updates from MurmReps",
+  title: "News & Updates",
   description:
-    "Stay up to date with MurmReps news, new product drops, agent updates, and community announcements. Follow @murmreps for the latest.",
+    "Latest drops, agent deals, and rep community updates from MurmReps.",
   openGraph: {
-    title: "News & Updates — Community Updates from MurmReps",
+    title: "News & Updates | MurmReps",
     description:
-      "Stay up to date with MurmReps news, new product drops, and community announcements.",
+      "Latest drops, agent deals, and rep community updates from MurmReps.",
     url: "/news",
   },
   twitter: {
-    title: "News & Updates — Community Updates from MurmReps",
+    title: "News & Updates | MurmReps",
     description:
-      "Stay up to date with MurmReps news, new product drops, and community announcements.",
+      "Latest drops, agent deals, and rep community updates from MurmReps.",
   },
   alternates: { canonical: "/news" },
 };

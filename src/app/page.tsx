@@ -5,19 +5,20 @@ import HomeSections from "@/components/HomeSections";
 import HeroSection from "@/components/HeroSection";
 
 export const metadata: Metadata = {
-  title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+  title: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
   description:
-    "Browse 8,000+ verified rep finds with QC reviews and buy links across 8 agents. Shoes, streetwear, bags, and jewelry all in one place.",
+    "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
+  keywords: "reps, replica fashion, rep finds, weidian finds, taobao finds, fashion reps, best reps, QC photos",
   openGraph: {
-    title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+    title: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
     description:
-      "Browse 8,000+ verified rep finds with QC reviews and buy links across 8 agents.",
+      "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents.",
     url: "/",
   },
   twitter: {
-    title: "MurmReps \u2014 Find the Best Reps, All in One Place",
+    title: "MurmReps \u2014 Find the Best Rep Finds | 8,000+ Products",
     description:
-      "Browse 8,000+ verified rep finds with QC reviews and buy links across 8 agents.",
+      "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents.",
   },
   alternates: { canonical: "/" },
 };
@@ -25,16 +26,26 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "WebSite",
   name: "MurmReps",
   url: "https://murmreps.com",
-  logo: "https://murmreps.com/favicon.svg",
-  sameAs: [
-    "https://instagram.com/murmreps",
-    "https://tiktok.com/@murmreps",
-  ],
   description:
-    "Find the best reps, all in one place. 8,000+ verified products with QC reviews and buy links across 8 agents.",
+    "Discover 8,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://murmreps.com/products?search={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "MurmReps",
+    url: "https://murmreps.com",
+    logo: "https://murmreps.com/favicon.svg",
+    sameAs: [
+      "https://instagram.com/murmreps",
+      "https://tiktok.com/@murmreps",
+    ],
+  },
 };
 
 export default function Home() {
