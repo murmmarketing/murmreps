@@ -76,9 +76,21 @@ export default function HomeSections() {
 
       setBrandRows(topBrands);
 
-      // "For You" — random popular products
-      const shuffled = [...all].sort(() => Math.random() - 0.5);
-      setForYouProducts(shuffled.filter(p => p.price_cny != null).slice(0, 8));
+      // "For You" — featured products first, then random popular
+      const withPrice = all.filter(p => p.price_cny != null);
+      const { data: featuredData } = await supabase
+        .from("products")
+        .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
+        .eq("featured", true)
+        .eq("collection", "main")
+        .not("image", "eq", "")
+        .not("image", "is", null)
+        .order("featured_rank", { ascending: true })
+        .limit(16);
+      const featured = (featuredData || []).sort(() => Math.random() - 0.5).slice(0, 5);
+      const featuredIds = new Set(featured.map(p => p.id));
+      const rest = withPrice.filter(p => !featuredIds.has(p.id)).sort(() => Math.random() - 0.5).slice(0, 3);
+      setForYouProducts([...featured, ...rest]);
 
       // "For Her" — girls products
       const girls = all.filter((p) => {

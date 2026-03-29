@@ -38,6 +38,8 @@ export function useAllProducts() {
         const { data, error } = await supabase
           .from("products")
           .select("*")
+          .not("image", "is", null)
+          .neq("image", "")
           .order("id");
 
         if (error || !data || data.length === 0) {
@@ -102,6 +104,8 @@ export function usePopularProducts(limit = 8) {
           .from("products")
           .select("*")
           .not("price_cny", "is", null)
+          .not("image", "is", null)
+          .neq("image", "")
           .limit(limit);
 
         if (error || !data || data.length === 0) throw new Error("fallback");
@@ -135,6 +139,8 @@ export function useProductSearch(query: string) {
         const { data, error } = await supabase
           .from("products")
           .select("id,name,brand,price_cny,price_usd,image,category")
+          .not("image", "is", null)
+          .neq("image", "")
           .ilike("name", `%${query}%`)
           .limit(6);
 

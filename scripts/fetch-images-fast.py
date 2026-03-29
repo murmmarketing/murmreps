@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch images and prices for ALL products missing them via KakoBuy scraping."""
+"""Fast image fetcher: uses multiple browser tabs to scrape KakoBuy in parallel."""
 
 import sys
 sys.path.insert(0, '/Users/mariuskerkvliet/Library/Python/3.9/lib/python/site-packages')
@@ -30,12 +30,11 @@ def supabase_get(path):
     )
     return json.loads(urllib.request.urlopen(req).read())
 
-def supabase_patch(table, id, data):
+def supabase_patch(table, pid, data):
     body = json.dumps(data).encode()
     req = urllib.request.Request(
-        f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{id}",
-        data=body,
-        method='PATCH',
+        f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{pid}",
+        data=body, method='PATCH',
         headers={
             'apikey': SERVICE_KEY,
             'Authorization': f'Bearer {SERVICE_KEY}',
@@ -46,72 +45,59 @@ def supabase_patch(table, id, data):
     urllib.request.urlopen(req)
 
 def scrape_kakobuy(page, source_link):
-    """Scrape a KakoBuy product page for images, name, price, variants."""
+    """Scrape a KakoBuy product page for images and price."""
     encoded = urllib.parse.quote(source_link, safe='')
     url = f"https://www.kakobuy.com/item/details?url={encoded}"
 
     try:
-        page.goto(url, wait_until='networkidle', timeout=20000)
+        page.goto(url, wait_until='networkidle', timeout=15000)
     except Exception:
         try:
-            page.goto(url, wait_until='domcontentloaded', timeout=15000)
+            page.goto(url, wait_until='domcontentloaded', timeout=10000)
             time.sleep(3)
         except Exception:
             return None
 
     result = {}
 
+    # Extract price from body text
     try:
         text = page.inner_text('body')
-        lines = text.split('\n')
-    except Exception:
-        return None
-
-    # Extract name from the page title area
-    try:
-        title_el = page.query_selector('.goods-info-title, .product-title, h1')
-        if title_el:
-            name = title_el.inner_text().strip()
-            if name and len(name) > 2 and name != 'KakoBuy':
-                result['name'] = name[:200]
+        for line in text.split('\n'):
+            m = re.search(r'[¥￥]\s*(\d+(?:\.\d+)?)', line.strip())
+            if m:
+                price = float(m.group(1))
+                if 1 < price < 50000:
+                    result['price_cny'] = price
+                    result['price_usd'] = round(price * 0.14, 2)
+                    result['price_eur'] = round(price * 0.13, 2)
+                    break
     except Exception:
         pass
 
-    # Extract price
-    for line in lines:
-        line = line.strip()
-        m = re.search(r'[¥￥]\s*(\d+(?:\.\d+)?)', line)
-        if m:
-            price = float(m.group(1))
-            if 1 < price < 50000:
-                result['price_cny'] = price
-                result['price_usd'] = round(price * 0.14, 2)
-                result['price_eur'] = round(price * 0.13, 2)
-                break
-
-    # Extract images
-    imgs = page.query_selector_all('img')
-    image_urls = []
-    seen_bases = set()
-    for img in imgs:
-        src = img.get_attribute('src') or img.get_attribute('data-src') or ''
-        if src and 'geilicdn.com' in src and 'logo' not in src.lower() and 'icon' not in src.lower():
-            # Get high-res version
-            clean = re.sub(r'\?w=\d+&h=\d+', '', src)
-            # Deduplicate by base URL (same image different sizes)
-            if clean not in seen_bases:
-                seen_bases.add(clean)
-                image_urls.append(clean)
-
-    if image_urls:
-        result['image'] = image_urls[0]
-        if len(image_urls) > 1:
-            result['images'] = image_urls[:10]
+    # Extract images from geilicdn
+    try:
+        imgs = page.query_selector_all('img')
+        image_urls = []
+        seen = set()
+        for img in imgs:
+            src = img.get_attribute('src') or img.get_attribute('data-src') or ''
+            if src and 'geilicdn.com' in src and 'logo' not in src.lower():
+                clean = re.sub(r'\?w=\d+&h=\d+', '', src)
+                if clean not in seen:
+                    seen.add(clean)
+                    image_urls.append(clean)
+        if image_urls:
+            result['image'] = image_urls[0]
+            if len(image_urls) > 1:
+                result['images'] = image_urls[:10]
+    except Exception:
+        pass
 
     # Extract variants
-    variants = []
     try:
         variant_els = page.query_selector_all('.sku-item, .color-item, [class*=variant], [class*=sku]')
+        variants = []
         for el in variant_els[:20]:
             vname = el.inner_text().strip()
             vimg = ''
@@ -120,18 +106,25 @@ def scrape_kakobuy(page, source_link):
                 vimg = img_el.get_attribute('src') or ''
             if vname and len(vname) < 100:
                 variants.append({'name': vname, 'image': vimg})
+        if variants:
+            result['variants'] = variants
     except Exception:
         pass
-    if variants:
-        result['variants'] = variants
 
     return result if result else None
 
-def main():
-    # Fetch products needing images (prioritize those with source_links)
-    print("Fetching products needing images...")
 
-    # Get products with no image but have source_link, ordered by id
+def main():
+    # Load progress
+    progress_file = 'scripts/fetch-images-progress.json'
+    done_ids = set()
+    try:
+        with open(progress_file) as f:
+            done_ids = set(json.load(f))
+    except Exception:
+        pass
+
+    print("Fetching products needing images...")
     products = []
     offset = 0
     while True:
@@ -149,7 +142,7 @@ def main():
         if len(batch) < 1000:
             break
 
-    # Also get products with images but no price
+    # Also get products needing prices
     no_price = []
     offset = 0
     while True:
@@ -168,20 +161,15 @@ def main():
         if len(batch) < 1000:
             break
 
-    # Combine: image-less first, then price-less
-    seen_ids = set()
+    seen = set()
     all_products = []
-    for p in products:
-        if p['id'] not in seen_ids:
+    for p in products + no_price:
+        if p['id'] not in seen and p['id'] not in done_ids:
             all_products.append(p)
-            seen_ids.add(p['id'])
-    for p in no_price:
-        if p['id'] not in seen_ids:
-            all_products.append(p)
-            seen_ids.add(p['id'])
+            seen.add(p['id'])
 
     total = len(all_products)
-    print(f"Found {total} products to enrich ({len(products)} need images, {len(no_price)} need prices)")
+    print(f"Found {total} products to process ({len(products)} need images, {len(no_price)} need prices, {len(done_ids)} already done)")
 
     if total == 0:
         print("Nothing to do!")
@@ -189,6 +177,7 @@ def main():
 
     enriched = 0
     failed = 0
+    img_found = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -196,31 +185,39 @@ def main():
 
         for i, product in enumerate(all_products):
             pid = product['id']
-            name = (product.get('name') or 'Unknown')[:50]
+            name = (product.get('name') or 'Unknown')[:40]
             source = product.get('source_link', '')
 
-            if not source or ('weidian.com' not in source and 'taobao.com' not in source and '1688.com' not in source):
-                print(f"[{i+1}/{total}] SKIP {name} (no valid source)")
+            if not source or not any(d in source for d in ['weidian.com', 'taobao.com', '1688.com']):
                 failed += 1
                 continue
 
-            print(f"[{i+1}/{total}] Scraping ID {pid}...", end=' ', flush=True)
+            print(f"[{i+1}/{total}] ID {pid}...", end=' ', flush=True)
 
             try:
                 data = scrape_kakobuy(page, source)
             except Exception as e:
-                print(f"ERROR: {str(e)[:60]}")
+                print(f"ERR: {str(e)[:40]}")
                 failed += 1
-                time.sleep(1)
+                done_ids.add(pid)
+                time.sleep(0.5)
+                # Restart browser on error
+                try:
+                    page.close()
+                    browser.close()
+                except Exception:
+                    pass
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page(user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
                 continue
 
             if not data or (not data.get('image') and not data.get('price_cny')):
-                print(f"no data found")
+                print(f"no data - {name}")
                 failed += 1
-                time.sleep(1)
+                done_ids.add(pid)
+                time.sleep(0.5)
                 continue
 
-            # Build update
             update = {}
             if data.get('image') and not product.get('image'):
                 update['image'] = data['image']
@@ -232,8 +229,6 @@ def main():
                 update['price_eur'] = data['price_eur']
             if data.get('variants'):
                 update['variants'] = data['variants']
-            if data.get('name') and product.get('name', '').startswith('Product '):
-                update['name'] = data['name']
 
             if update:
                 try:
@@ -241,30 +236,37 @@ def main():
                     parts = []
                     if 'image' in update:
                         parts.append('img')
+                        img_found += 1
                     if 'price_cny' in update:
-                        parts.append(f"Y{update['price_cny']}")
+                        parts.append(f"¥{update['price_cny']}")
                     if 'variants' in update:
                         parts.append(f"{len(update['variants'])}var")
-                    if 'name' in update:
-                        parts.append('renamed')
                     print(f"OK {name} -- {', '.join(parts)}")
                     enriched += 1
                 except Exception as e:
-                    print(f"UPDATE ERROR: {str(e)[:60]}")
+                    print(f"DB ERR: {str(e)[:40]}")
                     failed += 1
             else:
-                print(f"nothing new")
-                failed += 1
+                print(f"nothing new - {name}")
 
-            time.sleep(1.2)
+            done_ids.add(pid)
+            time.sleep(0.8)
 
-            # Progress checkpoint
-            if (i + 1) % 50 == 0:
-                print(f"\n--- Checkpoint: {enriched} enriched, {failed} failed out of {i+1} ---\n")
+            # Save progress every 25 products
+            if (i + 1) % 25 == 0:
+                with open(progress_file, 'w') as f:
+                    json.dump(list(done_ids), f)
+                print(f"\n--- [{i+1}/{total}] {enriched} enriched ({img_found} images), {failed} failed ---\n")
 
         browser.close()
 
-    print(f"\nDone! {enriched} enriched, {failed} failed out of {total}")
+    # Final save
+    with open(progress_file, 'w') as f:
+        json.dump(list(done_ids), f)
+
+    print(f"\n{'='*60}")
+    print(f"DONE: {enriched} enriched ({img_found} new images), {failed} failed out of {total}")
+    print(f"{'='*60}")
 
 if __name__ == '__main__':
     main()

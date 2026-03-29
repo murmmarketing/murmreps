@@ -95,6 +95,8 @@ function ProductsPageInner() {
           const { data, error } = await supabase
             .from("products")
             .select("*")
+            .not("image", "is", null)
+            .neq("image", "")
             .order("id")
             .range(from, from + pageSize - 1);
           if (error) throw error;

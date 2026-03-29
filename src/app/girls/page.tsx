@@ -26,6 +26,8 @@ interface Product {
   views: number;
   likes: number;
   dislikes: number;
+  featured: boolean;
+  featured_rank: number | null;
   created_at: string;
 }
 
@@ -98,6 +100,8 @@ function GirlsInner() {
           .from("products")
           .select("*")
           .eq("collection", "girls")
+          .not("image", "is", null)
+          .neq("image", "")
           .order("created_at", { ascending: false })
           .range(offset, offset + 999);
         if (!data || data.length === 0) break;
@@ -216,22 +220,36 @@ function GirlsInner() {
       {/* ══════ CAROUSELS ══════ */}
       {!loading && products.length > 0 && (
         <div className="mx-auto max-w-7xl space-y-8 px-4 pt-6 sm:px-6">
-          {/* Trending Now — top 8 by views with image + price */}
+          {/* Trending Now — featured products first, then top by views */}
           {(() => {
-            const trending = [...products]
-              .filter((p) => p.image && p.price_cny != null)
+            const withImg = products.filter((p) => p.image && p.price_cny != null);
+            const featuredTrending = withImg
+              .filter((p) => p.featured)
               .sort((a, b) => (b.views || 0) - (a.views || 0))
-              .slice(0, 8);
+              .slice(0, 5);
+            const featuredIds = new Set(featuredTrending.map((p) => p.id));
+            const topViews = withImg
+              .filter((p) => !featuredIds.has(p.id))
+              .sort((a, b) => (b.views || 0) - (a.views || 0))
+              .slice(0, 8 - featuredTrending.length);
+            const trending = [...featuredTrending, ...topViews];
             return trending.length > 0 ? (
               <ProductRow title="🔥 Trending Now" products={trending} viewMoreHref="/girls" />
             ) : null;
           })()}
-          {/* For You — random selection */}
+          {/* For You — mix of featured and random */}
           {(() => {
-            const forYou = [...products]
-              .filter((p) => p.image && p.price_cny != null)
+            const withImg = products.filter((p) => p.image && p.price_cny != null);
+            const featuredForYou = withImg
+              .filter((p) => p.featured)
               .sort(() => Math.random() - 0.5)
-              .slice(0, 8);
+              .slice(0, 5);
+            const featuredIds = new Set(featuredForYou.map((p) => p.id));
+            const randomRest = withImg
+              .filter((p) => !featuredIds.has(p.id))
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 8 - featuredForYou.length);
+            const forYou = [...featuredForYou, ...randomRest];
             return forYou.length > 0 ? (
               <ProductRow title="For You" products={forYou} />
             ) : null;
