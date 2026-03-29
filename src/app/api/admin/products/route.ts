@@ -102,7 +102,13 @@ export async function GET(req: NextRequest) {
     query = query.eq("tier", tier);
   }
   if (collection) {
-    query = query.eq("collection", collection);
+    if (collection === "main") {
+      query = query.in("collection", ["main", "both"]);
+    } else if (collection === "girls") {
+      query = query.in("collection", ["girls", "both"]);
+    } else {
+      query = query.eq("collection", collection);
+    }
   }
 
   const from = (page - 1) * limit;

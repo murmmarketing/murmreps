@@ -57,16 +57,20 @@ const CATEGORIES = [
   { emoji: "🧥", label: "Outerwear", value: "outerwear" },
   { emoji: "👛", label: "Wallets", value: "Wallets" },
   { emoji: "💎", label: "Accessories", value: "accessories" },
+  { emoji: "⌚", label: "Watches", value: "Watches" },
+  { emoji: "🕶️", label: "Sunglasses", value: "Sunglasses" },
+  { emoji: "🧴", label: "Perfumes", value: "Perfumes" },
+  { emoji: "📱", label: "Phone Cases", value: "Phone Cases" },
   { emoji: "🏠", label: "Home", value: "Home & Decor" },
 ];
 
 const CAT_MAP: Record<string, string[]> = {
   shoes: ["Sneakers", "Shoes", "Boots", "Slides & Sandals"],
-  jewelry: ["Necklaces", "Bracelets", "Earrings", "Rings", "Watches"],
-  tops: ["T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks", "Jerseys"],
-  bottoms: ["Pants", "Jeans", "Shorts", "Tracksuits"],
-  outerwear: ["Jackets", "Coats & Puffers", "Vests"],
-  accessories: ["Keychains & Accessories", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Phone Cases", "Socks & Underwear", "Belts", "Perfumes"],
+  jewelry: ["Necklaces", "Bracelets", "Earrings", "Rings", "Jewelry"],
+  tops: ["T-Shirts", "Shirts", "Polos", "Hoodies", "Sweaters", "Crewnecks", "Jerseys", "Long Sleeves", "Tank Tops"],
+  bottoms: ["Pants", "Jeans", "Shorts", "Sweatpants"],
+  outerwear: ["Jackets", "Coats & Puffers", "Vests", "Tracksuits"],
+  accessories: ["Keychains", "Hats & Caps", "Scarves & Gloves", "Glasses", "Socks & Underwear", "Belts", "Ties", "Masks", "Accessories"],
 };
 
 function matchCategory(product: Product, filter: string): boolean {
@@ -99,7 +103,7 @@ function GirlsInner() {
         const { data } = await supabase
           .from("products")
           .select("*")
-          .eq("collection", "girls")
+          .in("collection", ["girls", "both"])
           .not("image", "is", null)
           .neq("image", "")
           .order("created_at", { ascending: false })

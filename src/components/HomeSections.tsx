@@ -82,7 +82,7 @@ export default function HomeSections() {
         .from("products")
         .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
         .eq("featured", true)
-        .eq("collection", "main")
+        .in("collection", ["main", "both"])
         .not("image", "eq", "")
         .not("image", "is", null)
         .order("featured_rank", { ascending: true })

@@ -18,17 +18,19 @@ const categoryPills = [
   // Footwear
   "Sneakers", "Shoes", "Boots", "Slides & Sandals",
   // Tops
-  "T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks", "Jerseys",
+  "T-Shirts", "Shirts", "Polos", "Hoodies", "Sweaters", "Crewnecks", "Jerseys", "Long Sleeves", "Tank Tops",
   // Outerwear
-  "Jackets", "Coats & Puffers", "Vests",
+  "Jackets", "Coats & Puffers", "Vests", "Tracksuits",
   // Bottoms
-  "Pants", "Jeans", "Shorts", "Tracksuits",
-  // Bags & Acc
-  "Bags", "Wallets", "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Phone Cases", "Socks & Underwear",
+  "Pants", "Jeans", "Shorts", "Sweatpants",
+  // Bags & Wallets
+  "Bags", "Wallets",
+  // Accessories
+  "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Glasses", "Phone Cases", "Socks & Underwear", "Ties", "Masks", "Keychains",
   // Jewelry
-  "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
+  "Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Jewelry",
   // Other
-  "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories", "Trading Cards",
+  "Perfumes", "Electronics", "Home & Decor", "Accessories",
 ] as const;
 
 type Category = (typeof categoryPills)[number];
