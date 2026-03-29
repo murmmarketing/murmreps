@@ -56,6 +56,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  verification: {
+    google: "ZYcMnAEmiS4z-i7K0TNqJdO26Ucoh1ofdhhqLhDEZRk",
+  },
   other: {
     "tiktok-developers-site-verification": "AnS27eKEP3beb486LWNWpZSf9EtrZDhR",
   },
