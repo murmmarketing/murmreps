@@ -1,11 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Typewriter from "@/components/Typewriter";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { AvatarCircles } from "@/components/ui/avatar-circles";
-import { DottedSurface } from "@/components/ui/dotted-surface";
+
+// Lazy-load Three.js background — not needed for LCP
+const DottedSurface = dynamic(
+  () => import("@/components/ui/dotted-surface").then((m) => ({ default: m.DottedSurface })),
+  { ssr: false }
+);
 
 const avatarUrls = [
   "https://avatars.githubusercontent.com/u/16860528",
@@ -32,7 +38,7 @@ export default function HeroSection() {
           "radial-gradient(ellipse at 50% 0%, rgba(254,66,5,0.08) 0%, transparent 60%), #0a0a0a",
       }}
     >
-      {/* Three.js dotted wave background — desktop only */}
+      {/* Three.js dotted wave background — lazy loaded, desktop only */}
       {isDesktop && <DottedSurface />}
       <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-16 sm:px-6 sm:pb-24 sm:pt-32">
         <div className="mx-auto max-w-3xl text-center">

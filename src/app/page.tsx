@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import PopularFinds from "@/components/PopularFinds";
 import HeroSection from "@/components/HeroSection";
+
+const PopularFinds = dynamic(() => import("@/components/PopularFinds"), {
+  ssr: false,
+  loading: () => <div className="h-[400px]" />,
+});
 
 const HomeSections = dynamic(() => import("@/components/HomeSections"), {
   ssr: false,
-  loading: () => <div className="py-16 text-center text-gray-500">Loading...</div>,
+  loading: () => <div className="py-16" />,
 });
 
 export const metadata: Metadata = {
@@ -170,7 +174,7 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <a
                   href="https://discord.gg/8r5EFMRg"
                   target="_blank"

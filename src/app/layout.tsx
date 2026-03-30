@@ -74,6 +74,8 @@ export default function RootLayout({
       <head>
         <link rel="dns-prefetch" href="//pxdkqylraptallrkiaab.supabase.co" />
         <link rel="preconnect" href="https://pxdkqylraptallrkiaab.supabase.co" />
+        <link rel="dns-prefetch" href="//photo.yupoo.com" />
+        <link rel="preconnect" href="https://photo.yupoo.com" crossOrigin="anonymous" />
       </head>
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} font-body bg-void text-text-primary antialiased`}
@@ -82,7 +84,7 @@ export default function RootLayout({
         <ClientProviders>
           <ReferralBanner />
           <Navbar />
-          <main className="min-h-screen">{children}</main>
+          <main className="min-h-screen overflow-x-hidden">{children}</main>
           <Footer />
           <FloatingReferral />
           <SearchModal />

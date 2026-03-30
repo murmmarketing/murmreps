@@ -210,6 +210,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
+                    fetchPriority="low"
                     width={220}
                     height={293}
                     draggable={false}
