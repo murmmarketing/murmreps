@@ -70,7 +70,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="grid gap-4">
           {/* Row 1: Large + Medium */}
-          <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
             <Link
               href="/products"
               className="group relative min-h-[240px] overflow-hidden rounded-xl bg-[#141414] p-8 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(254,66,5,0.15)]"
@@ -103,7 +103,7 @@ export default function Home() {
           </div>
 
           {/* Row 2: Three equal */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/qc"
               className="group rounded-xl border border-subtle bg-[#141414] p-8 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-[0_0_20px_rgba(254,66,5,0.15)]"

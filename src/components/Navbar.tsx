@@ -125,14 +125,16 @@ export default function Navbar() {
           <img
             src="/logo.png"
             alt="MurmReps"
-            className="navbar-logo-default h-9 w-auto object-contain"
+            className="navbar-logo-default object-contain"
+            style={{ height: "36px", width: "249px" }}
             loading="eager"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo-pink.png"
             alt="MurmReps"
-            className="navbar-logo-pink hidden h-9 w-auto object-contain"
+            className="navbar-logo-pink hidden object-contain"
+            style={{ height: "36px", width: "196px" }}
             loading="eager"
           />
         </Link>
@@ -310,14 +312,16 @@ export default function Navbar() {
           <img
             src="/logo.png"
             alt="MurmReps logo"
-            className="navbar-logo-default h-7 w-auto object-contain"
+            className="navbar-logo-default object-contain"
+            style={{ height: "28px", width: "193px" }}
             loading="eager"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo-pink.png"
             alt="MurmReps logo"
-            className="navbar-logo-pink hidden h-7 w-auto object-contain"
+            className="navbar-logo-pink hidden object-contain"
+            style={{ height: "28px", width: "153px" }}
             loading="eager"
           />
         </Link>
@@ -372,7 +376,11 @@ export default function Navbar() {
 
           <button
             className="flex flex-col gap-1.5"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={() => {
+              const next = !mobileOpen;
+              setMobileOpen(next);
+              document.body.style.overflow = next ? "hidden" : "";
+            }}
             aria-label="Toggle menu"
           >
             <span
@@ -390,6 +398,12 @@ export default function Navbar() {
 
       {/* ─── Mobile overlay menu ─── */}
       {mobileOpen && (
+        <>
+        {/* Tap-outside backdrop */}
+        <div
+          className="fixed inset-0 z-40 lg:hidden"
+          onClick={() => { setMobileOpen(false); document.body.style.overflow = ""; }}
+        />
         <div className="fixed inset-0 top-12 z-50 bg-[#0a0a0a] lg:hidden">
           <div className="flex h-full flex-col overflow-y-auto px-4 pb-8 pt-4">
             <div className="mb-4 flex items-center justify-between">
@@ -421,7 +435,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => { setMobileOpen(false); document.body.style.overflow = ""; }}
                   className={`flex h-12 items-center border-b border-[rgba(255,255,255,0.06)] text-[15px] font-medium transition-colors duration-200 ${
                     pathname === link.href
                       ? "text-white"
@@ -468,6 +482,7 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+        </>
       )}
     </nav>
   );

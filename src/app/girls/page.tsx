@@ -189,7 +189,7 @@ function GirlsInner() {
           </p>
 
           {/* Stats */}
-          <div className="mx-auto mt-6 flex items-center justify-center gap-6 text-[13px]" style={{ color: P.textMuted }}>
+          <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px]" style={{ color: P.textMuted }}>
             <span><strong style={{ color: P.text }}>{products.length.toLocaleString()}+</strong> Finds</span>
             <span style={{ color: P.border }}>|</span>
             <span><strong style={{ color: P.text }}>45+</strong> Categories</span>
@@ -293,7 +293,7 @@ function GirlsInner() {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
-            className="rounded-lg px-3 py-2 text-[13px] outline-none"
+            className="min-w-[120px] rounded-lg px-3 py-2 text-[13px] outline-none"
             style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}
           >
             <option value="newest">Newest</option>

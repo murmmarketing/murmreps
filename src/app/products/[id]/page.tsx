@@ -229,7 +229,7 @@ export default function ProductDetailPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       {/* Breadcrumbs */}
-      <nav className="mb-6 flex items-center gap-1.5 text-sm text-text-secondary">
+      <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-text-secondary">
         <Link href="/products" className="transition-colors hover:text-white">
           Products
         </Link>

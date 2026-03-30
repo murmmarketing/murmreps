@@ -306,8 +306,26 @@ function ProductsPageInner() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      {/* Filters button */}
-      <div className="flex justify-end">
+      {/* Mobile search + Filters */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <svg
+            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products..."
+            className="h-10 w-full rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] pl-9 pr-3 text-sm text-white placeholder-text-muted outline-none transition-colors focus:border-accent/50"
+          />
+        </div>
         <button
           onClick={openFilters}
           className="relative flex h-10 shrink-0 items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 text-sm font-medium text-white transition-all hover:border-accent/30"
@@ -447,7 +465,7 @@ function ProductsPageInner() {
       )}
 
       {/* Product grid */}
-      <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-4 grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {paginated.map((product) => {
           const pid = String(product.id);
           const saved = wishlist.has(pid);
