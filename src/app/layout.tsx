@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import FloatingReferral from "@/components/FloatingReferral";
 import SearchModal from "@/components/SearchModal";
 import ClientProviders from "@/components/ClientProviders";
+import NewsletterPopup from "@/components/NewsletterPopup";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const spaceGrotesk = Space_Grotesk({
@@ -87,6 +88,7 @@ export default function RootLayout({
           <main className="min-h-screen overflow-x-hidden">{children}</main>
           <Footer />
           <FloatingReferral />
+          <NewsletterPopup />
           <SearchModal />
         </ClientProviders>
       </body>
