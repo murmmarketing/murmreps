@@ -71,6 +71,9 @@ export default function WishlistPage() {
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
+                    decoding="async"
+                    width={400}
+                    height={160}
                     className="h-full w-full object-contain"
                     onError={(e) => {
                       const target = e.currentTarget;

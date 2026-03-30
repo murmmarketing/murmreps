@@ -209,6 +209,9 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
+                    decoding="async"
+                    width={220}
+                    height={293}
                     draggable={false}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-[1.03]"
                     onError={(e) => {

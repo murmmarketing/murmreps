@@ -232,9 +232,10 @@ function categorize(name) {
 }
 
 function determineTier(priceCny) {
-  if (priceCny == null) return "mid";
-  if (priceCny < 50) return "budget";
-  if (priceCny < 150) return "mid";
+  if (priceCny == null) return null;
+  if (priceCny < 150) return "budget";
+  if (priceCny < 400) return "value";
+  if (priceCny < 800) return "quality";
   return "premium";
 }
 
@@ -309,7 +310,7 @@ async function main() {
       price_cny: null,
       price_usd: null,
       price_eur: null,
-      tier: "mid",
+      tier: null,
       quality: null,
       source_link: link,
       image: "",

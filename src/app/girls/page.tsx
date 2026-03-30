@@ -103,7 +103,7 @@ function GirlsInner() {
       while (true) {
         const { data } = await supabase
           .from("products")
-          .select("*")
+          .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,views,likes,dislikes,featured,featured_rank,created_at")
           .in("collection", ["girls", "both"])
           .not("image", "is", null)
           .neq("image", "")
@@ -325,6 +325,9 @@ function GirlsInner() {
                       src={product.image}
                       alt={product.name}
                       loading="lazy"
+                      decoding="async"
+                      width={300}
+                      height={375}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       onError={(e) => { e.currentTarget.style.display = "none"; }}
                     />

@@ -99,14 +99,14 @@ function ProductsPageInner() {
         while (true) {
           const { data, error } = await supabase
             .from("products")
-            .select("*")
+            .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,score,category,collection,tier,quality,source_link,featured")
             .not("image", "is", null)
             .neq("image", "")
             .order("score", { ascending: false })
             .range(from, from + pageSize - 1);
           if (error) throw error;
           if (!data || data.length === 0) break;
-          all = all.concat(data as typeof staticProducts);
+          all = all.concat(data as unknown as typeof staticProducts);
           if (data.length < pageSize) break;
           from += pageSize;
         }
@@ -480,6 +480,9 @@ function ProductsPageInner() {
                       src={product.image}
                       alt={product.name}
                       loading="lazy"
+                      decoding="async"
+                      width={300}
+                      height={300}
                       className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";

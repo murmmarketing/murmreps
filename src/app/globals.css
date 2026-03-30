@@ -141,6 +141,22 @@ body {
   100% { transform: translateX(200%); }
 }
 
+/* Prevent layout shift on product card images */
+.product-img-container {
+  aspect-ratio: 3/4;
+  contain: layout style;
+}
+
+.product-img-container-square {
+  aspect-ratio: 1/1;
+  contain: layout style;
+}
+
+/* Optimise paint for off-screen images */
+img[loading="lazy"] {
+  content-visibility: auto;
+}
+
 .premium-card {
   border: 1px solid rgba(255, 255, 255, 0.06);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;

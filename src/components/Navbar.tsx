@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useWishlistCount } from "@/lib/useWishlist";
@@ -138,21 +139,21 @@ export default function Navbar() {
       <div className="mx-auto hidden h-14 max-w-7xl items-center gap-5 px-4 lg:flex xl:px-6">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo.png"
             alt="MurmReps"
+            width={249}
+            height={36}
+            priority
             className="navbar-logo-default object-contain"
-            style={{ height: "36px", width: "249px" }}
-            loading="eager"
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo-pink.png"
             alt="MurmReps"
+            width={196}
+            height={36}
+            priority
             className="navbar-logo-pink hidden object-contain"
-            style={{ height: "36px", width: "196px" }}
-            loading="eager"
           />
         </Link>
 
@@ -325,21 +326,21 @@ export default function Navbar() {
       <div className="flex h-12 items-center justify-between px-4 lg:hidden">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo.png"
             alt="MurmReps logo"
+            width={193}
+            height={28}
+            priority
             className="navbar-logo-default object-contain"
-            style={{ height: "28px", width: "193px" }}
-            loading="eager"
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/logo-pink.png"
             alt="MurmReps logo"
+            width={153}
+            height={28}
+            priority
             className="navbar-logo-pink hidden object-contain"
-            style={{ height: "28px", width: "153px" }}
-            loading="eager"
           />
         </Link>
 

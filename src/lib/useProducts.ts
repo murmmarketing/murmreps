@@ -37,7 +37,7 @@ export function useAllProducts() {
       try {
         const { data, error } = await supabase
           .from("products")
-          .select("*")
+          .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,images,variants,qc_photos,delivery_days,weight_g,dimensions,verified,qc_rating")
           .not("image", "is", null)
           .neq("image", "")
           .order("score", { ascending: false });
@@ -102,7 +102,7 @@ export function usePopularProducts(limit = 8) {
       try {
         const { data, error } = await supabase
           .from("products")
-          .select("*")
+          .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,verified,qc_rating")
           .not("price_cny", "is", null)
           .not("image", "is", null)
           .neq("image", "")

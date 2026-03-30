@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const sort = searchParams.get("sort") || "score";
   const order = searchParams.get("order") || "desc";
 
-  let query = supabase.from("products").select("*", { count: "exact" })
+  let query = supabase.from("products").select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,score,category,collection,tier,quality,source_link,featured", { count: "exact" })
     .not("image", "is", null)
     .neq("image", "");
 

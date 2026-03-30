@@ -23,8 +23,10 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 
 // ── Tier logic ──
 function getTier(price) {
-  if (price < 200) return "budget";
-  if (price <= 800) return "mid";
+  if (price == null) return null;
+  if (price < 150) return "budget";
+  if (price < 400) return "value";
+  if (price < 800) return "quality";
   return "premium";
 }
 

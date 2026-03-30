@@ -34,7 +34,7 @@ export default function ReferralBanner() {
     "\u{1F525} New verified drops every week \u2022 19,000+ products tracked \u2022 Join r/MurmReps \u2022 Free link converter for 8 agents \u2022 QC photos before you buy \u{1F525}";
 
   return (
-    <div className="flex h-8 items-center overflow-hidden border-b border-[rgba(255,255,255,0.06)] bg-[#141414]">
+    <div className="flex h-8 min-h-[32px] items-center overflow-hidden border-b border-[rgba(255,255,255,0.06)] bg-[#141414]">
       <style>{`
         @keyframes ticker-scroll {
           0% { transform: translateX(0); }

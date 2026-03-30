@@ -252,6 +252,9 @@ export default function ProductDetailPage() {
               <img
                 src={displayImage}
                 alt={product.name}
+                width={600}
+                height={600}
+                decoding="async"
                 className="h-full w-full object-contain"
                 onError={() => setImgError(true)}
               />
@@ -284,6 +287,10 @@ export default function ProductDetailPage() {
                   <img
                     src={img}
                     alt={`${product.name} ${i + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    width={64}
+                    height={64}
                     className="h-full w-full object-contain"
                   />
                 </button>
@@ -299,6 +306,10 @@ export default function ProductDetailPage() {
                 <img
                   src={displayImage}
                   alt={product.name}
+                  loading="lazy"
+                  decoding="async"
+                  width={64}
+                  height={64}
                   className="h-full w-full object-contain"
                 />
               </div>
@@ -376,6 +387,10 @@ export default function ProductDetailPage() {
                       <img
                         src={v.image}
                         alt={v.name}
+                        loading="lazy"
+                        decoding="async"
+                        width={48}
+                        height={48}
                         className="h-full w-full rounded-md object-contain"
                       />
                     ) : (
@@ -561,6 +576,9 @@ export default function ProductDetailPage() {
                       src={p.image}
                       alt={p.name}
                       loading="lazy"
+                      decoding="async"
+                      width={240}
+                      height={140}
                       className="h-full w-full object-contain"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
@@ -642,6 +660,9 @@ export default function ProductDetailPage() {
                     src={set.images[0]}
                     alt={set.set}
                     loading="lazy"
+                    decoding="async"
+                    width={300}
+                    height={300}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 )}
