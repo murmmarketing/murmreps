@@ -61,6 +61,7 @@ const CATEGORIES = [
   { emoji: "🕶️", label: "Sunglasses", value: "Sunglasses" },
   { emoji: "🧴", label: "Perfumes", value: "Perfumes" },
   { emoji: "📱", label: "Phone Cases", value: "Phone Cases" },
+  { emoji: "🤵", label: "Old Money", value: "Old Money" },
   { emoji: "🏠", label: "Home", value: "Home & Decor" },
 ];
 

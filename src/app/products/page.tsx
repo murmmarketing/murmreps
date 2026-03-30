@@ -29,6 +29,8 @@ const categoryPills = [
   "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Glasses", "Phone Cases", "Socks & Underwear", "Ties", "Masks", "Keychains",
   // Jewelry
   "Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Jewelry",
+  // Style
+  "Old Money",
   // Other
   "Perfumes", "Electronics", "Home & Decor", "Accessories",
 ] as const;
