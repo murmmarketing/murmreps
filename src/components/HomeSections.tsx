@@ -40,7 +40,7 @@ export default function HomeSections() {
   useEffect(() => {
     async function fetchInitial() {
       const [forYouRes, recentRes, girlsRes] = await Promise.all([
-        // "For You" — top 8 by score
+        // "For You" — random 50 from top 200 by score (shuffled client-side to 8)
         supabase
           .from("products")
           .select(CARD_COLUMNS)
@@ -48,7 +48,7 @@ export default function HomeSections() {
           .not("image", "is", null)
           .not("price_cny", "is", null)
           .order("score", { ascending: false })
-          .limit(8),
+          .range(8, 207),
         // "Recently Added" — 8 newest
         supabase
           .from("products")
@@ -68,7 +68,9 @@ export default function HomeSections() {
           .limit(8),
       ]);
 
-      setForYouProducts((forYouRes.data as RowProduct[]) || []);
+      const forYouPool = (forYouRes.data as RowProduct[]) || [];
+      const shuffled = forYouPool.sort(() => Math.random() - 0.5).slice(0, 8);
+      setForYouProducts(shuffled);
       setRecentProducts((recentRes.data as RowProduct[]) || []);
       setGirlsProducts((girlsRes.data as RowProduct[]) || []);
       setLoading(false);
