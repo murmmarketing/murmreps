@@ -19,14 +19,14 @@ interface Product {
   category: string;
 }
 
-const SHOE_CATS = ["Sneakers", "Shoes", "Boots", "Slides & Sandals"];
-const TOP_CATS = ["T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks", "Jerseys"];
-const BOTTOM_CATS = ["Pants", "Jeans", "Shorts", "Tracksuits"];
-const OUTER_CATS = ["Jackets", "Coats & Puffers", "Vests"];
+const SHOE_CATS = ["Shoes", "Boots", "Slides & Sandals"];
+const TOP_CATS = ["Shirts", "Polos", "Hoodies", "Sweaters", "Jerseys", "Long Sleeves", "Tank Tops", "Tops"];
+const BOTTOM_CATS = ["Pants", "Shorts"];
+const OUTER_CATS = ["Jackets"];
 const ACC_CATS = [
-  "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Phone Cases",
+  "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Glasses", "Phone Cases",
   "Socks & Underwear", "Necklaces", "Bracelets", "Earrings", "Rings",
-  "Watches", "Keychains & Accessories",
+  "Watches", "Keychains",
 ];
 const BAG_CATS = ["Bags", "Wallets"];
 

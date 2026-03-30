@@ -36,7 +36,7 @@ const categoryGroups: {
   {
     label: "Shoes",
     emoji: "👠",
-    cats: ["Sneakers", "Shoes", "Boots", "Slides & Sandals"],
+    cats: ["Shoes", "Boots", "Slides & Sandals"],
     brands: "Hermes Oran, Dior, Chanel, Miu Miu",
     tip: "Size down 1 from EU sizing. Always check sole quality in QC photos.",
   },
@@ -52,7 +52,7 @@ const categoryGroups: {
     emoji: "🧣",
     cats: [
       "Scarves & Gloves", "Hats & Caps", "Belts", "Sunglasses",
-      "Watches", "Phone Cases", "Keychains & Accessories",
+      "Watches", "Phone Cases", "Keychains",
     ],
     brands: "Hermes scarves, Miu Miu caps, Celine, Loewe",
     tip: "Luxury scarves are some of the best reps available. Silk quality is excellent even at budget tier.",
@@ -61,9 +61,9 @@ const categoryGroups: {
     label: "Clothing",
     emoji: "👗",
     cats: [
-      "T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks",
-      "Jackets", "Coats & Puffers", "Vests",
-      "Pants", "Jeans", "Shorts", "Tracksuits",
+      "Shirts", "Polos", "Hoodies", "Sweaters", "Tops",
+      "Jackets",
+      "Pants", "Shorts",
     ],
     brands: "Acne Studios, Miu Miu, Jacquemus, Loewe",
     tip: "Size up 1-2 from Western sizing. Knitwear is the safest bet — quality is consistently great.",

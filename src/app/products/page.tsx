@@ -16,17 +16,17 @@ type Sort = "best" | "popular" | "price-asc" | "price-desc";
 const categoryPills = [
   "All Categories",
   // Footwear
-  "Sneakers", "Shoes", "Boots", "Slides & Sandals",
+  "Shoes", "Boots", "Slides & Sandals",
   // Tops
-  "T-Shirts", "Shirts", "Polos", "Hoodies", "Sweaters", "Crewnecks", "Jerseys", "Long Sleeves", "Tank Tops",
+  "Shirts", "Polos", "Hoodies", "Sweaters", "Jerseys", "Long Sleeves", "Tank Tops", "Tops",
   // Outerwear
-  "Jackets", "Coats & Puffers", "Vests", "Tracksuits",
+  "Jackets",
   // Bottoms
-  "Pants", "Jeans", "Shorts", "Sweatpants",
+  "Pants", "Shorts",
   // Bags & Wallets
   "Bags", "Wallets",
   // Accessories
-  "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Glasses", "Phone Cases", "Socks & Underwear", "Ties", "Masks", "Keychains",
+  "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Glasses", "Phone Cases", "Socks & Underwear",
   // Jewelry
   "Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Jewelry",
   // Style

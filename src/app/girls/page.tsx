@@ -82,11 +82,11 @@ const CATEGORIES = [
 ];
 
 const CAT_MAP: Record<string, string[]> = {
-  shoes: ["Sneakers", "Shoes", "Boots", "Slides & Sandals"],
+  shoes: ["Shoes", "Boots", "Slides & Sandals"],
   jewelry: ["Necklaces", "Bracelets", "Earrings", "Rings", "Jewelry"],
-  tops: ["T-Shirts", "Shirts", "Polos", "Hoodies", "Sweaters", "Crewnecks", "Jerseys", "Long Sleeves", "Tank Tops"],
-  bottoms: ["Pants", "Jeans", "Shorts", "Sweatpants"],
-  outerwear: ["Jackets", "Coats & Puffers", "Vests", "Tracksuits"],
+  tops: ["Shirts", "Polos", "Hoodies", "Sweaters", "Jerseys", "Long Sleeves", "Tank Tops", "Tops"],
+  bottoms: ["Pants", "Shorts"],
+  outerwear: ["Jackets"],
   accessories: ["Keychains", "Hats & Caps", "Scarves & Gloves", "Glasses", "Socks & Underwear", "Belts", "Ties", "Masks", "Accessories"],
 };
 

@@ -28,28 +28,28 @@ const categoryGroups: {
   {
     label: "Shoes",
     emoji: "👟",
-    cats: ["Sneakers", "Shoes", "Boots", "Slides & Sandals"],
+    cats: ["Shoes", "Boots", "Slides & Sandals"],
     verdict:
       "Budget shoes under ¥200 are hit or miss on materials but designs are spot-on. Nike and Adidas basics are safe bets.",
   },
   {
     label: "Tops",
     emoji: "👕",
-    cats: ["T-Shirts", "Shirts", "Hoodies", "Sweaters", "Crewnecks", "Jerseys"],
+    cats: ["Shirts", "Polos", "Hoodies", "Sweaters", "Jerseys", "Long Sleeves", "Tank Tops", "Tops"],
     verdict:
       "T-shirts are the safest budget buy. Print quality is great even at ¥79. Size up 1-2 sizes.",
   },
   {
     label: "Bottoms",
     emoji: "👖",
-    cats: ["Pants", "Jeans", "Shorts", "Tracksuits"],
+    cats: ["Pants", "Shorts"],
     verdict:
       "Budget shorts are excellent value. Jeans under ¥200 can be thinner — check QC for denim weight.",
   },
   {
     label: "Outerwear",
     emoji: "🧥",
-    cats: ["Jackets", "Coats & Puffers", "Vests"],
+    cats: ["Jackets"],
     verdict:
       "Hard to find quality outerwear under ¥200, but windbreakers and light jackets work. Avoid budget puffers.",
   },
@@ -57,9 +57,9 @@ const categoryGroups: {
     label: "Accessories",
     emoji: "⌚",
     cats: [
-      "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses",
+      "Belts", "Hats & Caps", "Scarves & Gloves", "Sunglasses", "Glasses",
       "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
-      "Phone Cases", "Socks & Underwear", "Keychains & Accessories",
+      "Phone Cases", "Socks & Underwear", "Keychains",
     ],
     verdict:
       "Best budget category. Belts, caps, and sunglasses under ¥100 are nearly identical to retail.",
