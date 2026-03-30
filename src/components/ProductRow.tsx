@@ -112,7 +112,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
   if (products.length === 0) return null;
 
   return (
-    <section>
+    <section className="overflow-x-hidden">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-heading text-[22px] font-bold text-white">{title}</h2>

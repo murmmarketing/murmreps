@@ -67,7 +67,7 @@ export default function Home() {
       </section>
 
       {/* Bento features */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+      <section className="mx-auto max-w-7xl overflow-hidden px-4 py-16 sm:px-6 sm:py-24">
         <div className="grid gap-4">
           {/* Row 1: Large + Medium */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWishlistCount } from "@/lib/useWishlist";
 
 const toolsLinks = [
@@ -98,6 +98,23 @@ function openSearchModal() {
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const savedScrollY = useRef(0);
+
+  const openMenu = () => {
+    savedScrollY.current = window.scrollY;
+    setMobileOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeMenu = () => {
+    setMobileOpen(false);
+    document.body.style.overflow = "";
+    requestAnimationFrame(() => {
+      window.scrollTo(0, savedScrollY.current);
+      document.body.scrollLeft = 0;
+      document.documentElement.scrollLeft = 0;
+    });
+  };
   const [navSearch, setNavSearch] = useState("");
   const wishlistCount = useWishlistCount();
   const pathname = usePathname();
@@ -116,7 +133,7 @@ export default function Navbar() {
   }, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] bg-[#0a0a0a]">
+    <nav className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] bg-[#0a1628]">
       {/* ─── Desktop ─── */}
       <div className="mx-auto hidden h-14 max-w-7xl items-center gap-5 px-4 lg:flex xl:px-6">
         {/* Logo */}
@@ -376,11 +393,7 @@ export default function Navbar() {
 
           <button
             className="flex flex-col gap-1.5"
-            onClick={() => {
-              const next = !mobileOpen;
-              setMobileOpen(next);
-              document.body.style.overflow = next ? "hidden" : "";
-            }}
+            onClick={() => { if (mobileOpen) { closeMenu(); } else { openMenu(); } }}
             aria-label="Toggle menu"
           >
             <span
@@ -399,12 +412,12 @@ export default function Navbar() {
       {/* ─── Mobile overlay menu ─── */}
       {mobileOpen && (
         <>
-        {/* Tap-outside backdrop */}
+        {/* Tap-outside backdrop — starts below navbar so toggle button stays clickable */}
         <div
-          className="fixed inset-0 z-40 lg:hidden"
-          onClick={() => { setMobileOpen(false); document.body.style.overflow = ""; }}
+          className="fixed inset-0 top-12 z-40 lg:hidden"
+          onClick={closeMenu}
         />
-        <div className="fixed inset-0 top-12 z-50 bg-[#0a0a0a] lg:hidden">
+        <div className="fixed inset-0 top-12 z-50 bg-[#0a1628] lg:hidden">
           <div className="flex h-full flex-col overflow-y-auto px-4 pb-8 pt-4">
             <div className="mb-4 flex items-center justify-between">
               <button
@@ -435,7 +448,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => { setMobileOpen(false); document.body.style.overflow = ""; }}
+                  onClick={closeMenu}
                   className={`flex h-12 items-center border-b border-[rgba(255,255,255,0.06)] text-[15px] font-medium transition-colors duration-200 ${
                     pathname === link.href
                       ? "text-white"

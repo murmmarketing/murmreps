@@ -24,6 +24,8 @@ interface Product {
   dislikes: number;
   collection: string;
   created_at: string;
+  score: number | null;
+  score_breakdown: Record<string, number> | null;
 }
 
 interface Toast {
@@ -54,7 +56,7 @@ const CATEGORIES = [
   "Necklaces", "Bracelets", "Earrings", "Rings", "Watches",
   "Electronics", "Perfumes", "Home & Decor", "Keychains & Accessories", "Trading Cards",
 ];
-const TIERS = ["budget", "mid", "premium"];
+const TIERS = ["budget", "value", "quality", "premium"];
 const QUALITIES = ["best", "good", "budget"];
 const COLLECTIONS = ["main", "girls"];
 
@@ -491,7 +493,7 @@ export default function AdminPage() {
       const wrongTier: { id: number; correctTier: string }[] = [];
       for (const p of allProducts) {
         if (p.price_cny == null) continue;
-        const correctTier = p.price_cny < 200 ? "budget" : p.price_cny <= 800 ? "mid" : "premium";
+        const correctTier = p.price_cny < 150 ? "budget" : p.price_cny < 400 ? "value" : p.price_cny < 800 ? "quality" : "premium";
         if (p.tier !== correctTier) {
           wrongTier.push({ id: p.id, correctTier });
         }
@@ -596,11 +598,13 @@ export default function AdminPage() {
       tier:
         form.tier ||
         (form.price_cny
-          ? parseFloat(form.price_cny) < 100
+          ? parseFloat(form.price_cny) < 150
             ? "budget"
-            : parseFloat(form.price_cny) < 300
-              ? "mid"
-              : "premium"
+            : parseFloat(form.price_cny) < 400
+              ? "value"
+              : parseFloat(form.price_cny) < 800
+                ? "quality"
+                : "premium"
           : null),
       quality: form.quality || null,
       source_link: form.source_link,
@@ -1113,6 +1117,8 @@ export default function AdminPage() {
                 <option value="name-desc">Name (Z-A)</option>
                 <option value="price_cny-asc">Price (Low)</option>
                 <option value="price_cny-desc">Price (High)</option>
+                <option value="score-desc">Score (High)</option>
+                <option value="score-asc">Score (Low)</option>
                 <option value="created_at-desc">Newest First</option>
                 <option value="created_at-asc">Oldest First</option>
               </select>
@@ -1141,6 +1147,7 @@ export default function AdminPage() {
                     { key: "brand", label: "Brand" },
                     { key: "category", label: "Category" },
                     { key: "price_cny", label: "Price" },
+                    { key: "score", label: "Score" },
                     { key: "tier", label: "Tier" },
                     { key: "collection", label: "Collection" },
                     { key: "created_at", label: "Created" },
@@ -1164,7 +1171,7 @@ export default function AdminPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={11} className="px-3 py-20 text-center">
+                    <td colSpan={12} className="px-3 py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <svg className="h-8 w-8 animate-spin text-[#FE4205]" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -1176,7 +1183,7 @@ export default function AdminPage() {
                   </tr>
                 ) : products.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-3 py-20 text-center">
+                    <td colSpan={12} className="px-3 py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <svg className="h-12 w-12 text-[#333]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -1287,14 +1294,28 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-3 py-2.5">
+                        {p.score != null ? (
+                          <span className={`font-semibold ${
+                            p.score >= 70 ? "text-[#4ADE80]" :
+                            p.score >= 50 ? "text-[#FACC15]" :
+                            p.score >= 30 ? "text-[#FB923C]" :
+                            "text-[#9CA3AF]"
+                          }`}>{p.score}</span>
+                        ) : (
+                          <span className="text-[#6B7280]">--</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
                         {p.tier && (
                           <span
                             className={`rounded-md px-2 py-0.5 text-xs font-medium ${
                               p.tier === "premium"
-                                ? "bg-[rgba(146,64,14,0.2)] text-[#F59E0B]"
-                                : p.tier === "mid"
-                                  ? "bg-[rgba(30,58,95,0.2)] text-[#60A5FA]"
-                                  : "bg-[rgba(55,65,81,0.2)] text-[#9CA3AF]"
+                                ? "bg-[rgba(234,179,8,0.15)] text-[#FACC15]"
+                                : p.tier === "quality"
+                                  ? "bg-[rgba(249,115,22,0.15)] text-[#FB923C]"
+                                  : p.tier === "value"
+                                    ? "bg-[rgba(34,197,94,0.15)] text-[#4ADE80]"
+                                    : "bg-[rgba(55,65,81,0.2)] text-[#9CA3AF]"
                             }`}
                           >
                             {p.tier}
@@ -1466,6 +1487,31 @@ export default function AdminPage() {
                     className="rounded-lg"
                     style={{ maxWidth: 180, maxHeight: 180, objectFit: "contain", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 12 }}
                   />
+                </div>
+              )}
+
+              {/* Score breakdown (read-only, shown when editing) */}
+              {editProduct && editProduct.score != null && (
+                <div className="rounded-lg border border-white/10 bg-[#0a0a0a] p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#FE4205]">Score</span>
+                    <span className={`text-lg font-bold ${
+                      editProduct.score >= 70 ? "text-[#4ADE80]" :
+                      editProduct.score >= 50 ? "text-[#FACC15]" :
+                      editProduct.score >= 30 ? "text-[#FB923C]" :
+                      "text-[#9CA3AF]"
+                    }`}>{editProduct.score}/100</span>
+                  </div>
+                  {editProduct.score_breakdown && (
+                    <div className="grid grid-cols-5 gap-2 text-center text-[11px]">
+                      {Object.entries(editProduct.score_breakdown).map(([key, val]) => (
+                        <div key={key} className="rounded-md bg-[#141414] px-1 py-1.5">
+                          <div className="font-semibold text-white">{val}/20</div>
+                          <div className="mt-0.5 text-[#6B7280]">{key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()).replace("Price Appeal", "Price").replace("Brand Power", "Brand").replace("Category Demand", "Cat.").replace("Image Quality", "Image")}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1828,6 +1874,8 @@ export default function AdminPage() {
                           dislikes: 0,
                           collection: "main",
                           created_at: "",
+                          score: null,
+                          score_breakdown: null,
                         });
                       }
                     }}
@@ -1932,9 +1980,10 @@ export default function AdminPage() {
               This will recalculate tier for all products based on price:
             </p>
             <div className="mb-4 space-y-1 text-xs text-[#6B7280]">
-              <div>&lt; &yen;200 = budget</div>
-              <div>&yen;200 - &yen;800 = mid</div>
-              <div>&gt; &yen;800 = premium</div>
+              <div>&lt; &yen;150 = budget</div>
+              <div>&yen;150 - &yen;399 = value</div>
+              <div>&yen;400 - &yen;799 = quality</div>
+              <div>&ge; &yen;800 = premium</div>
             </div>
             <p className="mb-6 text-xs text-[#F59E0B]">
               Products without a price will be skipped.

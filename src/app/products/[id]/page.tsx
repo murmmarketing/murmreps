@@ -49,9 +49,10 @@ interface Product {
 }
 
 const tierColors: Record<string, string> = {
-  budget: "bg-verified/10 text-verified",
-  mid: "bg-accent/10 text-accent",
-  premium: "bg-danger/10 text-danger",
+  budget: "bg-[#6B7280]/15 text-[#9CA3AF]",
+  value: "bg-[#22C55E]/15 text-[#4ADE80]",
+  quality: "bg-[#F97316]/15 text-[#FB923C]",
+  premium: "bg-[#EAB308]/15 text-[#FACC15] shadow-[0_0_8px_rgba(234,179,8,0.3)]",
 };
 
 const qualityBadgeStyles: Record<string, string> = {

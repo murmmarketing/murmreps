@@ -9,9 +9,10 @@ import { useProductStats } from "@/lib/useProductStats";
 import { usePreferences } from "@/lib/usePreferences";
 
 const tierColors: Record<string, string> = {
-  budget: "bg-verified/10 text-verified",
-  mid: "bg-accent/10 text-accent",
-  premium: "bg-danger/10 text-danger",
+  budget: "bg-[#6B7280]/15 text-[#9CA3AF]",
+  value: "bg-[#22C55E]/15 text-[#4ADE80]",
+  quality: "bg-[#F97316]/15 text-[#FB923C]",
+  premium: "bg-[#EAB308]/15 text-[#FACC15] shadow-[0_0_8px_rgba(234,179,8,0.3)]",
 };
 
 export default function WishlistPage() {
@@ -94,11 +95,13 @@ export default function WishlistPage() {
                 <h3 className="font-heading text-base font-semibold text-white">
                   {product.name}
                 </h3>
-                <span
-                  className={`shrink-0 rounded-pill px-2 py-0.5 text-[10px] font-medium ${tierColors[product.tier]}`}
-                >
-                  {product.tier}
-                </span>
+                {product.tier && (
+                  <span
+                    className={`shrink-0 rounded-pill px-2 py-0.5 text-[10px] font-medium ${tierColors[product.tier] || ""}`}
+                  >
+                    {product.tier}
+                  </span>
+                )}
               </div>
 
               <span className="mt-1 inline-block rounded-pill bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">

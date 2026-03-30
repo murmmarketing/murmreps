@@ -10,9 +10,9 @@ import { useProductStats } from "@/lib/useProductStats";
 import { usePreferences } from "@/lib/usePreferences";
 import { Pagination } from "@/components/ui/pagination";
 
-type Tier = "all" | "budget" | "mid" | "premium";
+type Tier = "all" | "budget" | "value" | "quality" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
-type Sort = "random" | "popular" | "price-asc" | "price-desc";
+type Sort = "best" | "popular" | "price-asc" | "price-desc";
 const categoryPills = [
   "All Categories",
   // Footwear
@@ -40,8 +40,9 @@ type Category = (typeof categoryPills)[number];
 const tierLabels: Record<Tier, string> = {
   all: "All",
   budget: "\u{1F4B0} Budget",
-  mid: "\u{1F4B0}\u{1F4B0} Mid",
-  premium: "\u{1F4B0}\u{1F4B0}\u{1F4B0} Premium",
+  value: "\u26A1 Value",
+  quality: "\u{1F525} Quality",
+  premium: "\u{1F451} Premium",
 };
 
 const qualityLabels: Record<Quality, string> = {
@@ -58,7 +59,7 @@ const qualityBadgeStyles: Record<string, string> = {
 };
 
 const sortOptions: { value: Sort; label: string; icon: string }[] = [
-  { value: "random", label: "Random", icon: "M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" },
+  { value: "best", label: "Best", icon: "M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" },
   { value: "popular", label: "Most Popular", icon: "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   { value: "price-asc", label: "Price \u2191", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" },
   { value: "price-desc", label: "Price \u2193", icon: "M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" },
@@ -101,7 +102,7 @@ function ProductsPageInner() {
             .select("*")
             .not("image", "is", null)
             .neq("image", "")
-            .order("id")
+            .order("score", { ascending: false })
             .range(from, from + pageSize - 1);
           if (error) throw error;
           if (!data || data.length === 0) break;
@@ -146,7 +147,7 @@ function ProductsPageInner() {
   }, [urlCategory]);
   const [tier, setTier] = useState<Tier>("all");
   const [quality, setQuality] = useState<Quality>("all");
-  const [sort, setSort] = useState<Sort>("random");
+  const [sort, setSort] = useState<Sort>("best");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const PRODUCTS_PER_PAGE = 24;
@@ -184,7 +185,7 @@ function ProductsPageInner() {
   const clearFilters = () => {
     setTmpTier("all");
     setTmpQuality("all");
-    setTmpSort("random");
+    setTmpSort("best");
     setTmpMinPrice("");
     setTmpMaxPrice("");
   };
@@ -210,7 +211,7 @@ function ProductsPageInner() {
   const activeFilterCount =
     (tier !== "all" ? 1 : 0) +
     (quality !== "all" ? 1 : 0) +
-    (sort !== "random" ? 1 : 0) +
+    (sort !== "best" ? 1 : 0) +
     (minPrice ? 1 : 0) +
     (maxPrice ? 1 : 0);
 
@@ -264,15 +265,8 @@ function ProductsPageInner() {
         if (viewsB !== viewsA) return viewsB - viewsA;
         return a.id - b.id;
       });
-    } else {
-      // Default: sort by views descending (most popular first)
-      result.sort((a, b) => {
-        const viewsA = (a as { views?: number }).views ?? 0;
-        const viewsB = (b as { views?: number }).views ?? 0;
-        if (viewsB !== viewsA) return viewsB - viewsA;
-        return a.id - b.id;
-      });
     }
+    // "best" is default — already sorted by score desc from Supabase
 
     return result;
   }, [search, category, tier, quality, sort, minPrice, maxPrice, products]);

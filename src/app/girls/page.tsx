@@ -9,7 +9,7 @@ import { usePreferences } from "@/lib/usePreferences";
 import ProductRow from "@/components/ProductRow";
 // Girls products identified by collection = 'girls' in Supabase
 
-type Sort = "newest" | "popular" | "price-asc" | "price-desc";
+type Sort = "best" | "newest" | "popular" | "price-asc" | "price-desc";
 
 interface Product {
   id: number;
@@ -91,7 +91,7 @@ function GirlsInner() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [activeCat, setActiveCat] = useState("All");
-  const [sort, setSort] = useState<Sort>("newest");
+  const [sort, setSort] = useState<Sort>("best");
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ function GirlsInner() {
           .in("collection", ["girls", "both"])
           .not("image", "is", null)
           .neq("image", "")
-          .order("created_at", { ascending: false })
+          .order("score", { ascending: false })
           .range(offset, offset + 999);
         if (!data || data.length === 0) break;
         all.push(...data);
@@ -129,7 +129,8 @@ function GirlsInner() {
     if (sort === "price-asc") r.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
     else if (sort === "price-desc") r.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
     else if (sort === "popular") r.sort((a, b) => (b.views || 0) - (a.views || 0));
-    // newest is default (already sorted by created_at desc)
+    else if (sort === "newest") r.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+    // "best" is default (already sorted by score desc from fetch)
     return r;
   }, [products, search, activeCat, sort]);
 
@@ -225,36 +226,17 @@ function GirlsInner() {
       {/* ══════ CAROUSELS ══════ */}
       {!loading && products.length > 0 && (
         <div className="mx-auto max-w-7xl space-y-8 px-4 pt-6 sm:px-6">
-          {/* Trending Now — featured products first, then top by views */}
+          {/* Trending Now — top 8 by score (already sorted) */}
           {(() => {
-            const withImg = products.filter((p) => p.image && p.price_cny != null);
-            const featuredTrending = withImg
-              .filter((p) => p.featured)
-              .sort((a, b) => (b.views || 0) - (a.views || 0))
-              .slice(0, 5);
-            const featuredIds = new Set(featuredTrending.map((p) => p.id));
-            const topViews = withImg
-              .filter((p) => !featuredIds.has(p.id))
-              .sort((a, b) => (b.views || 0) - (a.views || 0))
-              .slice(0, 8 - featuredTrending.length);
-            const trending = [...featuredTrending, ...topViews];
+            const trending = products.filter((p) => p.image && p.price_cny != null).slice(0, 8);
             return trending.length > 0 ? (
-              <ProductRow title="🔥 Trending Now" products={trending} viewMoreHref="/girls" />
+              <ProductRow title={"\uD83D\uDD25 Trending Now"} products={trending} viewMoreHref="/girls" />
             ) : null;
           })()}
-          {/* For You — mix of featured and random */}
+          {/* For You — pick 8 random from top 100 by score */}
           {(() => {
-            const withImg = products.filter((p) => p.image && p.price_cny != null);
-            const featuredForYou = withImg
-              .filter((p) => p.featured)
-              .sort(() => Math.random() - 0.5)
-              .slice(0, 5);
-            const featuredIds = new Set(featuredForYou.map((p) => p.id));
-            const randomRest = withImg
-              .filter((p) => !featuredIds.has(p.id))
-              .sort(() => Math.random() - 0.5)
-              .slice(0, 8 - featuredForYou.length);
-            const forYou = [...featuredForYou, ...randomRest];
+            const top100 = products.filter((p) => p.image && p.price_cny != null).slice(0, 100);
+            const forYou = top100.sort(() => Math.random() - 0.5).slice(0, 8);
             return forYou.length > 0 ? (
               <ProductRow title="For You" products={forYou} />
             ) : null;
@@ -296,6 +278,7 @@ function GirlsInner() {
             className="min-w-[120px] rounded-lg px-3 py-2 text-[13px] outline-none"
             style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}
           >
+            <option value="best">Best</option>
             <option value="newest">Newest</option>
             <option value="popular">Most Popular</option>
             <option value="price-asc">Price ↑</option>

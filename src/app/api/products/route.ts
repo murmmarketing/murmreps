@@ -12,8 +12,8 @@ export async function GET(req: NextRequest) {
   const quality = searchParams.get("quality") || "";
   const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
-  const sort = searchParams.get("sort") || "id";
-  const order = searchParams.get("order") || "asc";
+  const sort = searchParams.get("sort") || "score";
+  const order = searchParams.get("order") || "desc";
 
   let query = supabase.from("products").select("*", { count: "exact" })
     .not("image", "is", null)

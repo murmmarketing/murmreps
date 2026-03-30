@@ -40,7 +40,7 @@ export function useAllProducts() {
           .select("*")
           .not("image", "is", null)
           .neq("image", "")
-          .order("id");
+          .order("score", { ascending: false });
 
         if (error || !data || data.length === 0) {
           throw new Error(error?.message || "No data");
@@ -106,6 +106,7 @@ export function usePopularProducts(limit = 8) {
           .not("price_cny", "is", null)
           .not("image", "is", null)
           .neq("image", "")
+          .order("score", { ascending: false })
           .limit(limit);
 
         if (error || !data || data.length === 0) throw new Error("fallback");

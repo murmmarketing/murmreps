@@ -29,7 +29,7 @@ export default function PopularFinds() {
           .not("price_cny", "is", null)
           .not("image", "eq", "")
           .not("image", "is", null)
-          .order("views", { ascending: false })
+          .order("score", { ascending: false })
           .limit(8);
 
         if (error) throw error;

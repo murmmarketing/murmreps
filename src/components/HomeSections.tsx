@@ -42,7 +42,7 @@ export default function HomeSections() {
           .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
           .not("image", "eq", "")
           .not("image", "is", null)
-          .order("views", { ascending: false })
+          .order("score", { ascending: false })
           .range(offset, offset + 999);
         if (!data || data.length === 0) break;
         all.push(...data);
@@ -71,26 +71,15 @@ export default function HomeSections() {
         .slice(0, 6)
         .map(([brand, prods]) => ({
           brand,
-          products: prods.slice(0, 8), // top 8 by views (already sorted)
+          products: prods.slice(0, 8), // top 8 by score (already sorted)
         }));
 
       setBrandRows(topBrands);
 
-      // "For You" — featured products first, then random popular
-      const withPrice = all.filter(p => p.price_cny != null);
-      const { data: featuredData } = await supabase
-        .from("products")
-        .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
-        .eq("featured", true)
-        .in("collection", ["main", "both"])
-        .not("image", "eq", "")
-        .not("image", "is", null)
-        .order("featured_rank", { ascending: true })
-        .limit(16);
-      const featured = (featuredData || []).sort(() => Math.random() - 0.5).slice(0, 5);
-      const featuredIds = new Set(featured.map(p => p.id));
-      const rest = withPrice.filter(p => !featuredIds.has(p.id)).sort(() => Math.random() - 0.5).slice(0, 3);
-      setForYouProducts([...featured, ...rest]);
+      // "For You" — pick 8 random from top 200 by score
+      const top200 = all.filter(p => p.price_cny != null).slice(0, 200);
+      const shuffled = top200.sort(() => Math.random() - 0.5).slice(0, 8);
+      setForYouProducts(shuffled);
 
       // "For Her" — girls products
       const girls = all.filter((p) => {
