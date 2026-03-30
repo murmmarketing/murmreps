@@ -421,7 +421,7 @@ function GirlsInner() {
       </div>
 
       {/* ══════ BROWSE BY CATEGORY + PRODUCT GRID ══════ */}
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+      <div id="product-grid" className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
         {/* Category icon grid */}
         <div className="relative py-8">
           {showLeftFade && (
@@ -585,7 +585,7 @@ function GirlsInner() {
           <div className="mt-10 flex justify-center">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); { const el = document.getElementById("product-grid"); if (el) { const top = el.getBoundingClientRect().top + window.scrollY - 20; window.scrollTo({ top, behavior: "smooth" }); } } }}
                 disabled={currentPage === 1}
                 className="rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-30"
                 style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}
@@ -601,7 +601,7 @@ function GirlsInner() {
                 return (
                   <button
                     key={page}
-                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    onClick={() => { setCurrentPage(page); { const el = document.getElementById("product-grid"); if (el) { const top = el.getBoundingClientRect().top + window.scrollY - 20; window.scrollTo({ top, behavior: "smooth" }); } } }}
                     className="min-w-[36px] rounded-lg px-3 py-2 text-sm font-medium transition-colors"
                     style={{
                       background: currentPage === page ? P.primary : P.card,
@@ -613,7 +613,7 @@ function GirlsInner() {
                 );
               })}
               <button
-                onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); { const el = document.getElementById("product-grid"); if (el) { const top = el.getBoundingClientRect().top + window.scrollY - 20; window.scrollTo({ top, behavior: "smooth" }); } } }}
                 disabled={currentPage === totalPages}
                 className="rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-30"
                 style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}

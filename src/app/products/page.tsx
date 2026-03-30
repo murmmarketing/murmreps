@@ -301,8 +301,16 @@ function ProductsPageInner() {
   const pillActive = "bg-accent text-white";
   const pillInactive = "bg-[#1a1a1a] text-text-secondary border border-[rgba(255,255,255,0.1)] hover:border-accent/40";
 
+  const scrollToGrid = () => {
+    const el = document.getElementById("product-grid");
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 20;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div id="product-grid" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       {/* Mobile search + Filters */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
@@ -605,7 +613,7 @@ function ProductsPageInner() {
           currentPage={currentPage}
           onPageChange={(page) => {
             setCurrentPage(page);
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            scrollToGrid();
           }}
         />
       </div>
