@@ -93,24 +93,26 @@ function GirlsInner() {
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [forYouProducts, setForYouProducts] = useState<Product[]>([]);
 
-  // Category slider refs
+  // Category slider
   const catScrollRef = useRef<HTMLDivElement>(null);
-  const catButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const setCatButtonRef = useCallback((val: string, el: HTMLButtonElement | null) => {
-    if (el) catButtonRefs.current.set(val, el);
-    else catButtonRefs.current.delete(val);
+  const catButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(true);
+
+  const handleCatScroll = useCallback(() => {
+    const el = catScrollRef.current;
+    if (!el) return;
+    setShowLeftFade(el.scrollLeft > 10);
+    setShowRightFade(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
   }, []);
 
-  // Auto-center selected category
   useEffect(() => {
-    const container = catScrollRef.current;
-    const btn = catButtonRefs.current.get(activeCat);
-    if (!container || !btn) return;
-    const containerRect = container.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    const scrollLeft = container.scrollLeft + (btnRect.left - containerRect.left) - (containerRect.width / 2) + (btnRect.width / 2);
-    container.scrollTo({ left: scrollLeft, behavior: "smooth" });
-  }, [activeCat]);
+    const el = catScrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleCatScroll, { passive: true });
+    handleCatScroll();
+    return () => el.removeEventListener("scroll", handleCatScroll);
+  }, [handleCatScroll]);
 
   // Debounce search
   useEffect(() => {
@@ -293,16 +295,31 @@ function GirlsInner() {
       <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
         {/* ══════ CATEGORY GRID — scrollable with auto-centering ══════ */}
         <div className="relative py-6">
+          {showLeftFade && (
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-r from-[#0C0A0E] to-transparent" />
+          )}
+          {showRightFade && (
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-l from-[#0C0A0E] to-transparent" />
+          )}
           <div
             ref={catScrollRef}
-            className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-[calc(50vw-4rem)] sm:mx-0 sm:gap-4 sm:px-[calc(50vw-4rem)]"
+            className="scrollbar-hide flex gap-3 overflow-x-auto px-4 py-2 sm:gap-4"
           >
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
-                ref={(el) => setCatButtonRef(cat.value, el)}
-                onClick={() => setActiveCat(cat.value)}
-                className="flex flex-shrink-0 snap-center flex-col items-center gap-2 rounded-2xl p-3 transition-all duration-200 sm:p-4"
+                ref={(el) => { catButtonRefs.current[cat.value] = el; }}
+                onClick={() => {
+                  setActiveCat(cat.value);
+                  setTimeout(() => {
+                    catButtonRefs.current[cat.value]?.scrollIntoView({
+                      behavior: "smooth",
+                      inline: "center",
+                      block: "nearest",
+                    });
+                  }, 50);
+                }}
+                className="flex flex-shrink-0 flex-col items-center gap-2 rounded-2xl p-3 transition-all duration-200 sm:p-4"
                 style={{
                   width: 96,
                   minWidth: 96,
@@ -317,9 +334,6 @@ function GirlsInner() {
               </button>
             ))}
           </div>
-          {/* Fade gradients */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0C0A0E] to-transparent sm:hidden" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0C0A0E] to-transparent sm:hidden" />
         </div>
 
         {/* ══════ SORT BAR ══════ */}
