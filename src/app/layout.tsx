@@ -71,6 +71,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="dns-prefetch" href="//pxdkqylraptallrkiaab.supabase.co" />
+        <link rel="preconnect" href="https://pxdkqylraptallrkiaab.supabase.co" />
+      </head>
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} font-body bg-void text-text-primary antialiased`}
       >

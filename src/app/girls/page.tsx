@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -74,11 +74,6 @@ const CAT_MAP: Record<string, string[]> = {
   accessories: ["Keychains", "Hats & Caps", "Scarves & Gloves", "Glasses", "Socks & Underwear", "Belts", "Ties", "Masks", "Accessories"],
 };
 
-function matchCategory(product: Product, filter: string): boolean {
-  if (filter === "All") return true;
-  if (CAT_MAP[filter]) return CAT_MAP[filter].includes(product.category);
-  return product.category === filter;
-}
 
 const PER_PAGE = 24;
 
@@ -90,54 +85,97 @@ function GirlsInner() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("q") || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [activeCat, setActiveCat] = useState("All");
   const [sort, setSort] = useState<Sort>("best");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [forYouProducts, setForYouProducts] = useState<Product[]>([]);
 
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Fetch carousel data once
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      // Fetch girls products using collection column
-      const all: Product[] = [];
-      let offset = 0;
-      while (true) {
-        const { data } = await supabase
+      const [trendingRes, forYouRes] = await Promise.all([
+        supabase
           .from("products")
           .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,views,likes,dislikes,featured,featured_rank,created_at")
           .in("collection", ["girls", "both"])
           .not("image", "is", null)
           .neq("image", "")
+          .not("price_cny", "is", null)
           .order("score", { ascending: false })
-          .range(offset, offset + 999);
-        if (!data || data.length === 0) break;
-        all.push(...data);
-        if (data.length < 1000) break;
-        offset += 1000;
-      }
-      setProducts(all);
-      setLoading(false);
+          .limit(8),
+        supabase
+          .from("products")
+          .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,views,likes,dislikes,featured,featured_rank,created_at")
+          .in("collection", ["girls", "both"])
+          .not("image", "is", null)
+          .neq("image", "")
+          .not("price_cny", "is", null)
+          .order("views", { ascending: false })
+          .limit(8),
+      ]);
+      setTrendingProducts((trendingRes.data as Product[]) || []);
+      setForYouProducts((forYouRes.data as Product[]) || []);
     })();
   }, []);
 
-  const filtered = useMemo(() => {
-    let r = [...products];
-    if (search) {
-      const q = search.toLowerCase();
-      r = r.filter((p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
-    }
-    r = r.filter((p) => matchCategory(p, activeCat));
-    if (sort === "price-asc") r.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
-    else if (sort === "price-desc") r.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
-    else if (sort === "popular") r.sort((a, b) => (b.views || 0) - (a.views || 0));
-    else if (sort === "newest") r.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
-    // "best" is default (already sorted by score desc from fetch)
-    return r;
-  }, [products, search, activeCat, sort]);
+  // Fetch paginated grid data with server-side filters
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
 
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const paginated = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+      let query = supabase
+        .from("products")
+        .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,views,likes,dislikes,featured,featured_rank,created_at", { count: "exact" })
+        .in("collection", ["girls", "both"])
+        .not("image", "is", null)
+        .neq("image", "");
 
-  useEffect(() => setCurrentPage(1), [search, activeCat, sort]);
+      // Apply search
+      if (debouncedSearch) {
+        query = query.or(`name.ilike.%${debouncedSearch}%,brand.ilike.%${debouncedSearch}%`);
+      }
+
+      // Apply category
+      if (activeCat !== "All") {
+        const cats = CAT_MAP[activeCat];
+        if (cats) {
+          query = query.in("category", cats);
+        } else {
+          query = query.eq("category", activeCat);
+        }
+      }
+
+      // Apply sort
+      if (sort === "price-asc") query = query.order("price_cny", { ascending: true, nullsFirst: false });
+      else if (sort === "price-desc") query = query.order("price_cny", { ascending: false, nullsFirst: false });
+      else if (sort === "popular") query = query.order("views", { ascending: false });
+      else if (sort === "newest") query = query.order("created_at", { ascending: false });
+      else query = query.order("score", { ascending: false });
+
+      // Paginate
+      const from = (currentPage - 1) * PER_PAGE;
+      query = query.range(from, from + PER_PAGE - 1);
+
+      const { data, count } = await query;
+      setProducts((data as Product[]) || []);
+      setTotalCount(count ?? 0);
+      setLoading(false);
+    })();
+  }, [debouncedSearch, activeCat, sort, currentPage]);
+
+  const totalPages = Math.ceil(totalCount / PER_PAGE);
+  const paginated = products; // already paginated from Supabase
+
+  useEffect(() => setCurrentPage(1), [debouncedSearch, activeCat, sort]);
 
   return (
     <div style={{ background: P.bg }} className="min-h-screen">
@@ -191,7 +229,7 @@ function GirlsInner() {
 
           {/* Stats */}
           <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px]" style={{ color: P.textMuted }}>
-            <span><strong style={{ color: P.text }}>{products.length.toLocaleString()}+</strong> Finds</span>
+            <span><strong style={{ color: P.text }}>{totalCount.toLocaleString()}+</strong> Finds</span>
             <span style={{ color: P.border }}>|</span>
             <span><strong style={{ color: P.text }}>45+</strong> Categories</span>
             <span style={{ color: P.border }}>|</span>
@@ -224,23 +262,12 @@ function GirlsInner() {
       </section>
 
       {/* ══════ CAROUSELS ══════ */}
-      {!loading && products.length > 0 && (
+      {trendingProducts.length > 0 && (
         <div className="mx-auto max-w-7xl space-y-8 px-4 pt-6 sm:px-6">
-          {/* Trending Now — top 8 by score (already sorted) */}
-          {(() => {
-            const trending = products.filter((p) => p.image && p.price_cny != null).slice(0, 8);
-            return trending.length > 0 ? (
-              <ProductRow title={"\uD83D\uDD25 Trending Now"} products={trending} viewMoreHref="/girls" />
-            ) : null;
-          })()}
-          {/* For You — pick 8 random from top 100 by score */}
-          {(() => {
-            const top100 = products.filter((p) => p.image && p.price_cny != null).slice(0, 100);
-            const forYou = top100.sort(() => Math.random() - 0.5).slice(0, 8);
-            return forYou.length > 0 ? (
-              <ProductRow title="For You" products={forYou} />
-            ) : null;
-          })()}
+          <ProductRow title="Trending Now" products={trendingProducts} viewMoreHref="/girls" />
+          {forYouProducts.length > 0 && (
+            <ProductRow title="For You" products={forYouProducts} />
+          )}
         </div>
       )}
 
@@ -270,7 +297,7 @@ function GirlsInner() {
         {/* ══════ SORT BAR ══════ */}
         <div className="mb-5 flex items-center justify-between">
           <p className="text-[13px]" style={{ color: P.textMuted }}>
-            Showing {paginated.length} of {filtered.length} finds
+            Showing {paginated.length} of {totalCount} finds
           </p>
           <select
             value={sort}

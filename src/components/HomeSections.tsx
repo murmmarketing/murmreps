@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import ProductRow from "./ProductRow";
-import { girlsItemIds } from "@/data/girls-ids";
+
+const CARD_COLUMNS = "id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category";
 
 interface RowProduct {
   id: number;
@@ -16,7 +17,6 @@ interface RowProduct {
   views: number;
   likes: number;
   category: string;
-  source_link?: string;
 }
 
 interface BrandRow {
@@ -24,87 +24,103 @@ interface BrandRow {
   products: RowProduct[];
 }
 
+// Top brands to feature — avoids needing to fetch all products to compute them
+const TOP_BRANDS = ["Nike", "Louis Vuitton", "Gucci", "Balenciaga", "Dior", "Prada"];
+
 export default function HomeSections() {
   const [brandRows, setBrandRows] = useState<BrandRow[]>([]);
   const [recentProducts, setRecentProducts] = useState<RowProduct[]>([]);
   const [forYouProducts, setForYouProducts] = useState<RowProduct[]>([]);
   const [girlsProducts, setGirlsProducts] = useState<RowProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [brandsVisible, setBrandsVisible] = useState(false);
+  const brandsRef = useRef<HTMLDivElement>(null);
 
+  // Fetch above-fold data: "For You" and "Recently Added" only
   useEffect(() => {
-    async function fetchData() {
-      // Fetch all products (paginate past Supabase 1000-row limit)
-      const all: RowProduct[] = [];
-      let offset = 0;
-      while (true) {
-        const { data } = await supabase
+    async function fetchInitial() {
+      const [forYouRes, recentRes, girlsRes] = await Promise.all([
+        // "For You" — top 8 by score
+        supabase
           .from("products")
-          .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,source_link")
+          .select(CARD_COLUMNS)
+          .not("image", "eq", "")
+          .not("image", "is", null)
+          .not("price_cny", "is", null)
+          .order("score", { ascending: false })
+          .limit(8),
+        // "Recently Added" — 8 newest
+        supabase
+          .from("products")
+          .select(CARD_COLUMNS)
+          .not("image", "eq", "")
+          .not("image", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(8),
+        // "For Her" — 8 from girls/both collection
+        supabase
+          .from("products")
+          .select(CARD_COLUMNS)
+          .in("collection", ["girls", "both"])
           .not("image", "eq", "")
           .not("image", "is", null)
           .order("score", { ascending: false })
-          .range(offset, offset + 999);
-        if (!data || data.length === 0) break;
-        all.push(...data);
-        if (data.length < 1000) break;
-        offset += 1000;
-      }
+          .limit(8),
+      ]);
 
-      if (all.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      // Group by brand, count products per brand
-      const brandMap = new Map<string, RowProduct[]>();
-      for (const p of all) {
-        const brand = p.brand || "Various";
-        if (brand === "Various" || brand === "Unbranded") continue;
-        if (!brandMap.has(brand)) brandMap.set(brand, []);
-        brandMap.get(brand)!.push(p);
-      }
-
-      // Top 6 brands with 10+ products, sorted by product count
-      const topBrands = Array.from(brandMap.entries())
-        .filter(([, prods]) => prods.length >= 10)
-        .sort((a, b) => b[1].length - a[1].length)
-        .slice(0, 6)
-        .map(([brand, prods]) => ({
-          brand,
-          products: prods.slice(0, 8), // top 8 by score (already sorted)
-        }));
-
-      setBrandRows(topBrands);
-
-      // "For You" — pick 8 random from top 200 by score
-      const top200 = all.filter(p => p.price_cny != null).slice(0, 200);
-      const shuffled = top200.sort(() => Math.random() - 0.5).slice(0, 8);
-      setForYouProducts(shuffled);
-
-      // "For Her" — girls products
-      const girls = all.filter((p) => {
-        if (!p.image) return false;
-        const src = p.source_link || "";
-        const m = src.match(/itemID=(\d+)/i) || src.match(/[?&]id=(\d+)/);
-        return m && girlsItemIds.has(m[1]);
-      });
-      setGirlsProducts(girls.slice(0, 8));
-
-      // "Recently Added"
-      const { data: recent } = await supabase
-        .from("products")
-        .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category")
-        .not("image", "eq", "")
-        .not("image", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(8);
-
-      setRecentProducts(recent || []);
+      setForYouProducts((forYouRes.data as RowProduct[]) || []);
+      setRecentProducts((recentRes.data as RowProduct[]) || []);
+      setGirlsProducts((girlsRes.data as RowProduct[]) || []);
       setLoading(false);
     }
 
-    fetchData();
+    fetchInitial();
   }, []);
+
+  // Lazy-load brand rows when they scroll into view
+  useEffect(() => {
+    if (!brandsRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setBrandsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(brandsRef.current);
+    return () => observer.disconnect();
+  }, [loading]);
+
+  useEffect(() => {
+    if (!brandsVisible) return;
+
+    async function fetchBrands() {
+      const results = await Promise.all(
+        TOP_BRANDS.map((brand) =>
+          supabase
+            .from("products")
+            .select(CARD_COLUMNS)
+            .eq("brand", brand)
+            .not("image", "eq", "")
+            .not("image", "is", null)
+            .order("score", { ascending: false })
+            .limit(8)
+        )
+      );
+
+      const rows: BrandRow[] = [];
+      results.forEach((res, i) => {
+        if (res.data && res.data.length >= 4) {
+          rows.push({ brand: TOP_BRANDS[i], products: res.data as RowProduct[] });
+        }
+      });
+      setBrandRows(rows);
+    }
+
+    fetchBrands();
+  }, [brandsVisible]);
 
   if (loading) return <div className="py-16 text-center text-gray-500">Loading...</div>;
 
@@ -118,18 +134,20 @@ export default function HomeSections() {
 
       {/* For Her */}
       {girlsProducts.length > 0 && (
-        <ProductRow title="For Her ✨" products={girlsProducts} viewMoreHref="/girls" />
+        <ProductRow title="For Her" products={girlsProducts} viewMoreHref="/girls" />
       )}
 
-      {/* Brand rows */}
-      {brandRows.map(({ brand, products }) => (
-        <ProductRow
-          key={brand}
-          title={brand}
-          products={products}
-          viewMoreHref={`/products?q=${encodeURIComponent(brand)}`}
-        />
-      ))}
+      {/* Brand rows — lazy loaded */}
+      <div ref={brandsRef}>
+        {brandRows.map(({ brand, products }) => (
+          <ProductRow
+            key={brand}
+            title={brand}
+            products={products}
+            viewMoreHref={`/products?q=${encodeURIComponent(brand)}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

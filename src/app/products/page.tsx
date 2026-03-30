@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import staticProducts from "@/data/products.json";
@@ -87,51 +87,25 @@ export default function ProductsPage() {
 function ProductsPageInner() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState(staticProducts);
-  const [, setLoading] = useState(true);
-
-  // Fetch products from Supabase on mount, fall back to static JSON
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        let all: typeof staticProducts = [];
-        let from = 0;
-        const pageSize = 1000;
-        while (true) {
-          const { data, error } = await supabase
-            .from("products")
-            .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,score,category,collection,tier,quality,source_link,featured")
-            .not("image", "is", null)
-            .neq("image", "")
-            .order("score", { ascending: false })
-            .range(from, from + pageSize - 1);
-          if (error) throw error;
-          if (!data || data.length === 0) break;
-          all = all.concat(data as unknown as typeof staticProducts);
-          if (data.length < pageSize) break;
-          from += pageSize;
-        }
-        if (all.length > 0) {
-          console.log(`Fetched ${all.length} products from Supabase`);
-          setProducts(all);
-        } else {
-          console.log("Falling back to static JSON");
-        }
-      } catch (err) {
-        console.log("Supabase fetch failed, using static JSON:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Initialize search from URL ?q= parameter and sync when it changes
   const urlQuery = searchParams.get("q") || "";
   const [search, setSearch] = useState(urlQuery);
+  const [debouncedSearch, setDebouncedSearch] = useState(urlQuery);
+  const searchTimerRef = useRef<NodeJS.Timeout>();
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [search]);
 
   // Sync search state when URL ?q= param changes (e.g. navbar navigation)
   useEffect(() => {
     setSearch(urlQuery);
+    setDebouncedSearch(urlQuery);
   }, [urlQuery]);
 
   // Initialize category from URL ?category= parameter
@@ -153,6 +127,80 @@ function ProductsPageInner() {
   const PRODUCTS_PER_PAGE = 24;
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  // Fetch products from Supabase with server-side pagination
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      try {
+        let query = supabase
+          .from("products")
+          .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,score,category,collection,tier,quality,source_link,featured", { count: "exact" })
+          .not("image", "is", null)
+          .neq("image", "");
+
+        // Apply search filter server-side
+        if (debouncedSearch) {
+          query = query.or(`name.ilike.%${debouncedSearch}%,brand.ilike.%${debouncedSearch}%`);
+        }
+
+        // Apply category filter server-side
+        if (category !== "All Categories") {
+          query = query.eq("category", category);
+        }
+
+        // Apply tier filter
+        if (tier !== "all") {
+          query = query.eq("tier", tier);
+        }
+
+        // Apply quality filter
+        if (quality !== "all") {
+          query = query.eq("quality", quality);
+        }
+
+        // Apply price filters
+        if (minPrice) {
+          const min = parseFloat(minPrice);
+          if (!isNaN(min)) query = query.gte("price_cny", min);
+        }
+        if (maxPrice) {
+          const max = parseFloat(maxPrice);
+          if (!isNaN(max)) query = query.lte("price_cny", max);
+        }
+
+        // Apply sort
+        if (sort === "price-asc") {
+          query = query.order("price_cny", { ascending: true, nullsFirst: false });
+        } else if (sort === "price-desc") {
+          query = query.order("price_cny", { ascending: false, nullsFirst: false });
+        } else if (sort === "popular") {
+          query = query.order("views", { ascending: false });
+        } else {
+          query = query.order("score", { ascending: false });
+        }
+
+        // Paginate
+        const from = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        query = query.range(from, from + PRODUCTS_PER_PAGE - 1);
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+        if (data && data.length > 0) {
+          setProducts(data as unknown as typeof staticProducts);
+          setTotalCount(count ?? 0);
+        } else {
+          setProducts([]);
+          setTotalCount(count ?? 0);
+        }
+      } catch (err) {
+        console.log("Supabase fetch failed, using static JSON:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, [debouncedSearch, category, tier, quality, sort, minPrice, maxPrice, currentPage]);
 
   const [tmpTier, setTmpTier] = useState<Tier>(tier);
   const [tmpQuality, setTmpQuality] = useState<Quality>(quality);
@@ -218,82 +266,16 @@ function ProductsPageInner() {
   // Pre-compute trending IDs for badge display
   const trendingIds = useMemo(() => computeTrendingIds(products), [products]);
 
-  const filtered = useMemo(() => {
+  // Products are now fetched server-side with filters/pagination applied
+  const paginated = products;
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
     setCurrentPage(1);
-    let result = [...products];
+  }, [debouncedSearch, category, tier, quality, sort, minPrice, maxPrice]);
 
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q)
-      );
-    }
-
-    if (category !== "All Categories") {
-      result = result.filter((p) => p.category === category);
-    }
-
-    if (tier !== "all") {
-      result = result.filter((p) => p.tier === tier);
-    }
-
-    if (quality !== "all") {
-      result = result.filter((p) => p.quality === quality);
-    }
-
-    if (minPrice) {
-      const min = parseFloat(minPrice);
-      if (!isNaN(min)) result = result.filter((p) => (p.price_cny ?? 0) >= min);
-    }
-
-    if (maxPrice) {
-      const max = parseFloat(maxPrice);
-      if (!isNaN(max)) result = result.filter((p) => p.price_cny != null && p.price_cny <= max);
-    }
-
-    // Apply sort
-    if (sort === "price-asc") {
-      result.sort((a, b) => (a.price_cny ?? 9999999) - (b.price_cny ?? 9999999));
-    } else if (sort === "price-desc") {
-      result.sort((a, b) => (b.price_cny ?? 0) - (a.price_cny ?? 0));
-    } else if (sort === "popular") {
-      result.sort((a, b) => {
-        const viewsA = (a as { views?: number }).views ?? 0;
-        const viewsB = (b as { views?: number }).views ?? 0;
-        if (viewsB !== viewsA) return viewsB - viewsA;
-        return a.id - b.id;
-      });
-    }
-    // "best" is default — already sorted by score desc from Supabase
-
-    return result;
-  }, [search, category, tier, quality, sort, minPrice, maxPrice, products]);
-
-  const tmpFilteredCount = useMemo(() => {
-    let result = [...products];
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
-      );
-    }
-    if (category !== "All Categories") result = result.filter((p) => p.category === category);
-    if (tmpTier !== "all") result = result.filter((p) => p.tier === tmpTier);
-    if (tmpQuality !== "all") result = result.filter((p) => p.quality === tmpQuality);
-    if (tmpMinPrice) {
-      const min = parseFloat(tmpMinPrice);
-      if (!isNaN(min)) result = result.filter((p) => (p.price_cny ?? 0) >= min);
-    }
-    if (tmpMaxPrice) {
-      const max = parseFloat(tmpMaxPrice);
-      if (!isNaN(max)) result = result.filter((p) => p.price_cny != null && p.price_cny <= max);
-    }
-    return result.length;
-  }, [search, category, tmpTier, tmpQuality, tmpMinPrice, tmpMaxPrice, products]);
-
-  const paginated = filtered.slice((currentPage - 1) * PRODUCTS_PER_PAGE, currentPage * PRODUCTS_PER_PAGE);
+  // Approximate count for filter modal preview
+  const tmpFilteredCount = totalCount;
 
   const pillActive = "bg-accent text-white";
   const pillInactive = "bg-[#1a1a1a] text-text-secondary border border-[rgba(255,255,255,0.1)] hover:border-accent/40";
@@ -376,10 +358,10 @@ function ProductsPageInner() {
       {/* Result count */}
       <div className="mt-5 flex items-center justify-between">
         <p className="text-sm text-text-muted">
-          {filtered.length} products
+          {totalCount} products
         </p>
         <p className="text-sm text-text-muted">
-          Showing {paginated.length} of {filtered.length}
+          Showing {paginated.length} of {totalCount}
         </p>
       </div>
 
@@ -580,7 +562,7 @@ function ProductsPageInner() {
       {/* Pagination */}
       <div className="mt-10">
         <Pagination
-          totalItems={filtered.length}
+          totalItems={totalCount}
           itemsPerPage={PRODUCTS_PER_PAGE}
           currentPage={currentPage}
           onPageChange={(page) => {
@@ -590,7 +572,7 @@ function ProductsPageInner() {
         />
       </div>
 
-      {filtered.length === 0 && (
+      {totalCount === 0 && !loading && (
         <div className="mt-16 text-center">
           <p className="text-text-secondary">No products found. Try adjusting your filters.</p>
         </div>

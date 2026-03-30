@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import PopularFinds from "@/components/PopularFinds";
-import HomeSections from "@/components/HomeSections";
 import HeroSection from "@/components/HeroSection";
+
+const HomeSections = dynamic(() => import("@/components/HomeSections"), {
+  ssr: false,
+  loading: () => <div className="py-16 text-center text-gray-500">Loading...</div>,
+});
 
 export const metadata: Metadata = {
   title: "MurmReps \u2014 Find the Best Rep Finds | 19,000+ Products",
