@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react";
 const phrases = [
   "Cop smarter. Buy verified.",
   "The rep community's most trusted source.",
-  "8,000+ finds. 8 agents. Zero cap.",
+  "19,000+ finds. 8 agents. Zero cap.",
   "See QC photos before you buy.",
 ];
 

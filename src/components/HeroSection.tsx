@@ -67,7 +67,7 @@ export default function HeroSection() {
         {/* Stats */}
         <div className="mx-auto mt-8 flex max-w-lg items-center justify-center divide-x divide-subtle sm:mt-16">
           <div className="px-6 text-center sm:px-10">
-            <p className="font-heading text-2xl font-bold text-white">8,000+</p>
+            <p className="font-heading text-2xl font-bold text-white">19,000+</p>
             <p className="mt-1 text-sm text-text-secondary">Products</p>
           </div>
           <div className="px-6 text-center sm:px-10">

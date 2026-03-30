@@ -192,7 +192,7 @@ function GirlsInner() {
           <div className="mx-auto mt-6 flex items-center justify-center gap-6 text-[13px]" style={{ color: P.textMuted }}>
             <span><strong style={{ color: P.text }}>{products.length.toLocaleString()}+</strong> Finds</span>
             <span style={{ color: P.border }}>|</span>
-            <span><strong style={{ color: P.text }}>10</strong> Categories</span>
+            <span><strong style={{ color: P.text }}>45+</strong> Categories</span>
             <span style={{ color: P.border }}>|</span>
             <span>New drops weekly</span>
           </div>
