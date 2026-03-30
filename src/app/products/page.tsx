@@ -30,7 +30,7 @@ const categoryPills = [
   // Jewelry
   "Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Jewelry",
   // Style
-  "Old Money",
+  "Old Money", "Unique",
   // Other
   "Perfumes", "Electronics", "Home & Decor", "Accessories",
 ] as const;
