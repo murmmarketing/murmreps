@@ -134,7 +134,7 @@ export default function Navbar() {
   }, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] bg-[#0a1628]">
+    <nav className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] bg-[#0a0a0a]">
       {/* ─── Desktop ─── */}
       <div className="mx-auto hidden h-14 max-w-7xl items-center gap-5 px-4 lg:flex xl:px-6">
         {/* Logo */}
@@ -418,7 +418,7 @@ export default function Navbar() {
           className="fixed inset-0 top-12 z-40 lg:hidden"
           onClick={closeMenu}
         />
-        <div className="fixed inset-0 top-12 z-50 bg-[#0a1628] lg:hidden">
+        <div className="fixed inset-0 top-12 z-50 bg-[#0a0a0a] lg:hidden">
           <div className="flex h-full flex-col overflow-y-auto px-4 pb-8 pt-4">
             <div className="mb-4 flex items-center justify-between">
               <button
