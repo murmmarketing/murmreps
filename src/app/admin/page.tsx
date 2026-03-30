@@ -280,6 +280,12 @@ export default function AdminDashboard() {
             description="Recalculate product tiers and scoring"
           />
           <ToolCard
+            href="/admin/outfits"
+            icon="👕"
+            title="Outfit Generator"
+            description="AI flat-lay photos for TikTok & Instagram"
+          />
+          <ToolCard
             href="/admin/marketing"
             icon="📱"
             title="Marketing"
