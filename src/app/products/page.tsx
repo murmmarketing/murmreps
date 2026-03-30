@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, Suspense } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import staticProducts from "@/data/products.json";
@@ -277,6 +277,25 @@ function ProductsPageInner() {
   // Approximate count for filter modal preview
   const tmpFilteredCount = totalCount;
 
+  // Category slider refs
+  const catScrollRef = useRef<HTMLDivElement>(null);
+  const catButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const setCatButtonRef = useCallback((c: string, el: HTMLButtonElement | null) => {
+    if (el) catButtonRefs.current.set(c, el);
+    else catButtonRefs.current.delete(c);
+  }, []);
+
+  // Auto-center selected category pill
+  useEffect(() => {
+    const container = catScrollRef.current;
+    const btn = catButtonRefs.current.get(category);
+    if (!container || !btn) return;
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const scrollLeft = container.scrollLeft + (btnRect.left - containerRect.left) - (containerRect.width / 2) + (btnRect.width / 2);
+    container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+  }, [category]);
+
   const pillActive = "bg-accent text-white";
   const pillInactive = "bg-[#1a1a1a] text-text-secondary border border-[rgba(255,255,255,0.1)] hover:border-accent/40";
 
@@ -318,14 +337,18 @@ function ProductsPageInner() {
         </button>
       </div>
 
-      {/* Category pills */}
+      {/* Category pills — horizontally scrollable with auto-centering */}
       <div className="relative mt-3">
-        <div className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
+        <div
+          ref={catScrollRef}
+          className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-[calc(50vw-4rem)] sm:-mx-6 sm:px-[calc(50vw-4rem)]"
+        >
           {categoryPills.map((c) => (
             <button
               key={c}
+              ref={(el) => setCatButtonRef(c, el)}
               onClick={() => setCategory(c)}
-              className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
+              className={`shrink-0 snap-center rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
                 category === c
                   ? "bg-accent text-white"
                   : "bg-[#141414] text-text-secondary hover:text-white"
@@ -335,7 +358,9 @@ function ProductsPageInner() {
             </button>
           ))}
         </div>
-        {/* Gradient fade on right edge for mobile */}
+        {/* Fade gradient on left edge */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0a0a0a] to-transparent lg:hidden" />
+        {/* Fade gradient on right edge */}
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0a0a] to-transparent lg:hidden" />
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -92,6 +92,25 @@ function GirlsInner() {
   const [totalCount, setTotalCount] = useState(0);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [forYouProducts, setForYouProducts] = useState<Product[]>([]);
+
+  // Category slider refs
+  const catScrollRef = useRef<HTMLDivElement>(null);
+  const catButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const setCatButtonRef = useCallback((val: string, el: HTMLButtonElement | null) => {
+    if (el) catButtonRefs.current.set(val, el);
+    else catButtonRefs.current.delete(val);
+  }, []);
+
+  // Auto-center selected category
+  useEffect(() => {
+    const container = catScrollRef.current;
+    const btn = catButtonRefs.current.get(activeCat);
+    if (!container || !btn) return;
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const scrollLeft = container.scrollLeft + (btnRect.left - containerRect.left) - (containerRect.width / 2) + (btnRect.width / 2);
+    container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+  }, [activeCat]);
 
   // Debounce search
   useEffect(() => {
@@ -272,26 +291,35 @@ function GirlsInner() {
       )}
 
       <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        {/* ══════ CATEGORY GRID ══════ */}
-        <div className="hide-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 py-6 sm:mx-0 sm:justify-center sm:gap-4 sm:px-0">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.value}
-              onClick={() => setActiveCat(cat.value)}
-              className="flex flex-shrink-0 flex-col items-center gap-2 rounded-2xl p-3 transition-all duration-200 sm:p-4"
-              style={{
-                width: 96,
-                minWidth: 96,
-                background: activeCat === cat.value ? `${P.primary}15` : P.card,
-                border: `1px solid ${activeCat === cat.value ? P.primary : P.border}`,
-              }}
-            >
-              <span className="text-2xl">{cat.emoji}</span>
-              <span className="text-[12px] font-medium" style={{ color: activeCat === cat.value ? P.primary : P.textSec }}>
-                {cat.label}
-              </span>
-            </button>
-          ))}
+        {/* ══════ CATEGORY GRID — scrollable with auto-centering ══════ */}
+        <div className="relative py-6">
+          <div
+            ref={catScrollRef}
+            className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-[calc(50vw-4rem)] sm:mx-0 sm:gap-4 sm:px-[calc(50vw-4rem)]"
+          >
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                ref={(el) => setCatButtonRef(cat.value, el)}
+                onClick={() => setActiveCat(cat.value)}
+                className="flex flex-shrink-0 snap-center flex-col items-center gap-2 rounded-2xl p-3 transition-all duration-200 sm:p-4"
+                style={{
+                  width: 96,
+                  minWidth: 96,
+                  background: activeCat === cat.value ? `${P.primary}15` : P.card,
+                  border: `1px solid ${activeCat === cat.value ? P.primary : P.border}`,
+                }}
+              >
+                <span className="text-2xl">{cat.emoji}</span>
+                <span className="text-[12px] font-medium" style={{ color: activeCat === cat.value ? P.primary : P.textSec }}>
+                  {cat.label}
+                </span>
+              </button>
+            ))}
+          </div>
+          {/* Fade gradients */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0C0A0E] to-transparent sm:hidden" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0C0A0E] to-transparent sm:hidden" />
         </div>
 
         {/* ══════ SORT BAR ══════ */}
