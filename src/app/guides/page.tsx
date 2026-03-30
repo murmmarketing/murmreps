@@ -25,6 +25,22 @@ const guides = [
     live: true,
   },
   {
+    title: "Best Budget Finds Under ¥200",
+    description: "Cheap reps that look expensive — every category covered",
+    time: "6 min read",
+    href: "/guides/budget-finds",
+    emoji: "💰",
+    live: true,
+  },
+  {
+    title: "Girls Collection: Complete Guide",
+    description: "2,500+ women's finds explained — bags, shoes, jewelry & more",
+    time: "5 min read",
+    href: "/guides/girls-collection",
+    emoji: "👜",
+    live: true,
+  },
+  {
     title: "How to Read QC Photos",
     description: "Spot flaws before you ship — what to look for in every QC set",
     time: "4 min read",

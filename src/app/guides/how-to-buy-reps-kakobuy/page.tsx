@@ -441,7 +441,7 @@ export default function KakoBuyGuidePage() {
 
       {/* Related Guides */}
       <div className="border-t border-[rgba(255,255,255,0.08)] pt-8">
-        <h3 className="mb-4 text-lg font-bold text-white">More guides</h3>
+        <h3 className="mb-4 text-lg font-bold text-white">See also</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Link
             href="/guides/agent-comparison"
@@ -452,6 +452,28 @@ export default function KakoBuyGuidePage() {
             </p>
             <p className="text-sm text-text-muted">
               Compare all 8 agents side by side
+            </p>
+          </Link>
+          <Link
+            href="/guides/budget-finds"
+            className="rounded-xl bg-[#141414] p-5 transition-colors hover:bg-[#1a1a1a]"
+          >
+            <p className="mb-1 font-semibold text-white">
+              Budget Finds Under ¥200
+            </p>
+            <p className="text-sm text-text-muted">
+              Cheap reps that look expensive
+            </p>
+          </Link>
+          <Link
+            href="/guides/girls-collection"
+            className="rounded-xl bg-[#141414] p-5 transition-colors hover:bg-[#1a1a1a]"
+          >
+            <p className="mb-1 font-semibold text-white">
+              Girls Collection Guide
+            </p>
+            <p className="text-sm text-text-muted">
+              2,500+ curated women&apos;s finds
             </p>
           </Link>
           <Link
