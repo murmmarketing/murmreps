@@ -29,26 +29,124 @@ interface Toast {
 const AGENT_DEAL_TEMPLATE = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0; padding:0; background-color:#0a0a0a; font-family:Arial,sans-serif;">
-  <div style="max-width:600px; margin:0 auto; padding:20px;">
-    <div style="text-align:center; padding:30px 0; border-bottom:1px solid #222;">
-      <h1 style="color:#f97316; font-size:28px; margin:0;"><span style="color:#f97316;">M</span><span style="color:#fff;">urmReps</span></h1>
+<body style="margin:0; padding:0; background-color:#0a0a0a; font-family:Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased;">
+  <div style="max-width:600px; margin:0 auto;">
+
+    <div style="height:24px;"></div>
+
+    <!-- Logo -->
+    <div style="text-align:center; padding:32px 24px 24px;">
+      <span style="font-size:28px; font-weight:800; letter-spacing:-0.5px;">
+        <span style="color:#f97316;">M</span><span style="color:#ffffff;">urm</span><span style="color:#f97316;">Reps</span>
+      </span>
     </div>
-    <div style="padding:30px 0; text-align:center;">
-      <h2 style="color:#fff; font-size:24px; margin:0 0 10px;">Save with [AGENT NAME] 🤝</h2>
-      <p style="color:#999; font-size:16px; line-height:1.6;">Exclusive deal for MurmReps subscribers — [DISCOUNT DETAILS]</p>
+
+    <!-- Hero -->
+    <div style="text-align:center; padding:48px 32px; background:linear-gradient(135deg, #f97316 0%, #c2410c 100%); border-radius:16px; margin:0 16px 24px;">
+      <p style="color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:2px; margin:0 0 12px; opacity:0.8; font-weight:600;">Exclusive for MurmReps subscribers</p>
+      <h1 style="color:#fff; font-size:36px; font-weight:800; margin:0 0 12px; line-height:1.1; letter-spacing:-0.5px;">KakoBuy</h1>
+      <p style="color:rgba(255,255,255,0.9); font-size:16px; line-height:1.6; margin:0 0 24px; max-width:380px; display:inline-block;">
+        The #1 agent used by 80% of the rep community. Start your first haul today.
+      </p>
+      <a href="https://ikako.vip/r/6gkjt" style="display:inline-block; background:#fff; color:#f97316; padding:14px 40px; border-radius:10px; text-decoration:none; font-weight:700; font-size:15px;">
+        Sign up to KakoBuy →
+      </a>
     </div>
-    <div style="background:#111; border-radius:12px; padding:24px; margin-bottom:24px; text-align:center;">
-      <h3 style="color:#f97316; font-size:20px; margin:0 0 12px;">How to claim:</h3>
-      <p style="color:#999; font-size:14px; line-height:1.8; margin:0;">1. Click the button below<br/>2. Sign up with [AGENT NAME]<br/>3. Your discount is applied automatically</p>
-      <div style="margin-top:20px;">
-        <a href="[AFFILIATE_LINK]" style="display:inline-block; background:#f97316; color:#fff; padding:14px 32px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:15px;">Get the deal →</a>
+
+    <!-- Divider -->
+    <div style="height:1px; background:#1a1a1a; margin:0 32px;"></div>
+
+    <!-- Why KakoBuy -->
+    <div style="padding:32px 24px 16px;">
+      <p style="color:#f97316; font-size:12px; text-transform:uppercase; letter-spacing:2px; margin:0 0 4px; font-weight:600;">Why KakoBuy?</p>
+      <h2 style="color:#fff; font-size:22px; font-weight:700; margin:0; letter-spacing:-0.3px;">Built for the repfam</h2>
+    </div>
+
+    <!-- Benefit Cards -->
+    <div style="padding:0 24px 32px;">
+      <div style="background:#111; border-radius:12px; padding:20px; margin-bottom:12px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td width="48" style="vertical-align:top;">
+              <div style="background:rgba(249,115,22,0.12); width:36px; height:36px; border-radius:10px; text-align:center; line-height:36px; font-size:18px;">⚡</div>
+            </td>
+            <td style="vertical-align:top; padding-left:14px;">
+              <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">Fastest QC Photos</p>
+              <p style="color:#a1a1aa; font-size:13px; line-height:1.5; margin:0;">Get detailed quality check photos within 24 hours of your item arriving at the warehouse.</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:#111; border-radius:12px; padding:20px; margin-bottom:12px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td width="48" style="vertical-align:top;">
+              <div style="background:rgba(249,115,22,0.12); width:36px; height:36px; border-radius:10px; text-align:center; line-height:36px; font-size:18px;">🛡️</div>
+            </td>
+            <td style="vertical-align:top; padding-left:14px;">
+              <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">Free Returns</p>
+              <p style="color:#a1a1aa; font-size:13px; line-height:1.5; margin:0;">Don't like what you see? Return any item for free. No questions asked.</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:#111; border-radius:12px; padding:20px; margin-bottom:12px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td width="48" style="vertical-align:top;">
+              <div style="background:rgba(249,115,22,0.12); width:36px; height:36px; border-radius:10px; text-align:center; line-height:36px; font-size:18px;">💬</div>
+            </td>
+            <td style="vertical-align:top; padding-left:14px;">
+              <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">24/7 Live Chat Support</p>
+              <p style="color:#a1a1aa; font-size:13px; line-height:1.5; margin:0;">Real humans answering your questions around the clock. Not bots.</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:#111; border-radius:12px; padding:20px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td width="48" style="vertical-align:top;">
+              <div style="background:rgba(249,115,22,0.12); width:36px; height:36px; border-radius:10px; text-align:center; line-height:36px; font-size:18px;">📦</div>
+            </td>
+            <td style="vertical-align:top; padding-left:14px;">
+              <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">Competitive Shipping</p>
+              <p style="color:#a1a1aa; font-size:13px; line-height:1.5; margin:0;">Multiple shipping lines with real-time tracking. 7-15 day delivery to most countries.</p>
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
-    <div style="text-align:center; padding:20px 0;">
-      <p style="color:#666; font-size:12px; margin:0;">MurmReps — The rep community's most trusted source.</p>
-      <p style="color:#444; font-size:11px; margin:8px 0 0;"><a href="https://murmreps.com/api/newsletter/unsubscribe?email={{email}}" style="color:#444; text-decoration:underline;">Unsubscribe</a></p>
+
+    <!-- Big CTA -->
+    <div style="padding:0 24px 32px;">
+      <div style="background:linear-gradient(135deg, #f97316 0%, #c2410c 100%); border-radius:12px; padding:32px; text-align:center;">
+        <h2 style="color:#fff; font-size:24px; font-weight:800; margin:0 0 8px; letter-spacing:-0.3px;">Start buying now</h2>
+        <p style="color:rgba(255,255,255,0.85); font-size:14px; margin:0 0 20px; line-height:1.5;">Create your free KakoBuy account and browse 19,000+ finds on MurmReps.</p>
+        <a href="https://ikako.vip/r/6gkjt" style="display:inline-block; background:#fff; color:#f97316; padding:14px 40px; border-radius:10px; text-decoration:none; font-weight:700; font-size:15px;">
+          Sign up to KakoBuy →
+        </a>
+      </div>
     </div>
+
+    <!-- Other agents mention -->
+    <div style="text-align:center; padding:0 24px 32px;">
+      <p style="color:#52525b; font-size:12px; margin:0; line-height:1.6;">
+        Also available: Superbuy, CnFans, MuleBuy, ACBuy, LoveGoBuy, JoyaGoo, SugarGoo
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center; padding:24px 24px 40px;">
+      <p style="color:#333; font-size:12px; margin:0 0 8px;">
+        MurmReps · The rep community's most trusted source
+      </p>
+      <a href="https://murmreps.com/api/newsletter/unsubscribe?email={{email}}" style="color:#444; font-size:11px; text-decoration:underline;">Unsubscribe</a>
+    </div>
+
   </div>
 </body>
 </html>`;

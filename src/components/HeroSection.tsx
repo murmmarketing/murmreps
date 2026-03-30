@@ -54,10 +54,10 @@ export default function HeroSection() {
               </ShimmerButton>
             </Link>
             <Link
-              href="/guide"
+              href="/guides/how-to-buy-reps-kakobuy"
               className="inline-flex h-12 items-center rounded-btn border border-accent px-8 font-heading text-sm font-semibold text-accent transition-all duration-200 hover:bg-accent/10"
             >
-              Tutorial
+              How to buy
             </Link>
           </div>
 

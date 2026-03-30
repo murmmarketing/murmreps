@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
       .neq('image', '')
       .gte('created_at', oneWeekAgo)
       .order('score', { ascending: false })
-      .limit(5);
+      .limit(6);
 
     const items = products || [];
     const html = buildWeeklyDropsHTML(items);
@@ -45,22 +45,47 @@ interface ProductRow {
   category: string;
 }
 
+function buildProductGrid(products: ProductRow[]): string {
+  const rows: string[] = [];
+  for (let i = 0; i < products.length; i += 2) {
+    const left = products[i];
+    const right = products[i + 1];
+    rows.push(`
+        <tr>
+          <td width="50%" style="padding:8px;">
+            <a href="https://murmreps.com/products/${left.id}" style="text-decoration:none; display:block;">
+              <div style="background:#111; border-radius:12px; overflow:hidden;">
+                <img src="${left.image}" alt="${left.name}" style="width:100%; height:180px; object-fit:cover; display:block;" />
+                <div style="padding:14px;">
+                  <p style="color:#fff; font-size:14px; font-weight:600; margin:0 0 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${left.name}</p>
+                  <p style="color:#52525b; font-size:12px; margin:0 0 8px;">${left.brand} · ${left.views.toLocaleString()} views</p>
+                  <p style="color:#f97316; font-size:16px; font-weight:700; margin:0;">${left.price_eur ? '€' + left.price_eur.toFixed(2) : 'Price TBD'}</p>
+                </div>
+              </div>
+            </a>
+          </td>
+          ${right ? `
+          <td width="50%" style="padding:8px;">
+            <a href="https://murmreps.com/products/${right.id}" style="text-decoration:none; display:block;">
+              <div style="background:#111; border-radius:12px; overflow:hidden;">
+                <img src="${right.image}" alt="${right.name}" style="width:100%; height:180px; object-fit:cover; display:block;" />
+                <div style="padding:14px;">
+                  <p style="color:#fff; font-size:14px; font-weight:600; margin:0 0 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${right.name}</p>
+                  <p style="color:#52525b; font-size:12px; margin:0 0 8px;">${right.brand} · ${right.views.toLocaleString()} views</p>
+                  <p style="color:#f97316; font-size:16px; font-weight:700; margin:0;">${right.price_eur ? '€' + right.price_eur.toFixed(2) : 'Price TBD'}</p>
+                </div>
+              </div>
+            </a>
+          </td>` : '<td width="50%" style="padding:8px;"></td>'}
+        </tr>`);
+  }
+  return rows.join('');
+}
+
 function buildWeeklyDropsHTML(products: ProductRow[]): string {
-  const productCards = products.map((p) => `
-      <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #222;">
-        <table style="width:100%;" cellpadding="0" cellspacing="0">
-          <tr>
-            <td style="width:80px; vertical-align:top;">
-              <img src="${p.image}" alt="${p.name}" style="width:72px; height:72px; border-radius:8px; object-fit:cover;" />
-            </td>
-            <td style="vertical-align:top; padding-left:12px;">
-              <a href="https://murmreps.com/products/${p.id}" style="color:#fff; font-size:15px; text-decoration:none; font-weight:600;">${p.name}</a>
-              <p style="color:#f97316; font-size:13px; margin:4px 0 0;">${p.brand} · ${p.price_eur ? '€' + p.price_eur.toFixed(2) : 'Price TBD'}</p>
-              <p style="color:#666; font-size:12px; margin:2px 0 0;">${p.views.toLocaleString()} views · ${p.category}</p>
-            </td>
-          </tr>
-        </table>
-      </div>`).join('');
+  const productGrid = products.length > 0
+    ? `<table cellpadding="0" cellspacing="0" border="0" width="100%">${buildProductGrid(products)}</table>`
+    : '<p style="color:#52525b; font-size:14px; text-align:center; padding:24px 0;">No new products this week — check back soon!</p>';
 
   return `<!DOCTYPE html>
 <html>
@@ -68,45 +93,89 @@ function buildWeeklyDropsHTML(products: ProductRow[]): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0; padding:0; background-color:#0a0a0a; font-family:Arial,sans-serif;">
-  <div style="max-width:600px; margin:0 auto; padding:20px;">
-    <div style="text-align:center; padding:30px 0; border-bottom:1px solid #222;">
-      <h1 style="color:#f97316; font-size:28px; margin:0;">
-        <span style="color:#f97316;">M</span><span style="color:#fff;">urmReps</span>
-      </h1>
+<body style="margin:0; padding:0; background-color:#0a0a0a; font-family:Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased;">
+  <div style="max-width:600px; margin:0 auto;">
+
+    <div style="height:24px;"></div>
+
+    <!-- Logo -->
+    <div style="text-align:center; padding:32px 24px 24px;">
+      <span style="font-size:28px; font-weight:800; letter-spacing:-0.5px;">
+        <span style="color:#f97316;">M</span><span style="color:#ffffff;">urm</span><span style="color:#f97316;">Reps</span>
+      </span>
     </div>
 
-    <div style="padding:30px 0; text-align:center;">
-      <h2 style="color:#fff; font-size:24px; margin:0 0 10px;">This Week's Hottest Drops 🔥</h2>
-      <p style="color:#999; font-size:16px; line-height:1.6;">
-        Fresh finds hand-picked for the repfam. Don't sleep on these.
+    <!-- Hero -->
+    <div style="text-align:center; padding:40px 32px; background:linear-gradient(180deg, #111 0%, #0a0a0a 100%); border-radius:16px; margin:0 16px 24px;">
+      <p style="color:#f97316; font-size:13px; text-transform:uppercase; letter-spacing:2px; margin:0 0 12px; font-weight:600;">Weekly drops</p>
+      <h1 style="color:#fff; font-size:32px; font-weight:800; margin:0 0 16px; line-height:1.2; letter-spacing:-0.5px;">This Week's Hottest Finds 🔥</h1>
+      <p style="color:#a1a1aa; font-size:15px; line-height:1.6; margin:0; max-width:400px; display:inline-block;">
+        ${products.length} fresh drops hand-picked for the repfam. Don't sleep on these.
       </p>
     </div>
 
-    <div style="background:#111; border-radius:12px; padding:24px; margin-bottom:24px;">
-      ${productCards || '<p style="color:#999;">No new products this week — check back soon!</p>'}
+    <!-- Divider -->
+    <div style="height:1px; background:#1a1a1a; margin:0 32px;"></div>
 
-      <div style="text-align:center; margin-top:20px;">
-        <a href="https://murmreps.com/products?sort=newest" style="display:inline-block; background:#f97316; color:#fff; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:14px;">
-          Browse all new drops →
+    <!-- Products Header -->
+    <div style="padding:32px 24px 16px;">
+      <p style="color:#f97316; font-size:12px; text-transform:uppercase; letter-spacing:2px; margin:0 0 4px; font-weight:600;">Top picks</p>
+      <h2 style="color:#fff; font-size:22px; font-weight:700; margin:0; letter-spacing:-0.3px;">Trending this week</h2>
+    </div>
+
+    <!-- Product Grid -->
+    <div style="padding:0 16px 8px;">
+      ${productGrid}
+    </div>
+
+    <!-- CTA Button -->
+    <div style="text-align:center; padding:8px 24px 32px;">
+      <a href="https://murmreps.com/products?sort=newest" style="display:inline-block; background:#f97316; color:#fff; padding:14px 40px; border-radius:10px; text-decoration:none; font-weight:700; font-size:15px; letter-spacing:0.3px;">
+        Browse all new drops →
+      </a>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:1px; background:#1a1a1a; margin:0 32px;"></div>
+
+    <!-- KakoBuy CTA -->
+    <div style="padding:32px 24px;">
+      <div style="background:linear-gradient(135deg, #f97316 0%, #c2410c 100%); border-radius:12px; padding:24px; text-align:center;">
+        <p style="color:#fff; font-size:11px; text-transform:uppercase; letter-spacing:2px; margin:0 0 8px; opacity:0.8; font-weight:600;">Recommended agent</p>
+        <p style="color:#fff; font-size:22px; font-weight:800; margin:0 0 8px; letter-spacing:-0.3px;">KakoBuy</p>
+        <p style="color:rgba(255,255,255,0.85); font-size:13px; margin:0 0 16px; line-height:1.5;">Fastest QC photos. Best customer service. Free returns on every order.</p>
+        <a href="https://ikako.vip/r/6gkjt" style="display:inline-block; background:#fff; color:#f97316; padding:12px 32px; border-radius:10px; text-decoration:none; font-weight:700; font-size:14px;">
+          Sign up to KakoBuy →
         </a>
       </div>
     </div>
 
-    <div style="text-align:center; padding:20px 0; border-top:1px solid #222;">
-      <p style="color:#999; font-size:14px; margin:0 0 12px;">Quick links:</p>
-      <a href="https://murmreps.com/products" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:13px;">All Products</a>
-      <a href="https://murmreps.com/girls" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:13px;">For Her</a>
-      <a href="https://murmreps.com/guide" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:13px;">Beginner Guide</a>
-      <a href="https://discord.gg/8r5EFMRg" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:13px;">Discord</a>
+    <!-- Social -->
+    <div style="text-align:center; padding:8px 24px 32px;">
+      <p style="color:#52525b; font-size:12px; text-transform:uppercase; letter-spacing:2px; margin:0 0 16px; font-weight:600;">Join the community</p>
+      <table cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td style="padding:0 8px;">
+            <a href="https://discord.gg/8r5EFMRg" style="display:inline-block; background:#111; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:500;">Discord</a>
+          </td>
+          <td style="padding:0 8px;">
+            <a href="https://reddit.com/r/MurmReps" style="display:inline-block; background:#111; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:500;">Reddit</a>
+          </td>
+          <td style="padding:0 8px;">
+            <a href="https://tiktok.com/@murmreps" style="display:inline-block; background:#111; color:#fff; padding:10px 20px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:500;">TikTok</a>
+          </td>
+        </tr>
+      </table>
     </div>
 
-    <div style="text-align:center; padding:20px 0;">
-      <p style="color:#666; font-size:12px; margin:0;">MurmReps — The rep community's most trusted source.</p>
-      <p style="color:#444; font-size:11px; margin:8px 0 0;">
-        <a href="https://murmreps.com/api/newsletter/unsubscribe?email={{email}}" style="color:#444; text-decoration:underline;">Unsubscribe</a>
+    <!-- Footer -->
+    <div style="text-align:center; padding:24px 24px 40px;">
+      <p style="color:#333; font-size:12px; margin:0 0 8px;">
+        MurmReps · The rep community's most trusted source
       </p>
+      <a href="https://murmreps.com/api/newsletter/unsubscribe?email={{email}}" style="color:#444; font-size:11px; text-decoration:underline;">Unsubscribe</a>
     </div>
+
   </div>
 </body>
 </html>`;

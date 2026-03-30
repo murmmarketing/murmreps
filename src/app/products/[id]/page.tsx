@@ -45,6 +45,7 @@ interface Product {
   views?: number;
   likes?: number;
   dislikes?: number;
+  score?: number | null;
   collection?: string;
 }
 
@@ -92,6 +93,82 @@ export default function ProductDetailPage() {
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [copied, setCopied] = useState(false);
   const viewIncrementedRef = useRef(false);
+  const [similarFinds, setSimilarFinds] = useState<Product[]>([]);
+  const [moreBrand, setMoreBrand] = useState<Product[]>([]);
+
+  // Fetch smart recommendations from Supabase
+  useEffect(() => {
+    if (!product) return;
+    const priceCny = product.price_cny;
+    const brand = product.brand;
+    const category = product.category;
+    const currentId = Number(product.id);
+    const isGirls = product.collection === "girls";
+
+    const minPrice = priceCny ? Math.round(priceCny * 0.5) : 0;
+    const maxPrice = priceCny ? Math.round(priceCny * 1.5) : 999999;
+
+    const orClauses = [
+      `and(brand.eq.${brand},category.eq.${category})`,
+      priceCny ? `and(category.eq.${category},price_cny.gte.${minPrice},price_cny.lte.${maxPrice})` : `category.eq.${category}`,
+      brand !== "Various" ? `brand.eq.${brand}` : null,
+    ].filter(Boolean).join(",");
+
+    let similarQuery = supabase
+      .from("products")
+      .select("id, name, brand, price_cny, price_usd, price_eur, image, views, likes, score, category, collection, tier")
+      .neq("id", currentId)
+      .not("image", "is", null)
+      .neq("image", "")
+      .or(orClauses)
+      .order("score", { ascending: false })
+      .limit(20);
+
+    if (isGirls) {
+      similarQuery = similarQuery.in("collection", ["girls", "both"]);
+    }
+
+    const brandQuery = brand !== "Various"
+      ? supabase
+          .from("products")
+          .select("id, name, brand, price_cny, price_usd, price_eur, image, views, likes, score, category, collection, tier")
+          .eq("brand", brand)
+          .neq("id", currentId)
+          .not("image", "is", null)
+          .neq("image", "")
+          .order("score", { ascending: false })
+          .limit(8)
+      : null;
+
+    Promise.all([similarQuery, brandQuery]).then(([similarRes, brandRes]) => {
+      if (similarRes.data) {
+        const scored = (similarRes.data as unknown as Product[]).map((p) => {
+          let relevance = 0;
+          if (p.brand === brand && p.category === category) relevance += 100;
+          else if (p.category === category) relevance += 60;
+          else if (p.brand === brand) relevance += 40;
+
+          if (priceCny && p.price_cny) {
+            const priceDiff = Math.abs(p.price_cny - priceCny) / priceCny;
+            if (priceDiff < 0.2) relevance += 30;
+            else if (priceDiff < 0.5) relevance += 15;
+          }
+
+          if (p.collection === product.collection) relevance += 10;
+          if ((p.views ?? 0) > 100) relevance += 10;
+          if ((p.score ?? 0) > 50) relevance += 5;
+
+          return { ...p, _relevance: relevance };
+        });
+        scored.sort((a, b) => b._relevance - a._relevance);
+        setSimilarFinds(scored.slice(0, 8));
+      }
+
+      if (brandRes?.data) {
+        setMoreBrand(brandRes.data as unknown as Product[]);
+      }
+    });
+  }, [product]);
 
   // Apply pink theme for girls collection products; defer until collection is known
   const collection = product?.collection;
@@ -168,32 +245,6 @@ export default function ProductDetailPage() {
   const saved = wishlist.has(pid);
   const stats = productStats.get(pid, product as { views?: number; likes?: number; dislikes?: number });
   const hasLink = !!product.source_link;
-  // Improved similar products: prefer same brand, then fill with same category
-  const similar = (() => {
-    const allProducts = products as unknown as Product[];
-    const sameBrand = allProducts.filter(
-      (p) => p.brand === product.brand && String(p.id) !== pid
-    );
-    const sameCategory = allProducts.filter(
-      (p) => p.category === product.category && String(p.id) !== pid && p.brand !== product.brand
-    );
-    // Shuffle helper
-    const shuffle = <T,>(arr: T[]): T[] => {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    };
-    if (sameBrand.length >= 4) {
-      return shuffle(sameBrand).slice(0, 4);
-    }
-    const shuffledBrand = shuffle(sameBrand);
-    const remaining = 4 - shuffledBrand.length;
-    const shuffledCategory = shuffle(sameCategory).slice(0, remaining);
-    return [...shuffledBrand, ...shuffledCategory];
-  })();
 
   // Build the list of all images for the gallery
   const allImages: string[] =
@@ -475,6 +526,12 @@ export default function ProductDetailPage() {
                 );
               })}
             </div>
+            <p className="mt-4 text-sm text-text-muted">
+              New to buying reps?{" "}
+              <Link href="/guides/how-to-buy-reps-kakobuy" className="text-accent hover:underline">
+                Read our beginner guide →
+              </Link>
+            </p>
           </div>
 
           {/* Action buttons */}
@@ -556,14 +613,91 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Similar products */}
-      {similar.length > 0 && (
+      {/* Similar Finds */}
+      {similarFinds.length >= 3 && (
         <section className="mt-16">
-          <h2 className="mb-6 font-heading text-xl font-bold text-white">
-            Similar products
-          </h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-heading text-xl font-bold text-white">
+              Similar Finds
+            </h2>
+            <Link
+              href={`/products?category=${encodeURIComponent(product.category)}`}
+              className="text-sm text-accent hover:text-accent/80 transition-colors"
+            >
+              View More →
+            </Link>
+          </div>
           <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0">
-            {similar.map((p) => (
+            {similarFinds.map((p) => (
+              <Link
+                key={p.id}
+                href={`/products/${p.id}`}
+                className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 sm:w-auto"
+              >
+                <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#0a0a0a]">
+                  {p.image ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      loading="lazy"
+                      decoding="async"
+                      width={240}
+                      height={140}
+                      className="h-full w-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <span className="text-xs font-medium text-text-muted">
+                        {p.brand}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="line-clamp-2 font-heading text-sm font-semibold leading-tight text-white">
+                    {p.name}
+                  </h3>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="font-heading text-base font-bold text-white">
+                      {p.price_cny != null ? (
+                        formatPrice(p)
+                      ) : (
+                        <span className="text-sm text-text-muted">Multi</span>
+                      )}
+                    </span>
+                    <span
+                      className={`ml-auto rounded-pill px-2 py-0.5 text-[10px] font-medium ${tierColors[p.tier]}`}
+                    >
+                      {p.tier}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* More from {brand} */}
+      {moreBrand.length >= 3 && product.brand !== "Various" && (
+        <section className="mt-10">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-heading text-xl font-bold text-white">
+              More from {product.brand}
+            </h2>
+            <Link
+              href={`/products?search=${encodeURIComponent(product.brand)}`}
+              className="text-sm text-accent hover:text-accent/80 transition-colors"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0">
+            {moreBrand.map((p) => (
               <Link
                 key={p.id}
                 href={`/products/${p.id}`}

@@ -16,7 +16,7 @@ const toolLinks = [
   { label: "Agent Comparison", href: "/agents" },
   { label: "Parcel Tracking", href: "/tracking" },
   { label: "Image Search", href: "/image-search" },
-  { label: "Beginner Guide", href: "/guide" },
+  { label: "Beginner Guide", href: "/guides/how-to-buy-reps-kakobuy" },
 ];
 
 const communityLinks = [
