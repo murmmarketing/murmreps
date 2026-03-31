@@ -82,6 +82,38 @@ async function fetchSlot(
   return shuffle((data as Product[]) || []).slice(0, sampleSize);
 }
 
+async function fetchImageAsBase64(url: string): Promise<{ base64: string; mediaType: string } | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Referer: "https://murmreps.com/",
+      },
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+
+    const buffer = await res.arrayBuffer();
+    if (buffer.byteLength > 1_000_000) return null; // Skip images over 1MB
+
+    const base64 = Buffer.from(buffer).toString("base64");
+    const contentType = res.headers.get("content-type") || "image/jpeg";
+    const mediaType = contentType.includes("png") ? "image/png"
+      : contentType.includes("webp") ? "image/webp"
+      : contentType.includes("gif") ? "image/gif"
+      : "image/jpeg";
+
+    return { base64, mediaType };
+  } catch {
+    return null;
+  }
+}
+
 function hasCategory(products: Product[], cats: string[]): boolean {
   return products.some((p) => cats.includes(p.category));
 }
@@ -193,6 +225,15 @@ Seed: ${timestamp}`;
 
     type ContentBlock = Anthropic.ImageBlockParam | Anthropic.TextBlockParam;
 
+    // Pre-fetch all product images as base64 in parallel
+    const imageResults = await Promise.allSettled(
+      allCandidates.map((p) =>
+        p.image && p.image.startsWith("http")
+          ? fetchImageAsBase64(p.image)
+          : Promise.resolve(null)
+      )
+    );
+
     const buildContent = (extraNote?: string): ContentBlock[] => {
       const content: ContentBlock[] = [];
 
@@ -205,18 +246,26 @@ Seed: ${timestamp}`;
         text: `Vibe: ${preset.vibe}\nStyle: ${preset.description}\n\nHere are the candidate products with their photos. Pick the best outfit:`,
       });
 
-      // Add each candidate as image + text
-      for (const p of allCandidates) {
-        if (p.image && p.image.startsWith("http")) {
+      for (let i = 0; i < allCandidates.length; i++) {
+        const p = allCandidates[i];
+        const ir = imageResults[i];
+        const imgResult = ir.status === "fulfilled" ? ir.value : null;
+
+        if (imgResult) {
           content.push({
             type: "image",
-            source: { type: "url", url: p.image },
-          });
-          content.push({
-            type: "text",
-            text: `ID: ${p.id} | ${p.brand} — ${p.name} | ${p.category} | ¥${p.price_cny}`,
+            source: {
+              type: "base64",
+              media_type: imgResult.mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+              data: imgResult.base64,
+            },
           });
         }
+
+        content.push({
+          type: "text",
+          text: `ID: ${p.id} | ${p.brand} — ${p.name} | ${p.category} | ¥${p.price_cny}${!imgResult ? " [NO IMAGE]" : ""}`,
+        });
       }
 
       return content;
