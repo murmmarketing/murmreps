@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import sharp from "sharp";
 import { getAdminClient } from "@/lib/supabase";
 
 function checkAuth(req: NextRequest) {
@@ -61,15 +62,15 @@ async function fetchImageAsBase64(url: string): Promise<{ base64: string; mediaT
     });
     clearTimeout(timeout);
     if (!res.ok) return null;
-    const buffer = await res.arrayBuffer();
-    if (buffer.byteLength > 1_000_000) return null;
-    const base64 = Buffer.from(buffer).toString("base64");
-    const contentType = res.headers.get("content-type") || "image/jpeg";
-    const mediaType = contentType.includes("png") ? "image/png"
-      : contentType.includes("webp") ? "image/webp"
-      : contentType.includes("gif") ? "image/gif"
-      : "image/jpeg";
-    return { base64, mediaType };
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.byteLength > 2_000_000) return null;
+
+    const resized = await sharp(buffer)
+      .resize(800, 800, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 70 })
+      .toBuffer();
+
+    return { base64: resized.toString("base64"), mediaType: "image/jpeg" };
   } catch {
     return null;
   }
