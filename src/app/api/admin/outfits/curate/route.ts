@@ -93,6 +93,28 @@ async function fetchImageAsBase64(url: string): Promise<{ base64: string; mediaT
   }
 }
 
+async function callWithRetry(
+  anthropic: Anthropic,
+  params: Anthropic.MessageCreateParams,
+  maxRetries = 3,
+): Promise<Anthropic.Message> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await callWithRetry(anthropic,params);
+    } catch (e: unknown) {
+      const status = (e as { status?: number }).status;
+      if (status && (status === 529 || status === 500 || status === 503) && attempt < maxRetries - 1) {
+        const delay = Math.pow(2, attempt + 1) * 1000;
+        console.log(`Anthropic ${status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error("Anthropic API failed after all retries");
+}
+
 function hasCategory(products: Product[], cats: string[]): boolean {
   return products.some((p) => cats.includes(p.category));
 }
@@ -217,7 +239,7 @@ Pick approximately:
 
 Respond with ONLY a JSON array of 50 product IDs. Nothing else. Seed: ${timestamp}`;
 
-    const stage1Response = await anthropic.messages.create({
+    const stage1Response = await callWithRetry(anthropic,{
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2000,
       system: stage1System,
@@ -327,7 +349,7 @@ Then on a new line write "NOTES:" followed by a 1-2 sentence explanation of the 
 Seed: ${timestamp}`;
 
     const callClaude = async (extraNote?: string): Promise<{ ids: number[]; notes: string }> => {
-      const response = await anthropic.messages.create({
+      const response = await callWithRetry(anthropic,{
         model: "claude-sonnet-4-20250514",
         max_tokens: 600,
         system: stage2System,
