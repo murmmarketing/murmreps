@@ -96,6 +96,7 @@ export default function OutfitCuratorPage() {
   const [curating, setCurating] = useState(false);
   const [curationMode, setCurationMode] = useState("");
   const [styleNotes, setStyleNotes] = useState("");
+  const [scanStats, setScanStats] = useState({ total: 0, shortlisted: 0, selected: 0 });
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -143,7 +144,7 @@ export default function OutfitCuratorPage() {
   const generateOutfit = async (key: string) => {
     const preset = PRESETS[key];
     if (!preset) return;
-    setCurating(true); setCurrentPreset(key); setOutfit([]); setCurationMode(""); setStyleNotes(""); setError("");
+    setCurating(true); setCurrentPreset(key); setOutfit([]); setCurationMode(""); setStyleNotes(""); setScanStats({ total: 0, shortlisted: 0, selected: 0 }); setError("");
     try {
       const res = await fetch("/api/admin/outfits/curate", {
         method: "POST",
@@ -152,7 +153,12 @@ export default function OutfitCuratorPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.products?.length > 0) { setOutfit(data.products); setCurationMode(data.mode || ""); setStyleNotes(data.notes || ""); }
+        if (data.products?.length > 0) {
+          setOutfit(data.products);
+          setCurationMode(data.mode || "");
+          setStyleNotes(data.notes || "");
+          setScanStats({ total: data.totalScanned || 0, shortlisted: data.shortlisted || 0, selected: data.products.length });
+        }
         else setError("No matching products found.");
       } else { const data = await res.json(); setError(data.error || "Curation failed"); }
     } catch { setError("Failed to curate outfit"); }
@@ -291,7 +297,7 @@ export default function OutfitCuratorPage() {
           ))}
         </div>
 
-        {curating && <p className="text-xs text-[#6B7280]">Picking from 18,000+ products...</p>}
+        {curating && <p className="text-xs text-[#6B7280]">Stage 1: Scanning all products... → Stage 2: Evaluating top 50 with images...</p>}
 
         {error && <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{error}</div>}
 
@@ -307,6 +313,11 @@ export default function OutfitCuratorPage() {
                   </span>
                 )}
                 <span className="text-xs text-[#6B7280]">{outfit.length} items</span>
+                {scanStats.total > 0 && (
+                  <span className="text-xs text-[#52525b]">
+                    Scanned {scanStats.total.toLocaleString()} → Shortlisted {scanStats.shortlisted} → Selected {scanStats.selected}
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 <button onClick={copyLinks} className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-2 text-xs text-[#9CA3AF] hover:text-white transition-colors">
