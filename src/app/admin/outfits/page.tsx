@@ -38,21 +38,65 @@ const vibes = [
   "summer casual", "hypebeast", "women's luxury", "minimalist",
 ];
 
-interface Preset {
-  label: string;
-  queries: string[];
+interface PresetConfig {
+  name: string;
+  vibe: string;
+  description: string;
+  brands: string[];
+  maxPrice?: number;
+  collection?: string;
   surface: string;
   lighting: string;
-  vibe: string;
 }
 
-const presets: Preset[] = [
-  { label: "Summer Streetwear", queries: ["slides", "shorts", "t-shirt", "sunglasses", "chain necklace"], surface: "cream carpet", lighting: "bright natural light", vibe: "summer casual" },
-  { label: "Old Money", queries: ["polo", "chinos", "loafer", "belt", "watch"], surface: "white marble", lighting: "soft natural light", vibe: "old money quiet luxury" },
-  { label: "Dark Aesthetic", queries: ["chrome hearts hoodie", "cargo pants", "black sneakers", "beanie"], surface: "dark grey carpet", lighting: "moody dim lighting", vibe: "dark aesthetic" },
-  { label: "Girls Luxury", queries: ["dior bag", "hermes sandals", "jewelry", "sunglasses"], surface: "white bedsheet", lighting: "soft natural light", vibe: "women's luxury" },
-  { label: "Hypebeast", queries: ["supreme hoodie", "jeans", "jordan 4", "cap"], surface: "grey carpet", lighting: "bright natural light", vibe: "hypebeast" },
-];
+const PRESETS: Record<string, PresetConfig> = {
+  "summer-streetwear": {
+    name: "Summer Streetwear",
+    vibe: "summer streetwear",
+    description: "Relaxed summer fit. Think graphic tees, shorts, clean sneakers, and a cap. Brands like Nike, Stussy, Supreme, BAPE. Light colors, breathable fabrics.",
+    brands: ["Nike", "Stussy", "Supreme", "BAPE", "Gallery Dept", "FOG Essentials", "Palm Angels", "Corteiz", "Trapstar"],
+    maxPrice: 500,
+    surface: "cream carpet",
+    lighting: "bright natural light",
+  },
+  "old-money": {
+    name: "Old Money",
+    vibe: "old money quiet luxury",
+    description: "Understated wealth. Polo shirts, tailored pants, loafers, minimal accessories. Brands like Ralph Lauren, Burberry, Acne Studios, Hermes. Neutral tones — navy, beige, white, grey, brown.",
+    brands: ["Ralph Lauren", "Burberry", "Acne Studios", "Hermes", "Lacoste", "New Balance", "Maison Margiela", "Loewe", "Casablanca"],
+    maxPrice: 800,
+    surface: "white marble",
+    lighting: "soft natural light",
+  },
+  "dark-aesthetic": {
+    name: "Dark Aesthetic",
+    vibe: "dark aesthetic avant-garde",
+    description: "All black or very dark tones. Rick Owens, Chrome Hearts, Balenciaga. Oversized silhouettes, layered jewelry, chunky boots. Goth-adjacent streetwear.",
+    brands: ["Rick Owens", "Chrome Hearts", "Balenciaga", "Vetements", "Undercover", "Raf Simons", "Maison Margiela", "Vivienne Westwood"],
+    maxPrice: 1000,
+    surface: "dark grey carpet",
+    lighting: "moody dim lighting",
+  },
+  "girls-luxury": {
+    name: "Girls Luxury",
+    vibe: "feminine luxury",
+    description: "Elegant womens outfit. Designer bags, heels or sandals, delicate jewelry, a chic top. Brands like Chanel, Dior, Hermes, Miu Miu, Van Cleef. Soft colors — cream, pink, beige, gold.",
+    brands: ["Chanel", "Dior", "Hermes", "Louis Vuitton", "Miu Miu", "Vivienne Westwood", "Prada", "Gucci", "Fendi", "Celine", "Loewe"],
+    collection: "girls",
+    maxPrice: 1000,
+    surface: "white bedsheet",
+    lighting: "soft natural light",
+  },
+  "hypebeast": {
+    name: "Hypebeast",
+    vibe: "hypebeast maximalist",
+    description: "Bold logos, statement pieces, head-to-toe designer. Supreme, Off-White, Louis Vuitton collabs, Jordan 1s. Mix of streetwear and luxury. Eye-catching, intentionally loud.",
+    brands: ["Supreme", "Off-White", "Louis Vuitton", "Balenciaga", "Gucci", "Dior", "Nike", "Amiri", "Chrome Hearts", "BAPE"],
+    maxPrice: 1200,
+    surface: "grey carpet",
+    lighting: "bright natural light",
+  },
+};
 
 function buildPrompt(products: Product[], surface: string, lighting: string, vibe: string): string {
   const items = products.map((p) => `${p.brand !== "Various" ? p.brand + " " : ""}${p.name}`).join(", ");
@@ -78,6 +122,9 @@ export default function OutfitGeneratorPage() {
   const [vibe, setVibe] = useState(vibes[0]);
   const [prompt, setPrompt] = useState("");
   const [strength, setStrength] = useState(0.75);
+  const [currentPreset, setCurrentPreset] = useState("");
+  const [curating, setCurating] = useState(false);
+  const [curationMode, setCurationMode] = useState("");
 
   // Generation
   const [imageUrl, setImageUrl] = useState("");
@@ -137,25 +184,40 @@ export default function OutfitGeneratorPage() {
     setSelected((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const applyPreset = async (preset: Preset) => {
+  const applyPreset = async (key: string) => {
+    const preset = PRESETS[key];
+    if (!preset) return;
+    setCurating(true);
+    setCurrentPreset(key);
     setSurface(preset.surface);
     setLighting(preset.lighting);
     setVibe(preset.vibe);
     setSelected([]);
-    const picks: Product[] = [];
-    for (const q of preset.queries) {
-      try {
-        const res = await fetch(`/api/admin/products/search?q=${encodeURIComponent(q)}`, {
-          headers: { "x-admin-password": storedPassword },
-        });
-        if (res.ok) {
-          const results = await res.json();
-          const match = results.find((r: Product) => !picks.some((p) => p.id === r.id));
-          if (match) picks.push(match);
+    setCurationMode("");
+    setError("");
+
+    try {
+      const res = await fetch("/api/admin/outfits/curate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": storedPassword },
+        body: JSON.stringify({ preset }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.products && data.products.length > 0) {
+          setSelected(data.products);
+          setCurationMode(data.mode || "");
+        } else {
+          setError("No matching products found for this preset.");
         }
-      } catch { /* ignore */ }
+      } else {
+        const data = await res.json();
+        setError(data.error || "Curation failed");
+      }
+    } catch {
+      setError("Failed to curate outfit");
     }
-    setSelected(picks);
+    setCurating(false);
   };
 
   const generate = async () => {
@@ -243,15 +305,34 @@ export default function OutfitGeneratorPage() {
       <div className="mx-auto max-w-4xl px-6 py-6 space-y-6">
         {/* Presets */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">Quick Presets</label>
+          <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
+            AI-Curated Presets
+            {curationMode && (
+              <span className="ml-2 rounded-full bg-[rgba(255,255,255,0.06)] px-2 py-0.5 text-[10px] text-[#FE4205]">
+                {curationMode === "ai-curated" ? "AI-styled" : curationMode === "random" ? "random (no API key)" : "fallback"}
+              </span>
+            )}
+          </label>
           <div className="flex flex-wrap gap-2">
-            {presets.map((p) => (
-              <button key={p.label} onClick={() => applyPreset(p)}
-                className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-2 text-sm text-white transition-colors hover:border-[#FE4205]/30 hover:bg-[#1a1a1a]">
-                {p.label}
+            {Object.entries(PRESETS).map(([key, preset]) => (
+              <button key={key} onClick={() => applyPreset(key)}
+                disabled={curating}
+                className={`rounded-lg border px-4 py-2 text-sm text-white transition-colors disabled:opacity-50 ${
+                  currentPreset === key
+                    ? "border-[#FE4205]/50 bg-[#FE4205]/10"
+                    : "border-[rgba(255,255,255,0.08)] bg-[#141414] hover:border-[#FE4205]/30 hover:bg-[#1a1a1a]"
+                }`}>
+                {curating && currentPreset === key ? "🤖 Curating..." : preset.name}
               </button>
             ))}
           </div>
+          {currentPreset && selected.length > 0 && (
+            <button onClick={() => applyPreset(currentPreset)}
+              disabled={curating}
+              className="mt-2 text-sm text-[#FE4205] hover:text-[#FE4205]/80 transition-colors disabled:opacity-50">
+              🔄 Pick different items
+            </button>
+          )}
         </div>
 
         {/* Product Picker */}
