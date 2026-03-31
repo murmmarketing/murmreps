@@ -235,7 +235,10 @@ export default function OutfitGeneratorPage() {
               </button>
             ))}
           </div>
-          {currentPreset && selected.length > 0 && (
+          {curating && (
+            <p className="mt-2 text-xs text-[#6B7280]">Picking from 18,000+ products...</p>
+          )}
+          {currentPreset && selected.length > 0 && !curating && (
             <button onClick={() => applyPreset(currentPreset)} disabled={curating} className="mt-2 text-sm text-[#FE4205] hover:text-[#FE4205]/80 transition-colors disabled:opacity-50">🔄 Pick different items</button>
           )}
         </div>

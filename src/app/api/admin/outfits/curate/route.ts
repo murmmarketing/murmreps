@@ -14,8 +14,7 @@ interface PresetConfig {
   name: string;
   vibe: string;
   description: string;
-  brands: string[];
-  maxPrice?: number;
+  brands?: string[];
   collection?: string;
 }
 
@@ -29,32 +28,54 @@ interface Product {
   collection: string;
 }
 
-async function getCandidates(
+const SLOT_CATS = {
+  tops: ["Shirts", "Hoodies", "Sweaters", "Polos", "Long Sleeves", "Jerseys", "Tank Tops", "Tops"],
+  bottoms: ["Pants", "Shorts"],
+  shoes: ["Shoes", "Boots", "Slides & Sandals"],
+  outerwear: ["Jackets"],
+  accessories: ["Accessories", "Hats & Caps", "Belts", "Sunglasses", "Glasses", "Bags", "Wallets", "Scarves & Gloves", "Socks & Underwear", "Phone Cases"],
+  jewelry: ["Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Jewelry"],
+};
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+async function fetchSlot(
   supabase: ReturnType<typeof getAdminClient>,
-  preset: PresetConfig
+  categories: string[],
+  limit: number,
+  brands?: string[],
+  collection?: string,
 ): Promise<Product[]> {
+  // Fetch a larger pool sorted by score, then shuffle to get random variety
   let query = supabase
     .from("products")
     .select("id, name, brand, price_cny, image, category, collection")
+    .in("category", categories)
     .not("image", "is", null)
     .neq("image", "")
     .neq("brand", "Various");
 
-  if (preset.collection) {
-    query = query.in("collection", [preset.collection, "both"]);
+  if (brands && brands.length > 0) {
+    query = query.in("brand", brands);
   }
-  if (preset.maxPrice) {
-    query = query.lte("price_cny", preset.maxPrice);
-  }
-  if (preset.brands && preset.brands.length > 0) {
-    query = query.in("brand", preset.brands);
+  if (collection) {
+    query = query.in("collection", [collection, "both"]);
   }
 
-  const { data } = await query
-    .order("score", { ascending: false })
-    .limit(80);
+  // Fetch 200 top-scored, then shuffle and take `limit`
+  const { data } = await query.order("score", { ascending: false }).limit(200);
+  return shuffle((data as Product[]) || []).slice(0, limit);
+}
 
-  return (data as Product[]) || [];
+function hasCategory(products: Product[], cats: string[]): boolean {
+  return products.some((p) => cats.includes(p.category));
 }
 
 export async function POST(req: NextRequest) {
@@ -63,92 +84,129 @@ export async function POST(req: NextRequest) {
 
   try {
     const { preset } = (await req.json()) as { preset: PresetConfig };
-
     if (!preset || !preset.name) {
       return NextResponse.json({ error: "Preset required" }, { status: 400 });
     }
 
     const supabase = getAdminClient();
-    const candidates = await getCandidates(supabase, preset);
+    const brands = preset.brands && preset.brands.length > 0 ? preset.brands : undefined;
+    const collection = preset.collection || undefined;
 
-    if (candidates.length < 3) {
-      return NextResponse.json(
-        { error: "Not enough products matching this preset", products: [] },
-        { status: 400 }
-      );
+    // Fetch random candidates per slot in parallel
+    const [tops, bottoms, shoes, outerwear, accessories, jewelry] = await Promise.all([
+      fetchSlot(supabase, SLOT_CATS.tops, 15, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.bottoms, 15, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.shoes, 15, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.outerwear, 10, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.accessories, 15, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.jewelry, 10, brands, collection),
+    ]);
+
+    const allCandidates = [...tops, ...bottoms, ...shoes, ...outerwear, ...accessories, ...jewelry];
+
+    if (allCandidates.length < 4) {
+      return NextResponse.json({ error: "Not enough products found", products: [] }, { status: 400 });
     }
 
-    // If no Anthropic key, fall back to score-based selection
+    // No API key → random selection with slot coverage
     if (!process.env.ANTHROPIC_API_KEY) {
-      const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-      const brandCount: Record<string, number> = {};
       const picks: Product[] = [];
-      for (const p of shuffled) {
-        if (picks.length >= 6) break;
-        const bc = brandCount[p.brand] || 0;
-        if (bc >= 2) continue;
-        brandCount[p.brand] = bc + 1;
-        picks.push(p);
-      }
+      if (tops.length) picks.push(tops[0]);
+      if (bottoms.length) picks.push(bottoms[0]);
+      if (shoes.length) picks.push(shoes[0]);
+      const accOrJewelry = shuffle([...accessories, ...jewelry]);
+      if (accOrJewelry.length) picks.push(accOrJewelry[0]);
+      if (outerwear.length && picks.length < 6) picks.push(outerwear[0]);
+      if (accOrJewelry.length > 1 && picks.length < 6) picks.push(accOrJewelry[1]);
       return NextResponse.json({ products: picks, mode: "random" });
     }
 
-    // Use Claude to curate the outfit
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-    const productList = candidates
-      .map(
-        (p) =>
-          `${p.id} | ${p.name} | ${p.brand} | ${p.category} | ¥${p.price_cny}`
-      )
+    // Build candidate list for Claude
+    const productList = allCandidates
+      .map((p) => `${p.id} | ${p.name} | ${p.brand} | ${p.category} | ¥${p.price_cny}`)
       .join("\n");
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 500,
-      messages: [
-        {
-          role: "user",
-          content: `You are a modern fashion stylist. Pick exactly 5-6 items from this product list to create a cohesive ${preset.vibe} outfit.
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const timestamp = Date.now();
+
+    const systemPrompt = `You are a fashion stylist picking a complete outfit from a product catalog. You MUST select exactly:
+
+REQUIRED (every outfit must have ALL of these):
+- 1 top (t-shirt, hoodie, sweater, crewneck, polo, or shirt)
+- 1 bottom (pants, jeans, shorts, or sweatpants)
+- 1 pair of shoes (sneakers, boots, or slides)
+- 1 jewelry OR bag item (necklace, bracelet, ring, chain, watch, or bag)
+
+OPTIONAL (pick 1-2 if they complement the outfit):
+- 1 outerwear piece (jacket, coat) — only if the top is a t-shirt or thin shirt
+- 1 extra accessory (hat, belt, sunglasses, socks)
+
+Total items: 4-6 pieces.
 
 Rules:
-- Pick items that work together in color, style, and brand level
-- Must include: 1 top/shirt, 1 bottom OR shoes, and at least 1 accessory
-- Avoid clashing brands (don't mix Nike with Gucci)
-- Think about color palette — items should complement each other
-- Consider seasonality and the overall vibe: ${preset.description}
+- Colors must coordinate. Don't mix clashing colors randomly.
+- Brands should be cohesive in tier — don't pair a ¥50 budget tee with a ¥2000 LV bag unless it's intentional contrast.
+- Pick items that a real person would actually wear together.
+- Be creative and surprising — don't always pick the safest combo.
+- VARIETY IS KEY: pick a different combination every time. Seed: ${timestamp}
+
+Respond with ONLY a JSON array of product IDs, nothing else. Example: [123, 456, 789, 101, 202]`;
+
+    const callClaude = async (extraNote?: string): Promise<number[]> => {
+      const userContent = `${extraNote ? extraNote + "\n\n" : ""}Vibe: ${preset.vibe}
+Style description: ${preset.description}
 
 Available products (format: ID | Name | Brand | Category | Price):
-${productList}
+${productList}`;
 
-Respond ONLY with a JSON array of the selected product IDs, nothing else. Example: [123, 456, 789, 101, 202]`,
-        },
-      ],
-    });
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userContent }],
+      });
 
-    const text =
-      response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      const text = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      const match = text.match(/\[[\d,\s]+\]/);
+      if (!match) return [];
+      return JSON.parse(match[0]);
+    };
 
-    // Parse the ID array — handle potential markdown wrapping
-    const jsonMatch = text.match(/\[[\d,\s]+\]/);
-    if (!jsonMatch) {
-      // Fallback to random if parsing fails
-      const picks = candidates
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 6);
-      return NextResponse.json({ products: picks, mode: "fallback" });
+    // First attempt
+    let selectedIds = await callClaude();
+    let selected = allCandidates.filter((p) => selectedIds.includes(p.id));
+
+    // Validate: must have top, bottom, shoes, jewelry/bag
+    const valid =
+      hasCategory(selected, SLOT_CATS.tops) &&
+      hasCategory(selected, SLOT_CATS.bottoms) &&
+      hasCategory(selected, SLOT_CATS.shoes) &&
+      hasCategory(selected, [...SLOT_CATS.jewelry, ...SLOT_CATS.accessories]);
+
+    // Retry once if invalid
+    if (!valid && selected.length > 0) {
+      const missing: string[] = [];
+      if (!hasCategory(selected, SLOT_CATS.tops)) missing.push("top (shirt/hoodie/tee)");
+      if (!hasCategory(selected, SLOT_CATS.bottoms)) missing.push("bottom (pants/shorts)");
+      if (!hasCategory(selected, SLOT_CATS.shoes)) missing.push("shoes");
+      if (!hasCategory(selected, [...SLOT_CATS.jewelry, ...SLOT_CATS.accessories])) missing.push("jewelry or accessory");
+
+      selectedIds = await callClaude(
+        `Your previous selection was missing required categories: ${missing.join(", ")}. You MUST include one item from each required category.`
+      );
+      selected = allCandidates.filter((p) => selectedIds.includes(p.id));
     }
 
-    const selectedIds: number[] = JSON.parse(jsonMatch[0]);
-    const selected = candidates.filter((p) => selectedIds.includes(p.id));
-
-    // If Claude picked fewer than 3, supplement with random candidates
+    // Final fallback: if still bad, manually fill missing slots
     if (selected.length < 3) {
-      const remaining = candidates
-        .filter((p) => !selectedIds.includes(p.id))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 6 - selected.length);
-      selected.push(...remaining);
+      selected = [];
+      if (tops.length) selected.push(tops[0]);
+      if (bottoms.length) selected.push(bottoms[0]);
+      if (shoes.length) selected.push(shoes[0]);
+      const accPool = shuffle([...accessories, ...jewelry]);
+      if (accPool.length) selected.push(accPool[0]);
+      if (outerwear.length && selected.length < 6) selected.push(outerwear[0]);
+      return NextResponse.json({ products: selected, mode: "fallback" });
     }
 
     return NextResponse.json({ products: selected, mode: "ai-curated" });
