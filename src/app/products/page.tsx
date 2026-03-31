@@ -135,7 +135,7 @@ function ProductsPageInner() {
       try {
         let query = supabase
           .from("products")
-          .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,score,category,collection,tier,quality,source_link,featured", { count: "exact" })
+          .select("id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category,tier,quality", { count: "exact" })
           .not("image", "is", null)
           .neq("image", "");
 
@@ -503,7 +503,7 @@ function ProductsPageInner() {
       ) : (
       <>
       <div className="mt-4 grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {paginated.map((product) => {
+        {paginated.map((product, productIndex) => {
           const pid = String(product.id);
           const saved = wishlist.has(pid);
           const displayBrand = product.brand === "Various" ? "Unbranded" : product.brand;
@@ -522,7 +522,7 @@ function ProductsPageInner() {
                     <img
                       src={product.image}
                       alt={product.name}
-                      loading="lazy"
+                      loading={productIndex < 8 ? "eager" : "lazy"}
                       decoding="async"
                       width={300}
                       height={300}

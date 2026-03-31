@@ -36,14 +36,9 @@ interface Product {
   price_eur: number | null;
   tier: string;
   quality: string;
-  source_link: string;
   image: string;
   views: number;
   likes: number;
-  dislikes: number;
-  featured: boolean;
-  featured_rank: number | null;
-  created_at: string;
 }
 
 // Pink palette
@@ -270,7 +265,7 @@ function GirlsInner() {
 
       let query = supabase
         .from("products")
-        .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,source_link,image,views,likes,dislikes,featured,featured_rank,created_at", { count: "exact" })
+        .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,image,views,likes", { count: "exact" })
         .in("collection", ["girls", "both"])
         .not("image", "is", null)
         .neq("image", "");
@@ -506,7 +501,7 @@ function GirlsInner() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
-            {paginated.map((product) => (
+            {paginated.map((product, productIndex) => (
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
@@ -533,7 +528,7 @@ function GirlsInner() {
                     <img
                       src={product.image}
                       alt={product.name}
-                      loading="lazy"
+                      loading={productIndex < 8 ? "eager" : "lazy"}
                       decoding="async"
                       width={300}
                       height={375}

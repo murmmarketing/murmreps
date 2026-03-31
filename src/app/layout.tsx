@@ -4,11 +4,13 @@ import "./globals.css";
 import ReferralBanner from "@/components/ReferralBanner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FloatingReferral from "@/components/FloatingReferral";
-import SearchModal from "@/components/SearchModal";
+import dynamic from "next/dynamic";
 import ClientProviders from "@/components/ClientProviders";
-import NewsletterPopup from "@/components/NewsletterPopup";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+
+const FloatingReferral = dynamic(() => import("@/components/FloatingReferral"), { ssr: false });
+const NewsletterPopup = dynamic(() => import("@/components/NewsletterPopup"), { ssr: false });
+const SearchModal = dynamic(() => import("@/components/SearchModal"), { ssr: false });
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
