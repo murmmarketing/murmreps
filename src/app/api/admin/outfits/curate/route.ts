@@ -49,11 +49,10 @@ function shuffle<T>(arr: T[]): T[] {
 async function fetchSlot(
   supabase: ReturnType<typeof getAdminClient>,
   categories: string[],
-  limit: number,
+  sampleSize: number,
   brands?: string[],
   collection?: string,
 ): Promise<Product[]> {
-  // Fetch a larger pool sorted by score, then shuffle to get random variety
   let query = supabase
     .from("products")
     .select("id, name, brand, price_cny, image, category, collection")
@@ -70,9 +69,9 @@ async function fetchSlot(
     query = query.in("collection", [collection, "both"]);
   }
 
-  // Fetch 300 top-scored, then shuffle and take `limit`
-  const { data } = await query.order("score", { ascending: false }).limit(300);
-  return shuffle((data as Product[]) || []).slice(0, limit);
+  // Fetch top 30 by score, then randomly sample
+  const { data } = await query.order("score", { ascending: false }).limit(30);
+  return shuffle((data as Product[]) || []).slice(0, sampleSize);
 }
 
 function hasCategory(products: Product[], cats: string[]): boolean {
@@ -93,14 +92,14 @@ export async function POST(req: NextRequest) {
     const brands = preset.brands && preset.brands.length > 0 ? preset.brands : undefined;
     const collection = preset.collection || undefined;
 
-    // Fetch random candidates per slot in parallel
+    // Fetch random candidates per slot in parallel (smaller counts for image API)
     const [tops, bottoms, shoes, outerwear, accessories, jewelry] = await Promise.all([
-      fetchSlot(supabase, SLOT_CATS.tops, 15, brands, collection),
-      fetchSlot(supabase, SLOT_CATS.bottoms, 15, brands, collection),
-      fetchSlot(supabase, SLOT_CATS.shoes, 15, brands, collection),
-      fetchSlot(supabase, SLOT_CATS.outerwear, 10, brands, collection),
-      fetchSlot(supabase, SLOT_CATS.accessories, 15, brands, collection),
-      fetchSlot(supabase, SLOT_CATS.jewelry, 10, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.tops, 7, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.bottoms, 7, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.shoes, 7, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.outerwear, 5, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.accessories, 7, brands, collection),
+      fetchSlot(supabase, SLOT_CATS.jewelry, 5, brands, collection),
     ]);
 
     const allCandidates = [...tops, ...bottoms, ...shoes, ...outerwear, ...accessories, ...jewelry];
@@ -119,68 +118,127 @@ export async function POST(req: NextRequest) {
       if (accOrJewelry.length) picks.push(accOrJewelry[0]);
       if (outerwear.length && picks.length < 6) picks.push(outerwear[0]);
       if (accOrJewelry.length > 1 && picks.length < 6) picks.push(accOrJewelry[1]);
-      return NextResponse.json({ products: picks, mode: "random" });
+      return NextResponse.json({ products: picks, mode: "random", notes: "" });
     }
-
-    // Build candidate list for Claude
-    const productList = allCandidates
-      .map((p) => `${p.id} | ${p.name} | ${p.brand} | ${p.category} | ¥${p.price_cny}`)
-      .join("\n");
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const timestamp = Date.now();
 
-    const systemPrompt = `You are a fashion stylist curating outfits for flat-lay photography on TikTok/Instagram.
+    const systemPrompt = `You are an expert fashion stylist curating outfits for flat-lay photography on TikTok and Instagram. You can SEE the actual product photos — use them to make smart visual decisions.
 
-REQUIRED items (every outfit MUST have ALL):
-- 1 top (t-shirt, hoodie, sweater, crewneck, polo, or shirt)
-- 1 bottom (pants, jeans, shorts, or sweatpants)
-- 1 pair of shoes (sneakers, boots, or slides)
-- 1 jewelry piece OR bag (necklace, chain, bracelet, ring, watch, bag, wallet)
+REQUIRED ITEMS (every outfit MUST include ALL of these):
+- 1 top (t-shirt, hoodie, sweater, crewneck, polo, shirt)
+- 1 bottom (pants, jeans, shorts, sweatpants)
+- 1 pair of shoes (sneakers, boots, slides)
+- 1 jewelry piece OR bag (necklace, chain, bracelet, ring, watch, bag)
 
-OPTIONAL (pick 1-2):
-- 1 outerwear (jacket, coat) — only if the top is thin
-- 1 accessory (cap/hat, belt, sunglasses, socks)
+OPTIONAL (pick 1-2 if they complement the outfit):
+- 1 outerwear piece (jacket, coat) — only if the top is a thin t-shirt or polo
+- 1 extra accessory (cap, belt, sunglasses, socks)
 
-Total: 4-6 items per outfit.
+Total: 4-6 items.
 
-STYLING RULES:
-- Color coordination is CRITICAL. Pick items that look good together. Monochrome or 2-3 color palettes work best.
-- Brand tier matching — don't pair ¥50 budget items with ¥2000 luxury unless it's intentional high-low styling.
-- Think about what would look good in a flat-lay photo on grey carpet.
-- Avoid picking items that are too similar (e.g., don't pick 2 t-shirts or 2 pairs of shoes).
-- Prefer items with recognizable brand logos (Supreme box logo, Nike swoosh, Chrome Hearts cross) — these photograph better for social media.
-- Prefer statement pieces that catch the eye — bold graphics, iconic designs, recognizable silhouettes.
-- Be creative and surprising — don't always pick the safest combo.
-- VARIETY IS KEY: pick a different combination every time. Seed: ${timestamp}
+VISUAL STYLING RULES (you can see the product photos — use your eyes):
 
-Respond with ONLY a JSON array of product IDs, nothing else. Example: [123, 456, 789, 101, 202]`;
+COLOR PALETTE: Pick items that share a cohesive 2-3 color palette. Best combos:
+- All black / monochrome
+- Black + white + one accent color
+- Earth tones (beige, brown, cream, olive)
+- Navy + white + grey
+- All white / cream (summer clean)
+Avoid random rainbow combinations.
 
-    const callClaude = async (extraNote?: string): Promise<number[]> => {
-      const userContent = `${extraNote ? extraNote + "\n\n" : ""}Vibe: ${preset.vibe}
-Style description: ${preset.description}
+BRAND LOGO VISIBILITY: Prefer items where the brand logo or graphic is clearly visible and recognizable in the photo. Big Supreme box logos, Nike swooshes, Chrome Hearts crosses, Stussy text — these photograph well and get engagement.
 
-Available products (format: ID | Name | Brand | Category | Price):
-${productList}`;
+PHOTO QUALITY: Only pick items where the product photo is:
+- Clean and clear (not blurry or dark)
+- Shows the item properly (front view, not wrapped in packaging)
+- Has a relatively clean background
+SKIP items with messy photos, multiple unrelated items in frame, heavy watermarks, or items still in plastic bags.
 
+BRAND COHESION: Match brand tiers:
+- Streetwear: Nike + Stussy + Supreme + Jordan + New Balance
+- Luxury street: Chrome Hearts + Balenciaga + Amiri + Off-White
+- Old money: Ralph Lauren + Burberry + Acne Studios + Loro Piana
+- Archive: Rick Owens + Raf Simons + Undercover + Maison Margiela
+Don't randomly mix tiers unless doing intentional high-low (1 luxury piece + budget basics).
+
+SILHOUETTE BALANCE:
+- Oversized top → slim/straight bottom
+- Fitted top → wider/relaxed bottom
+- Bold graphic top → plain bottom
+- Plain top → statement shoes or accessories
+
+SEASONAL SENSE:
+- Don't pair a heavy puffer jacket with shorts
+- Hoodies go with pants/jeans, not usually with dress shoes
+- Slides/sandals go with shorts or relaxed fits
+
+FLAT-LAY THINKING: Imagine these items laid out on grey carpet for a photo. Which combination would look the most visually appealing and get the most engagement on TikTok?
+
+First, respond with ONLY a JSON array of product IDs. Example: [123, 456, 789, 101, 202]
+Then on a new line write "NOTES:" followed by a 1-2 sentence explanation of the color palette and styling logic.
+
+Seed: ${timestamp}`;
+
+    type ContentBlock = Anthropic.ImageBlockParam | Anthropic.TextBlockParam;
+
+    const buildContent = (extraNote?: string): ContentBlock[] => {
+      const content: ContentBlock[] = [];
+
+      if (extraNote) {
+        content.push({ type: "text", text: extraNote });
+      }
+
+      content.push({
+        type: "text",
+        text: `Vibe: ${preset.vibe}\nStyle: ${preset.description}\n\nHere are the candidate products with their photos. Pick the best outfit:`,
+      });
+
+      // Add each candidate as image + text
+      for (const p of allCandidates) {
+        if (p.image && p.image.startsWith("http")) {
+          content.push({
+            type: "image",
+            source: { type: "url", url: p.image },
+          });
+          content.push({
+            type: "text",
+            text: `ID: ${p.id} | ${p.brand} — ${p.name} | ${p.category} | ¥${p.price_cny}`,
+          });
+        }
+      }
+
+      return content;
+    };
+
+    const callClaude = async (extraNote?: string): Promise<{ ids: number[]; notes: string }> => {
       const response = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 500,
+        max_tokens: 600,
         system: systemPrompt,
-        messages: [{ role: "user", content: userContent }],
+        messages: [{ role: "user", content: buildContent(extraNote) }],
       });
 
       const text = response.content[0].type === "text" ? response.content[0].text.trim() : "";
-      const match = text.match(/\[[\d,\s]+\]/);
-      if (!match) return [];
-      return JSON.parse(match[0]);
+
+      // Parse IDs
+      const idMatch = text.match(/\[[\d,\s]+\]/);
+      const ids: number[] = idMatch ? JSON.parse(idMatch[0]) : [];
+
+      // Parse notes
+      const notesMatch = text.match(/NOTES:\s*([\s\S]+)/);
+      const notes = notesMatch ? notesMatch[1].trim() : "";
+
+      return { ids, notes };
     };
 
     // First attempt
-    let selectedIds = await callClaude();
-    let selected = allCandidates.filter((p) => selectedIds.includes(p.id));
+    let result = await callClaude();
+    let selected = allCandidates.filter((p) => result.ids.includes(p.id));
+    let notes = result.notes;
 
-    // Validate: must have top, bottom, shoes, jewelry/bag
+    // Validate: must have top, bottom, shoes, jewelry/accessory
     const valid =
       hasCategory(selected, SLOT_CATS.tops) &&
       hasCategory(selected, SLOT_CATS.bottoms) &&
@@ -195,13 +253,14 @@ ${productList}`;
       if (!hasCategory(selected, SLOT_CATS.shoes)) missing.push("shoes");
       if (!hasCategory(selected, [...SLOT_CATS.jewelry, ...SLOT_CATS.accessories])) missing.push("jewelry or accessory");
 
-      selectedIds = await callClaude(
+      result = await callClaude(
         `Your previous selection was missing required categories: ${missing.join(", ")}. You MUST include one item from each required category.`
       );
-      selected = allCandidates.filter((p) => selectedIds.includes(p.id));
+      selected = allCandidates.filter((p) => result.ids.includes(p.id));
+      notes = result.notes;
     }
 
-    // Final fallback: if still bad, manually fill missing slots
+    // Final fallback
     if (selected.length < 3) {
       selected = [];
       if (tops.length) selected.push(tops[0]);
@@ -210,10 +269,10 @@ ${productList}`;
       const accPool = shuffle([...accessories, ...jewelry]);
       if (accPool.length) selected.push(accPool[0]);
       if (outerwear.length && selected.length < 6) selected.push(outerwear[0]);
-      return NextResponse.json({ products: selected, mode: "fallback" });
+      return NextResponse.json({ products: selected, mode: "fallback", notes: "" });
     }
 
-    return NextResponse.json({ products: selected, mode: "ai-curated" });
+    return NextResponse.json({ products: selected, mode: "ai-curated", notes });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     console.error("Curation error:", msg);

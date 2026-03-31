@@ -95,6 +95,7 @@ export default function OutfitCuratorPage() {
   const [currentPreset, setCurrentPreset] = useState("");
   const [curating, setCurating] = useState(false);
   const [curationMode, setCurationMode] = useState("");
+  const [styleNotes, setStyleNotes] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -142,7 +143,7 @@ export default function OutfitCuratorPage() {
   const generateOutfit = async (key: string) => {
     const preset = PRESETS[key];
     if (!preset) return;
-    setCurating(true); setCurrentPreset(key); setOutfit([]); setCurationMode(""); setError("");
+    setCurating(true); setCurrentPreset(key); setOutfit([]); setCurationMode(""); setStyleNotes(""); setError("");
     try {
       const res = await fetch("/api/admin/outfits/curate", {
         method: "POST",
@@ -151,7 +152,7 @@ export default function OutfitCuratorPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.products?.length > 0) { setOutfit(data.products); setCurationMode(data.mode || ""); }
+        if (data.products?.length > 0) { setOutfit(data.products); setCurationMode(data.mode || ""); setStyleNotes(data.notes || ""); }
         else setError("No matching products found.");
       } else { const data = await res.json(); setError(data.error || "Curation failed"); }
     } catch { setError("Failed to curate outfit"); }
@@ -342,6 +343,13 @@ export default function OutfitCuratorPage() {
 
               {bottom ? <div><ItemCard product={bottom} /></div> : <div />}
             </div>
+
+            {/* Style notes */}
+            {styleNotes && (
+              <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111] p-4">
+                <p className="text-sm italic text-[#9CA3AF]">{styleNotes}</p>
+              </div>
+            )}
 
             {/* Manual add */}
             <div>
