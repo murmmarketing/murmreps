@@ -64,12 +64,10 @@ async function fetchImageAsBase64(url: string): Promise<{ base64: string; mediaT
     if (!res.ok) return null;
     const buffer = Buffer.from(await res.arrayBuffer());
     if (buffer.byteLength > 2_000_000) return null;
-
     const resized = await sharp(buffer)
       .resize(800, 800, { fit: "inside", withoutEnlargement: true })
       .jpeg({ quality: 70 })
       .toBuffer();
-
     return { base64: resized.toString("base64"), mediaType: "image/jpeg" };
   } catch {
     return null;
@@ -90,7 +88,10 @@ export async function POST(req: NextRequest) {
   if (authError) return authError;
 
   try {
-    const { preset } = (await req.json()) as { preset: PresetConfig };
+    const { preset, excludeIds } = (await req.json()) as {
+      preset: PresetConfig;
+      excludeIds?: number[];
+    };
     if (!preset || !preset.name) {
       return NextResponse.json({ error: "Preset required" }, { status: 400 });
     }
@@ -98,11 +99,12 @@ export async function POST(req: NextRequest) {
     const supabase = getAdminClient();
     const brands = preset.brands?.length ? preset.brands : undefined;
     const collection = preset.collection || undefined;
+    const recentExcludes = excludeIds || [];
 
     // ============================================================
     // STAGE 1: Fetch ALL qualifying products (text only)
     // ============================================================
-    let query = supabase
+    let baseQuery = supabase
       .from("products")
       .select("id, name, brand, price_cny, image, category, collection, score, views")
       .not("image", "is", null)
@@ -110,17 +112,17 @@ export async function POST(req: NextRequest) {
       .neq("brand", "Various");
 
     for (const pattern of MULTI_VARIANT_FILTERS) {
-      query = query.not("name", "ilike", pattern);
+      baseQuery = baseQuery.not("name", "ilike", pattern);
     }
 
-    if (brands) query = query.in("brand", brands);
-    if (collection) query = query.in("collection", [collection, "both"]);
+    if (brands) baseQuery = baseQuery.in("brand", brands);
+    if (collection) baseQuery = baseQuery.in("collection", [collection, "both"]);
 
-    // Supabase returns max 1000 per request — paginate to get all
+    // Paginate to get all
     let allProducts: Product[] = [];
     let offset = 0;
     while (true) {
-      const { data } = await query
+      const { data } = await baseQuery
         .order("score", { ascending: false })
         .range(offset, offset + 999);
       if (!data || data.length === 0) break;
@@ -129,10 +131,15 @@ export async function POST(req: NextRequest) {
       offset += 1000;
     }
 
+    // Filter out recently used products
+    if (recentExcludes.length > 0) {
+      allProducts = allProducts.filter((p) => !recentExcludes.includes(p.id));
+    }
+
     const totalScanned = allProducts.length;
 
     if (totalScanned < 10) {
-      return NextResponse.json({ error: `Only ${totalScanned} products found — not enough`, products: [] }, { status: 400 });
+      return NextResponse.json({ error: `Only ${totalScanned} products found`, products: [] }, { status: 400 });
     }
 
     // No API key → random slot-based selection
@@ -152,9 +159,11 @@ export async function POST(req: NextRequest) {
     const timestamp = Date.now();
 
     // ============================================================
-    // STAGE 1b: Text-only Haiku scan → shortlist 50
+    // STAGE 1b: Shuffle ALL products, then send to Haiku
     // ============================================================
-    const productLines = allProducts
+    const shuffledAll = shuffle(allProducts);
+
+    const productLines = shuffledAll
       .map((p) => `${p.id}|${p.brand}|${p.name}|${p.category}|¥${p.price_cny}|s:${p.score || 0}|v:${p.views}`)
       .join("\n");
 
@@ -163,14 +172,20 @@ export async function POST(req: NextRequest) {
 VIBE: ${preset.vibe}
 STYLE: ${preset.description}
 ${brands ? `PREFERRED BRANDS: ${brands.join(", ")}` : ""}
+${recentExcludes.length > 0 ? `DO NOT select any of these recently used product IDs: ${recentExcludes.join(", ")}` : ""}
+
+CRITICAL: Every time you run, you MUST pick completely different products. Never default to "safe" or "obvious" picks. Surprise me. Pick items I wouldn't expect. Prioritize variety and discovery over popularity.
+
+DO NOT pick:
+- Multi-item listings (photos showing multiple items in one image)
+- Products with vague names like "Product 12345" or just a number
+- Items with 0 views unless they have interesting names/brands
 
 Select exactly 50 product IDs that:
 1. Have recognizable, desirable brands
 2. Span ALL outfit categories: tops, bottoms, shoes, jewelry/bags, accessories, outerwear
-3. Have specific product names (not vague like "Product 12345")
-4. Cover a mix of price points within the vibe
-5. Prioritize higher score (s:) and views (v:) — these are community-validated
-6. Would look good together in multiple outfit combinations
+3. Cover a mix of price points within the vibe
+4. Would look good together in multiple outfit combinations
 
 Pick approximately:
 - 12 tops (mix of tees, hoodies, sweaters, polos)
@@ -197,7 +212,6 @@ Respond with ONLY a JSON array of 50 product IDs. Nothing else. Seed: ${timestam
       shortlistedIds = JSON.parse(stage1Match[0]);
     }
 
-    // Fallback: if Haiku fails to return valid IDs, randomly sample 50
     let shortlisted: Product[];
     if (shortlistedIds.length >= 20) {
       shortlisted = allProducts.filter((p) => shortlistedIds.includes(p.id));
@@ -205,13 +219,18 @@ Respond with ONLY a JSON array of 50 product IDs. Nothing else. Seed: ${timestam
       shortlisted = shuffle(allProducts).slice(0, 50);
     }
 
+    // Filter out recent excludes from shortlist too
+    if (recentExcludes.length > 0) {
+      shortlisted = shortlisted.filter((p) => !recentExcludes.includes(p.id));
+    }
+
+    // Shuffle shortlisted for Stage 2 variety
+    shortlisted = shuffle(shortlisted);
     const shortlistedCount = shortlisted.length;
 
     // ============================================================
     // STAGE 2: Vision-based final selection with images (Sonnet)
     // ============================================================
-
-    // Fetch images in parallel
     const imageResults = await Promise.allSettled(
       shortlisted.map((p) =>
         p.image && p.image.startsWith("http")
@@ -224,11 +243,7 @@ Respond with ONLY a JSON array of 50 product IDs. Nothing else. Seed: ${timestam
 
     const buildContent = (extraNote?: string): ContentBlock[] => {
       const content: ContentBlock[] = [];
-
-      if (extraNote) {
-        content.push({ type: "text", text: extraNote });
-      }
-
+      if (extraNote) content.push({ type: "text", text: extraNote });
       content.push({
         type: "text",
         text: `Vibe: ${preset.vibe}\nStyle: ${preset.description}\n\nThese ${shortlistedCount} products were shortlisted from ${totalScanned} candidates. Pick the best outfit:`,
@@ -238,7 +253,6 @@ Respond with ONLY a JSON array of 50 product IDs. Nothing else. Seed: ${timestam
         const p = shortlisted[i];
         const ir = imageResults[i];
         const imgResult = ir.status === "fulfilled" ? ir.value : null;
-
         if (imgResult) {
           content.push({
             type: "image",
@@ -249,17 +263,15 @@ Respond with ONLY a JSON array of 50 product IDs. Nothing else. Seed: ${timestam
             },
           });
         }
-
         content.push({
           type: "text",
           text: `ID: ${p.id} | ${p.brand} — ${p.name} | ${p.category} | ¥${p.price_cny}${!imgResult ? " [NO IMAGE]" : ""}`,
         });
       }
-
       return content;
     };
 
-    const stage2System = `You are an expert fashion stylist curating outfits for flat-lay photography on TikTok and Instagram. You can SEE the actual product photos — use them to make smart visual decisions.
+    const stage2System = `You are an expert fashion stylist curating outfits for flat-lay photography on TikTok and Instagram. You can SEE the actual product photos.
 
 REQUIRED ITEMS (every outfit MUST include ALL):
 - 1 top (t-shirt, hoodie, sweater, crewneck, polo, shirt)
@@ -273,26 +285,21 @@ OPTIONAL (pick 1-2 if they complement the outfit):
 
 Total: 4-6 items.
 
-VISUAL STYLING RULES:
+VARIETY IS CRITICAL. Pick unexpected, interesting combinations. Do NOT default to generic Nike + Supreme + basic sneakers. Dig into the candidates and find unique pieces — archive brands, interesting colorways, statement accessories.
 
-COLOR PALETTE: Pick items sharing a cohesive 2-3 color palette. Best combos:
-- All black / monochrome
-- Black + white + one accent color
-- Earth tones (beige, brown, cream, olive)
-- Navy + white + grey
-- All white / cream (summer clean)
+PHOTO QUALITY CHECK — you can see the images. REJECT any product where:
+- The photo shows MULTIPLE items (like several bags in one photo) — pick single-item photos only
+- A person is wearing/holding the item — we need flat product photos
+- The photo is blurry, dark, or has heavy watermarks
+- The item is still in packaging/plastic
 
-BRAND LOGO VISIBILITY: Prefer items where the logo/graphic is clearly visible. Supreme box logos, Nike swooshes, Chrome Hearts crosses photograph well.
-
-PHOTO QUALITY: Only pick items with clean, clear photos showing ONE item properly. SKIP blurry photos, group shots of multiple items, heavy watermarks, items in plastic bags.
+COLOR PALETTE: Pick items sharing a cohesive 2-3 color palette. Monochrome, earth tones, or black + accent work best.
 
 BRAND COHESION: Match brand tiers. Don't randomly mix streetwear with haute couture.
 
-SILHOUETTE BALANCE: Oversized top → slim bottom. Bold graphic top → plain bottom.
+SILHOUETTE BALANCE: Oversized top → slim bottom. Bold graphic → plain bottom.
 
 SEASONAL SENSE: Don't pair puffers with shorts, or slides with formal pants.
-
-FLAT-LAY THINKING: Which combination would look most visually appealing laid out on grey carpet for a TikTok photo?
 
 First, respond with ONLY a JSON array of product IDs. Example: [123, 456, 789, 101, 202]
 Then on a new line write "NOTES:" followed by a 1-2 sentence explanation of the color palette and styling logic.
@@ -306,7 +313,6 @@ Seed: ${timestamp}`;
         system: stage2System,
         messages: [{ role: "user", content: buildContent(extraNote) }],
       });
-
       const text = response.content[0].type === "text" ? response.content[0].text.trim() : "";
       const idMatch = text.match(/\[[\d,\s]+\]/);
       const ids: number[] = idMatch ? JSON.parse(idMatch[0]) : [];
@@ -315,7 +321,6 @@ Seed: ${timestamp}`;
       return { ids, notes };
     };
 
-    // First attempt
     let result = await callClaude();
     let selected = shortlisted.filter((p) => result.ids.includes(p.id));
     let notes = result.notes;
@@ -329,14 +334,12 @@ Seed: ${timestamp}`;
 
     if (!valid && selected.length > 0) {
       const missing: string[] = [];
-      if (!hasCategory(selected, SLOT_CATS.tops)) missing.push("top (shirt/hoodie/tee)");
-      if (!hasCategory(selected, SLOT_CATS.bottoms)) missing.push("bottom (pants/shorts)");
+      if (!hasCategory(selected, SLOT_CATS.tops)) missing.push("top");
+      if (!hasCategory(selected, SLOT_CATS.bottoms)) missing.push("bottom");
       if (!hasCategory(selected, SLOT_CATS.shoes)) missing.push("shoes");
-      if (!hasCategory(selected, [...SLOT_CATS.jewelry, ...SLOT_CATS.accessories])) missing.push("jewelry or accessory");
+      if (!hasCategory(selected, [...SLOT_CATS.jewelry, ...SLOT_CATS.accessories])) missing.push("jewelry/accessory");
 
-      result = await callClaude(
-        `Your previous selection was missing: ${missing.join(", ")}. You MUST include one item from each required category.`
-      );
+      result = await callClaude(`Missing: ${missing.join(", ")}. You MUST include one from each required category.`);
       selected = shortlisted.filter((p) => result.ids.includes(p.id));
       notes = result.notes;
     }

@@ -130,6 +130,7 @@ export default function ContentGeneratorPage() {
   const [scanStats, setScanStats] = useState({ total: 0, shortlisted: 0, selected: 0 });
   const [outfitError, setOutfitError] = useState("");
   const [outfitCopied, setOutfitCopied] = useState(false);
+  const [recentOutfitIds, setRecentOutfitIds] = useState<number[]>([]);
   const [swapTarget, setSwapTarget] = useState<Product | null>(null);
   const [swapOptions, setSwapOptions] = useState<Product[]>([]);
   const [swapLoading, setSwapLoading] = useState(false);
@@ -219,13 +220,14 @@ export default function ContentGeneratorPage() {
       const res = await fetch("/api/admin/outfits/curate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-password": storedPassword },
-        body: JSON.stringify({ preset }),
+        body: JSON.stringify({ preset, excludeIds: recentOutfitIds }),
       });
       if (res.ok) {
         const data = await res.json();
         if (data.products?.length > 0) {
           setOutfit(data.products); setCurationMode(data.mode || ""); setStyleNotes(data.notes || "");
           setScanStats({ total: data.totalScanned || 0, shortlisted: data.shortlisted || 0, selected: data.products.length });
+          setRecentOutfitIds((prev) => [...prev, ...data.products.map((p: Product) => p.id)].slice(-18));
         } else setOutfitError("No matching products found.");
       } else { const data = await res.json(); setOutfitError(data.error || "Curation failed"); }
     } catch { setOutfitError("Failed to curate outfit"); }
