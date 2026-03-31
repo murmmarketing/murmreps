@@ -33,9 +33,8 @@ const vibes = [
   "summer casual", "hypebeast", "women's luxury", "minimalist",
 ];
 const qualities = [
-  { value: "quick", label: "Quick (~10s)", desc: "Lower quality, faster" },
-  { value: "standard", label: "Standard (~20s)", desc: "Balanced" },
-  { value: "maximum", label: "Maximum (~40s)", desc: "Best quality, slow" },
+  { value: "quick", label: "Quick — 1K (~15s)" },
+  { value: "standard", label: "Standard — 2K (~30s)" },
 ];
 
 interface PresetConfig {
@@ -173,7 +172,7 @@ export default function OutfitGeneratorPage() {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-password": storedPassword },
         body: JSON.stringify({
-          products: selected.map((p) => ({ id: p.id, name: p.name, brand: p.brand, category: p.category })),
+          products: selected.map((p) => ({ id: p.id, name: p.name, brand: p.brand, category: p.category, image: p.image })),
           surface, vibe, ratio: format, quality,
         }),
       });
@@ -330,7 +329,7 @@ export default function OutfitGeneratorPage() {
         {/* Generate */}
         <button onClick={generate} disabled={generating || selected.length === 0}
           className="w-full rounded-xl bg-[#FE4205] py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)] disabled:opacity-30">
-          {generating ? `Generating flat-lay (${quality === "quick" ? "~10s" : quality === "maximum" ? "~40s" : "~20s"})...` : "Generate Flat-Lay Photo"}
+          {generating ? `Generating flat-lay (${quality === "quick" ? "~15s" : "~30s"})...` : "Generate Flat-Lay Photo"}
         </button>
 
         {error && <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{error}</div>}
