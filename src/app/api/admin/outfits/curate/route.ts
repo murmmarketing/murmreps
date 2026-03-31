@@ -40,6 +40,25 @@ const SLOT_CATS = {
   jewelry: ["Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Jewelry"],
 };
 
+// Name-based safety filters to catch miscategorized products
+const SLOT_BLOCKLIST: Record<string, string[]> = {
+  tops: ["sneaker", "shoe", "boot", "slide", "sandal", "jordan 1", "jordan 4", "dunk", "air force", "air max", "yeezy", "loafer"],
+  bottoms: ["sneaker", "shoe", "boot", "hoodie", "jacket", "bag", "necklace", "bracelet", "ring", "watch"],
+  shoes: ["shirt", "tee", "short", "jeans", "pants", "hoodie", "jacket", "sweater", "bag", "cap", "hat", "belt", "sock", "wallet", "ring", "chain", "necklace", "bracelet", "glasses", "bootcut", "bootleg"],
+  outerwear: ["sneaker", "shoe", "boot", "slide", "pants", "jeans", "short", "bag", "necklace"],
+  accessories: ["sneaker", "shoe", "boot", "hoodie", "jacket", "sweater", "pants", "jeans"],
+  jewelry: ["sneaker", "shoe", "boot", "hoodie", "jacket", "pants", "jeans", "short", "shirt"],
+};
+
+function filterSlot(products: Product[], slot: string): Product[] {
+  const blocklist = SLOT_BLOCKLIST[slot];
+  if (!blocklist) return products;
+  return products.filter((p) => {
+    const n = (p.name || "").toLowerCase();
+    return !blocklist.some((kw) => n.includes(kw));
+  });
+}
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -145,12 +164,13 @@ export async function POST(req: NextRequest) {
     // No API key → random slot-based selection
     if (!process.env.ANTHROPIC_API_KEY) {
       const picks: Product[] = [];
-      const bySlot = (cats: string[]) => shuffle(allProducts.filter((p) => cats.includes(p.category)));
-      const t = bySlot(SLOT_CATS.tops); if (t.length) picks.push(t[0]);
-      const b = bySlot(SLOT_CATS.bottoms); if (b.length) picks.push(b[0]);
-      const s = bySlot(SLOT_CATS.shoes); if (s.length) picks.push(s[0]);
-      const aj = bySlot([...SLOT_CATS.accessories, ...SLOT_CATS.jewelry]); if (aj.length) picks.push(aj[0]);
-      const o = bySlot(SLOT_CATS.outerwear); if (o.length && picks.length < 6) picks.push(o[0]);
+      const safeSlot = (cats: string[], slot: string) => shuffle(filterSlot(allProducts.filter((p) => cats.includes(p.category)), slot));
+      const t = safeSlot(SLOT_CATS.tops, "tops"); if (t.length) picks.push(t[0]);
+      const b = safeSlot(SLOT_CATS.bottoms, "bottoms"); if (b.length) picks.push(b[0]);
+      const s = safeSlot(SLOT_CATS.shoes, "shoes"); if (s.length) picks.push(s[0]);
+      const aj = shuffle(filterSlot(allProducts.filter((p) => [...SLOT_CATS.accessories, ...SLOT_CATS.jewelry].includes(p.category)), "accessories"));
+      if (aj.length) picks.push(aj[0]);
+      const o = safeSlot(SLOT_CATS.outerwear, "outerwear"); if (o.length && picks.length < 6) picks.push(o[0]);
       if (aj.length > 1 && picks.length < 6) picks.push(aj[1]);
       return NextResponse.json({ products: picks, mode: "random", notes: "", totalScanned, shortlisted: 0 });
     }
@@ -347,11 +367,12 @@ Seed: ${timestamp}`;
     // Final fallback
     if (selected.length < 3) {
       selected = [];
-      const bySlot = (cats: string[]) => shuffle(shortlisted.filter((p) => cats.includes(p.category)));
-      const t = bySlot(SLOT_CATS.tops); if (t.length) selected.push(t[0]);
-      const b = bySlot(SLOT_CATS.bottoms); if (b.length) selected.push(b[0]);
-      const s = bySlot(SLOT_CATS.shoes); if (s.length) selected.push(s[0]);
-      const aj = bySlot([...SLOT_CATS.accessories, ...SLOT_CATS.jewelry]); if (aj.length) selected.push(aj[0]);
+      const safeSlot = (cats: string[], slot: string) => shuffle(filterSlot(shortlisted.filter((p) => cats.includes(p.category)), slot));
+      const t = safeSlot(SLOT_CATS.tops, "tops"); if (t.length) selected.push(t[0]);
+      const b = safeSlot(SLOT_CATS.bottoms, "bottoms"); if (b.length) selected.push(b[0]);
+      const s = safeSlot(SLOT_CATS.shoes, "shoes"); if (s.length) selected.push(s[0]);
+      const aj = shuffle(filterSlot(shortlisted.filter((p) => [...SLOT_CATS.accessories, ...SLOT_CATS.jewelry].includes(p.category)), "accessories"));
+      if (aj.length) selected.push(aj[0]);
       return NextResponse.json({ products: selected, mode: "fallback", notes: "", totalScanned, shortlisted: shortlistedCount });
     }
 
