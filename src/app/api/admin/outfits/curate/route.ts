@@ -60,7 +60,15 @@ async function fetchSlot(
     .not("image", "is", null)
     .neq("image", "")
     .neq("brand", "Various")
-    .gt("views", 0);
+    .gt("views", 0)
+    .not("name", "ilike", "%(% styles)%")
+    .not("name", "ilike", "%(% colors)%")
+    .not("name", "ilike", "%(% colours)%")
+    .not("name", "ilike", "%in 1%")
+    .not("name", "ilike", "%pack of%")
+    .not("name", "ilike", "%set of%")
+    .not("name", "ilike", "%combo%")
+    .not("name", "ilike", "%bundle%");
 
   if (brands && brands.length > 0) {
     query = query.in("brand", brands);
@@ -173,6 +181,8 @@ SEASONAL SENSE:
 - Don't pair a heavy puffer jacket with shorts
 - Hoodies go with pants/jeans, not usually with dress shoes
 - Slides/sandals go with shorts or relaxed fits
+
+MULTI-VARIANT LISTINGS: If you see a product photo showing MULTIPLE items in one image (e.g., 8 t-shirts spread out, a collection of colors, a pile of items), do NOT pick that product. Only pick products where the photo shows ONE specific item clearly. Single items photograph better for flat-lays.
 
 FLAT-LAY THINKING: Imagine these items laid out on grey carpet for a photo. Which combination would look the most visually appealing and get the most engagement on TikTok?
 
