@@ -60,7 +60,8 @@ async function fetchSlot(
     .in("category", categories)
     .not("image", "is", null)
     .neq("image", "")
-    .neq("brand", "Various");
+    .neq("brand", "Various")
+    .gt("views", 0);
 
   if (brands && brands.length > 0) {
     query = query.in("brand", brands);
@@ -69,8 +70,8 @@ async function fetchSlot(
     query = query.in("collection", [collection, "both"]);
   }
 
-  // Fetch 200 top-scored, then shuffle and take `limit`
-  const { data } = await query.order("score", { ascending: false }).limit(200);
+  // Fetch 300 top-scored, then shuffle and take `limit`
+  const { data } = await query.order("score", { ascending: false }).limit(300);
   return shuffle((data as Product[]) || []).slice(0, limit);
 }
 
@@ -129,24 +130,27 @@ export async function POST(req: NextRequest) {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const timestamp = Date.now();
 
-    const systemPrompt = `You are a fashion stylist picking a complete outfit from a product catalog. You MUST select exactly:
+    const systemPrompt = `You are a fashion stylist curating outfits for flat-lay photography on TikTok/Instagram.
 
-REQUIRED (every outfit must have ALL of these):
+REQUIRED items (every outfit MUST have ALL):
 - 1 top (t-shirt, hoodie, sweater, crewneck, polo, or shirt)
 - 1 bottom (pants, jeans, shorts, or sweatpants)
 - 1 pair of shoes (sneakers, boots, or slides)
-- 1 jewelry OR bag item (necklace, bracelet, ring, chain, watch, or bag)
+- 1 jewelry piece OR bag (necklace, chain, bracelet, ring, watch, bag, wallet)
 
-OPTIONAL (pick 1-2 if they complement the outfit):
-- 1 outerwear piece (jacket, coat) — only if the top is a t-shirt or thin shirt
-- 1 extra accessory (hat, belt, sunglasses, socks)
+OPTIONAL (pick 1-2):
+- 1 outerwear (jacket, coat) — only if the top is thin
+- 1 accessory (cap/hat, belt, sunglasses, socks)
 
-Total items: 4-6 pieces.
+Total: 4-6 items per outfit.
 
-Rules:
-- Colors must coordinate. Don't mix clashing colors randomly.
-- Brands should be cohesive in tier — don't pair a ¥50 budget tee with a ¥2000 LV bag unless it's intentional contrast.
-- Pick items that a real person would actually wear together.
+STYLING RULES:
+- Color coordination is CRITICAL. Pick items that look good together. Monochrome or 2-3 color palettes work best.
+- Brand tier matching — don't pair ¥50 budget items with ¥2000 luxury unless it's intentional high-low styling.
+- Think about what would look good in a flat-lay photo on grey carpet.
+- Avoid picking items that are too similar (e.g., don't pick 2 t-shirts or 2 pairs of shoes).
+- Prefer items with recognizable brand logos (Supreme box logo, Nike swoosh, Chrome Hearts cross) — these photograph better for social media.
+- Prefer statement pieces that catch the eye — bold graphics, iconic designs, recognizable silhouettes.
 - Be creative and surprising — don't always pick the safest combo.
 - VARIETY IS KEY: pick a different combination every time. Seed: ${timestamp}
 

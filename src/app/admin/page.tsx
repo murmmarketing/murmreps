@@ -282,8 +282,8 @@ export default function AdminDashboard() {
           <ToolCard
             href="/admin/outfits"
             icon="👕"
-            title="Outfit Generator"
-            description="AI flat-lay photos for TikTok & Instagram"
+            title="Outfit Curator"
+            description="AI-curated outfits for flat-lay photography"
           />
           <ToolCard
             href="/admin/marketing"
