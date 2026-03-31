@@ -280,7 +280,7 @@ export default function AdminDashboard() {
             description="Recalculate product tiers and scoring"
           />
           <ToolCard
-            href="/admin/outfits"
+            href="/admin/reddit"
             icon="👕"
             title="Outfit Curator"
             description="AI-curated outfits for flat-lay photography"
