@@ -487,7 +487,18 @@ function GirlsInner() {
 
         {/* Product grid */}
         {loading ? (
-          <div className="py-24 text-center" style={{ color: P.textMuted }}>Loading finds...</div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="animate-pulse overflow-hidden rounded-2xl" style={{ background: P.card, border: `1px solid ${P.border}` }}>
+                <div className="aspect-square" style={{ background: "rgba(255,255,255,0.03)" }} />
+                <div className="p-4">
+                  <div className="h-4 w-3/4 rounded" style={{ background: "rgba(255,255,255,0.05)" }} />
+                  <div className="mt-2 h-3 w-1/2 rounded" style={{ background: "rgba(255,255,255,0.05)" }} />
+                  <div className="mt-3 h-5 w-1/3 rounded" style={{ background: "rgba(255,255,255,0.05)" }} />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : paginated.length === 0 ? (
           <div className="py-24 text-center">
             <p className="text-lg" style={{ color: P.textSec }}>No finds match your search.</p>

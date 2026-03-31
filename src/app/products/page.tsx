@@ -86,7 +86,7 @@ export default function ProductsPage() {
 
 function ProductsPageInner() {
   const searchParams = useSearchParams();
-  const [products, setProducts] = useState(staticProducts);
+  const [products, setProducts] = useState<typeof staticProducts>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -487,6 +487,21 @@ function ProductsPageInner() {
       )}
 
       {/* Product grid */}
+      {loading ? (
+        <div className="mt-4 grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="animate-pulse overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414]">
+              <div className="aspect-square bg-[#1a1a1a]" />
+              <div className="p-4">
+                <div className="h-4 w-3/4 rounded bg-[#1a1a1a]" />
+                <div className="mt-2 h-3 w-1/2 rounded bg-[#1a1a1a]" />
+                <div className="mt-3 h-5 w-1/3 rounded bg-[#1a1a1a]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+      <>
       <div className="mt-4 grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {paginated.map((product) => {
           const pid = String(product.id);
@@ -617,6 +632,8 @@ function ProductsPageInner() {
           }}
         />
       </div>
+      </>
+      )}
 
       {totalCount === 0 && !loading && (
         <div className="mt-16 text-center">
