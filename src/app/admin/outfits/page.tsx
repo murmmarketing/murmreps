@@ -12,6 +12,14 @@ interface Product {
   category: string;
 }
 
+interface GeneratedImage {
+  imageUrl: string;
+  collageUrl?: string;
+  mode: string;
+  prompt: string;
+  timestamp: number;
+}
+
 const surfaces = [
   "beige carpet", "cream carpet", "grey carpet", "dark grey carpet",
   "white marble", "light wood floor", "dark wood floor", "white bedsheet",
@@ -48,7 +56,7 @@ const presets: Preset[] = [
 
 function buildPrompt(products: Product[], surface: string, lighting: string, vibe: string): string {
   const items = products.map((p) => `${p.brand !== "Various" ? p.brand + " " : ""}${p.name}`).join(", ");
-  return `Flat lay photo of a ${vibe} outfit on ${surface}, overhead shot, ${lighting}. Items neatly arranged in outfit formation: ${items}. Clean minimal aesthetic, editorial style, high resolution product photography. No mannequin, no person, just clothing and accessories laid flat. 4K, photorealistic.`;
+  return `Flat lay product photography of clothing and accessories arranged neatly on ${surface}, overhead bird's eye view, ${lighting}. The exact items arranged in a ${vibe} outfit formation: ${items}. Each item clearly visible, folded or placed naturally with clean spacing between items. Professional editorial product photography, slightly warm tones, crisp sharp details, 4K, photorealistic. No person, no mannequin, just clothing and accessories laid flat.`;
 }
 
 export default function OutfitGeneratorPage() {
@@ -69,15 +77,25 @@ export default function OutfitGeneratorPage() {
   const [format, setFormat] = useState("1:1");
   const [vibe, setVibe] = useState(vibes[0]);
   const [prompt, setPrompt] = useState("");
+  const [strength, setStrength] = useState(0.75);
 
   // Generation
   const [imageUrl, setImageUrl] = useState("");
+  const [collageUrl, setCollageUrl] = useState("");
+  const [mode, setMode] = useState("");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
+
+  // Gallery
+  const [gallery, setGallery] = useState<GeneratedImage[]>([]);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("admin-auth");
     if (saved) { setStoredPassword(saved); setAuthed(true); }
+    try {
+      const g = localStorage.getItem("outfit-gallery");
+      if (g) setGallery(JSON.parse(g));
+    } catch { /* ignore */ }
   }, []);
 
   const handleLogin = () => {
@@ -89,10 +107,7 @@ export default function OutfitGeneratorPage() {
 
   // Search products
   useEffect(() => {
-    if (!storedPassword || search.length < 2) {
-      setSearchResults([]);
-      return;
-    }
+    if (!storedPassword || search.length < 2) { setSearchResults([]); return; }
     clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(async () => {
       setSearching(true);
@@ -108,9 +123,7 @@ export default function OutfitGeneratorPage() {
 
   // Rebuild prompt when selections change
   useEffect(() => {
-    if (selected.length > 0) {
-      setPrompt(buildPrompt(selected, surface, lighting, vibe));
-    }
+    if (selected.length > 0) setPrompt(buildPrompt(selected, surface, lighting, vibe));
   }, [selected, surface, lighting, vibe]);
 
   const addProduct = (p: Product) => {
@@ -129,8 +142,6 @@ export default function OutfitGeneratorPage() {
     setLighting(preset.lighting);
     setVibe(preset.vibe);
     setSelected([]);
-
-    // Search for each query and pick first result
     const picks: Product[] = [];
     for (const q of preset.queries) {
       try {
@@ -148,15 +159,22 @@ export default function OutfitGeneratorPage() {
   };
 
   const generate = async () => {
-    if (!prompt) return;
+    if (!prompt || selected.length === 0) return;
     setGenerating(true);
     setError("");
     setImageUrl("");
+    setCollageUrl("");
+    setMode("");
     try {
       const res = await fetch("/api/admin/outfits/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-password": storedPassword },
-        body: JSON.stringify({ prompt, ratio: format }),
+        body: JSON.stringify({
+          prompt,
+          ratio: format,
+          strength,
+          products: selected.map((p) => ({ id: p.id, name: p.name, brand: p.brand, image: p.image })),
+        }),
       });
       if (res.status === 401) {
         setAuthed(false);
@@ -164,8 +182,24 @@ export default function OutfitGeneratorPage() {
         return;
       }
       const data = await res.json();
-      if (data.error) setError(data.error);
-      else setImageUrl(data.imageUrl);
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setImageUrl(data.imageUrl);
+        setCollageUrl(data.collageUrl || "");
+        setMode(data.mode || "");
+        // Save to gallery
+        const entry: GeneratedImage = {
+          imageUrl: data.imageUrl,
+          collageUrl: data.collageUrl,
+          mode: data.mode,
+          prompt,
+          timestamp: Date.now(),
+        };
+        const updated = [entry, ...gallery].slice(0, 20);
+        setGallery(updated);
+        try { localStorage.setItem("outfit-gallery", JSON.stringify(updated)); } catch { /* ignore */ }
+      }
     } catch {
       setError("Failed to generate image");
     }
@@ -222,11 +256,7 @@ export default function OutfitGeneratorPage() {
 
         {/* Product Picker */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">
-            Products ({selected.length}/8)
-          </label>
-
-          {/* Selected */}
+          <label className="mb-2 block text-sm font-medium text-[#9CA3AF]">Products ({selected.length}/8)</label>
           {selected.length > 0 && (
             <div className="mb-3 flex flex-wrap gap-2">
               {selected.map((p) => (
@@ -239,16 +269,12 @@ export default function OutfitGeneratorPage() {
               ))}
             </div>
           )}
-
-          {/* Search */}
           <div className="relative">
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products to add..."
               className="w-full rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-[#6B7280] outline-none focus:border-[#FE4205]" />
             {searching && <span className="absolute right-3 top-3 text-xs text-[#6B7280]">...</span>}
           </div>
-
-          {/* Results */}
           {searchResults.length > 0 && (
             <div className="mt-2 max-h-60 overflow-y-auto rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111] divide-y divide-[rgba(255,255,255,0.04)]">
               {searchResults.map((p) => (
@@ -266,6 +292,24 @@ export default function OutfitGeneratorPage() {
             </div>
           )}
         </div>
+
+        {/* Reference Images Preview */}
+        {selected.length >= 2 && (
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111] p-4">
+            <p className="mb-2 text-xs font-medium text-[#6B7280] uppercase tracking-wider">Reference images (sent to AI)</p>
+            <div className="grid grid-cols-4 gap-2">
+              {selected.map((p) => (
+                <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg bg-[#0e0e0e]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                    <p className="text-[10px] text-white truncate">{p.name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Configuration */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -299,6 +343,20 @@ export default function OutfitGeneratorPage() {
           </div>
         </div>
 
+        {/* Strength slider */}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-[#9CA3AF]">
+            Reference strength: {strength.toFixed(2)}
+          </label>
+          <input type="range" min="0.4" max="0.9" step="0.05" value={strength}
+            onChange={(e) => setStrength(parseFloat(e.target.value))}
+            className="w-full accent-[#FE4205]" />
+          <div className="flex justify-between text-xs text-[#52525b]">
+            <span>More creative</span>
+            <span>More accurate</span>
+          </div>
+        </div>
+
         {/* Prompt */}
         {selected.length > 0 && (
           <div>
@@ -312,22 +370,41 @@ export default function OutfitGeneratorPage() {
         <button onClick={generate}
           disabled={generating || selected.length === 0 || !prompt}
           className="w-full rounded-xl bg-[#FE4205] py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)] disabled:opacity-30">
-          {generating ? "Generating (this takes ~15 seconds)..." : "Generate Flat-Lay Image"}
+          {generating ? "Generating with product images (~20 seconds)..." : "Generate Flat-Lay Image"}
         </button>
 
         {error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-            {error}
-          </div>
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{error}</div>
         )}
 
         {/* Result */}
         {imageUrl && (
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt="Generated outfit flat lay" className="w-full" />
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-[#6B7280]">Generated flat-lay</p>
+                {mode && (
+                  <span className="rounded-full bg-[rgba(255,255,255,0.06)] px-2 py-0.5 text-[10px] text-[#9CA3AF]">
+                    {mode === "img2img" ? "Image-guided" : "Text-only"}
+                  </span>
+                )}
+              </div>
+              <div className="overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageUrl} alt="Generated outfit flat lay" className="w-full" />
+              </div>
             </div>
+
+            {collageUrl && (
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[#6B7280]">Reference collage (input)</p>
+                <div className="overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] opacity-60">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={collageUrl} alt="Reference collage" className="w-full" />
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-3">
               <a href={imageUrl} download="murmreps-outfit.png" target="_blank" rel="noopener noreferrer"
                 className="rounded-lg bg-[#FE4205] px-6 py-2.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)]">
@@ -342,11 +419,39 @@ export default function OutfitGeneratorPage() {
         )}
 
         {generating && (
-          <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center justify-center gap-3 py-16">
             <svg className="h-8 w-8 animate-spin text-[#FE4205]" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
+            <p className="text-xs text-[#6B7280]">Creating collage from product images and generating...</p>
+          </div>
+        )}
+
+        {/* Gallery */}
+        {gallery.length > 0 && !generating && (
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-medium text-[#9CA3AF]">Previous Generations</h2>
+              <button onClick={() => { setGallery([]); localStorage.removeItem("outfit-gallery"); }}
+                className="text-xs text-[#52525b] hover:text-red-400 transition-colors">
+                Clear all
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+              {gallery.map((g, i) => (
+                <button key={i} onClick={() => { setImageUrl(g.imageUrl); setCollageUrl(g.collageUrl || ""); setMode(g.mode); }}
+                  className="group relative aspect-square overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111] transition-all hover:border-[rgba(255,255,255,0.15)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={g.imageUrl} alt={`Generation ${i + 1}`} className="h-full w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-[10px] text-white">
+                      {new Date(g.timestamp).toLocaleDateString()}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
