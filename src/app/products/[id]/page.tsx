@@ -62,6 +62,43 @@ const qualityBadgeStyles: Record<string, string> = {
   budget: "bg-[#6C757D]/20 text-white",
 };
 
+function CostEstimate({ price, region, weight, onRegionChange, onWeightChange }: {
+  price: number; region: string; weight: string;
+  onRegionChange: (v: string) => void; onWeightChange: (v: string) => void;
+}) {
+  const fee = Math.round(price * 0.05);
+  const rates: Record<string, [number, number]> = { europe: [80, 150], usa: [90, 160], uk: [70, 130], australia: [100, 180] };
+  const weights: Record<string, number> = { light: 0.3, medium: 0.7, heavy: 1.2 };
+  const r = rates[region] || rates.europe;
+  const w = weights[weight] || 0.7;
+  const shipLow = Math.round(r[0] * w);
+  const shipHigh = Math.round(r[1] * w);
+  const totalLow = Math.round((price + fee + shipLow) * 0.127);
+  const totalHigh = Math.round((price + fee + shipHigh) * 0.127);
+  return (
+    <div className="mt-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4 space-y-3 text-sm">
+      <div className="flex justify-between"><span className="text-text-muted">Product</span><span className="text-white">¥{price} (~€{Math.round(price * 0.127)})</span></div>
+      <div className="flex justify-between"><span className="text-text-muted">Agent fee (~5%)</span><span className="text-white">¥{fee} (~€{Math.round(fee * 0.127)})</span></div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-text-muted shrink-0">Shipping</span>
+        <div className="flex gap-2">
+          <select value={region} onChange={(e) => onRegionChange(e.target.value)} className="rounded bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] px-2 py-1 text-xs text-white outline-none">
+            <option value="europe">Europe</option><option value="usa">USA/Canada</option><option value="uk">UK</option><option value="australia">Australia</option>
+          </select>
+          <select value={weight} onChange={(e) => onWeightChange(e.target.value)} className="rounded bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] px-2 py-1 text-xs text-white outline-none">
+            <option value="light">Light (&lt;300g)</option><option value="medium">Medium (300-800g)</option><option value="heavy">Heavy (800g+)</option>
+          </select>
+        </div>
+      </div>
+      <div className="border-t border-[rgba(255,255,255,0.06)] pt-3 flex justify-between">
+        <span className="text-white font-medium">Estimated total</span><span className="text-accent font-bold">€{totalLow}–{totalHigh}</span>
+      </div>
+      <p className="text-[11px] text-text-muted">Rough estimate. Actual cost depends on agent, shipping line, and weight.</p>
+      <p className="text-[11px] text-accent">💡 Ship multiple items together to save on shipping!</p>
+    </div>
+  );
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const staticProduct = (products as unknown as Product[]).find(
@@ -93,6 +130,11 @@ export default function ProductDetailPage() {
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [copied, setCopied] = useState(false);
   const viewIncrementedRef = useRef(false);
+  const [costOpen, setCostOpen] = useState(false);
+  const [costRegion, setCostRegion] = useState("europe");
+  const [costWeight, setCostWeight] = useState("medium");
+  const [howToBuyOpen, setHowToBuyOpen] = useState(false);
+  const [miniFaqOpen, setMiniFaqOpen] = useState<number | null>(null);
   const [similarFinds, setSimilarFinds] = useState<Product[]>([]);
   const [moreBrand, setMoreBrand] = useState<Product[]>([]);
 
@@ -484,8 +526,37 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Cost Calculator */}
+          {product.price_cny != null && product.price_cny > 0 && (
+            <div className="mt-4">
+              <button onClick={() => setCostOpen(!costOpen)} className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors">
+                <span>💰</span>
+                <span className="border-b border-dotted border-[#6B7280]">Estimate your total cost</span>
+                <svg className={`h-3 w-3 transition-transform ${costOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+              </button>
+              {costOpen && <CostEstimate price={product.price_cny!} region={costRegion} weight={costWeight} onRegionChange={setCostRegion} onWeightChange={setCostWeight} />}
+            </div>
+          )}
+
           {/* Divider */}
           <div className="my-6 border-t border-subtle" />
+
+          {/* How to buy explainer */}
+          <button onClick={() => setHowToBuyOpen(!howToBuyOpen)} className="mb-4 flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors">
+            <span>{howToBuyOpen ? "▼" : "▶"}</span>
+            <span>How do I buy this?</span>
+          </button>
+          {howToBuyOpen && (
+            <div className="mb-5 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-4 text-sm space-y-2">
+              <div className="flex gap-2"><span className="text-accent font-bold">1.</span><span className="text-[#d4d4d8]">Click any agent button below (we recommend <strong className="text-white">KakoBuy</strong>)</span></div>
+              <div className="flex gap-2"><span className="text-accent font-bold">2.</span><span className="text-[#d4d4d8]">Create a free account on the agent&apos;s site</span></div>
+              <div className="flex gap-2"><span className="text-accent font-bold">3.</span><span className="text-[#d4d4d8]">Add the item to your cart and pay</span></div>
+              <div className="flex gap-2"><span className="text-accent font-bold">4.</span><span className="text-[#d4d4d8]">Your agent buys it from the Chinese seller (1-5 days)</span></div>
+              <div className="flex gap-2"><span className="text-accent font-bold">5.</span><span className="text-[#d4d4d8]">You get QC photos to check quality</span></div>
+              <div className="flex gap-2"><span className="text-accent font-bold">6.</span><span className="text-[#d4d4d8]">Once happy, ship it to your address (7-20 days)</span></div>
+              <p className="pt-2 text-xs text-text-muted">💡 First time? <Link href="/guides/how-to-buy-reps-kakobuy" className="text-accent hover:underline">Read our step-by-step guide →</Link></p>
+            </div>
+          )}
 
           {/* Buy section */}
           <div data-buy-section>
@@ -499,6 +570,7 @@ export default function ProductDetailPage() {
                 const url = hasLink
                   ? agent.buildUrl(product.source_link)
                   : agent.referralUrl;
+                const isKako = agent.name === "KakoBuy";
                 return (
                   <a
                     key={agent.name}
@@ -506,9 +578,10 @@ export default function ProductDetailPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackEvent('agent_click', { product_id: Number(product.id), agent_name: agent.name })}
-                    className="flex items-center justify-center gap-2 rounded-btn border border-subtle bg-[#141414] px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.1)]"
+                    className={`relative flex items-center justify-center gap-2 rounded-btn border px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.1)] ${isKako ? "border-accent/40 bg-accent/5" : "border-subtle bg-[#141414]"}`}
                   >
                     {agent.name}
+                    {isKako && <span className="rounded-full bg-accent/20 px-1.5 py-0.5 text-[9px] font-semibold text-accent">Recommended</span>}
                     <svg
                       className="h-3.5 w-3.5 text-text-muted"
                       fill="none"
@@ -526,12 +599,16 @@ export default function ProductDetailPage() {
                 );
               })}
             </div>
-            <p className="mt-4 text-sm text-text-muted">
-              New to buying reps?{" "}
-              <Link href="/guides/how-to-buy-reps-kakobuy" className="text-accent hover:underline">
-                Read our beginner guide →
-              </Link>
-            </p>
+            <div className="mt-4 flex flex-col gap-1">
+              <p className="text-sm text-text-muted">
+                New to buying reps?{" "}
+                <Link href="/guides/how-to-buy-reps-kakobuy" className="text-accent hover:underline">Read our beginner guide →</Link>
+              </p>
+              <p className="text-sm text-text-muted">
+                Not sure which agent?{" "}
+                <Link href="/guides/agent-comparison" className="text-accent hover:underline">Compare all 8 agents →</Link>
+              </p>
+            </div>
           </div>
 
           {/* Action buttons */}
@@ -609,6 +686,24 @@ export default function ProductDetailPage() {
               <span>👁</span>
               <span>{stats.views} views</span>
             </span>
+          </div>
+
+          {/* Mini FAQ */}
+          <div className="mt-8 space-y-2">
+            <h3 className="text-sm font-semibold text-text-secondary mb-2">Common Questions</h3>
+            {[
+              { q: "What is an agent?", a: "An agent buys products from Chinese sellers on your behalf and ships them to you. You need one because most Chinese sellers don't ship internationally." },
+              { q: "How do I buy this?", a: "Click an agent button above (we recommend KakoBuy), create a free account, add to cart, and pay. The agent handles the rest — buying, QC photos, and shipping." },
+              { q: "What if it's bad quality?", a: "Your agent takes QC (Quality Check) photos before shipping. If you're not happy, you can return the item for free and get a refund." },
+            ].map((faq, i) => (
+              <div key={i} className="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#141414] overflow-hidden">
+                <button onClick={() => setMiniFaqOpen(miniFaqOpen === i ? null : i)} className="flex w-full items-center justify-between p-3 text-left">
+                  <span className="text-xs font-medium text-white">{faq.q}</span>
+                  <svg className={`h-3 w-3 shrink-0 text-accent transition-transform ${miniFaqOpen === i ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                </button>
+                {miniFaqOpen === i && <p className="px-3 pb-3 text-xs text-text-muted leading-relaxed">{faq.a}</p>}
+              </div>
+            ))}
           </div>
         </div>
       </div>

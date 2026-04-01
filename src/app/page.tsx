@@ -13,6 +13,8 @@ const HomeSections = dynamic(() => import("@/components/HomeSections"), {
   loading: () => <div className="py-16" />,
 });
 
+const HomeFAQ = dynamic(() => import("@/components/HomeFAQ"), { ssr: false });
+
 export const metadata: Metadata = {
   title: "MurmReps \u2014 Find the Best Rep Finds | 19,000+ Products",
   description:
@@ -74,6 +76,9 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6">
         <HomeSections />
       </section>
+
+      {/* FAQ */}
+      <HomeFAQ />
 
       {/* Bento features */}
       <section className="mx-auto max-w-7xl overflow-hidden px-4 py-16 sm:px-6 sm:py-24">
