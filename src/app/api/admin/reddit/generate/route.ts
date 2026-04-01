@@ -373,6 +373,114 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ==================== PINTEREST ====================
+    if (platform === "pinterest") {
+      const TOP_CATS = ["Shirts", "Hoodies", "Sweaters", "Polos", "Jackets", "Long Sleeves", "Jerseys", "Tops"];
+      const BOT_CATS = ["Pants", "Shorts"];
+      const SHOE_CATS = ["Shoes", "Boots", "Slides & Sandals"];
+      const ACC_CATS = ["Hats & Caps", "Belts", "Sunglasses", "Bags", "Wallets", "Necklaces", "Bracelets", "Earrings", "Rings", "Watches", "Scarves & Gloves", "Accessories", "Jewelry"];
+
+      const vibeFromProducts = (items: Product[]) => {
+        const brands = items.map((p) => p.brand.toLowerCase()).join(" ");
+        if (brands.includes("rick owens") || brands.includes("chrome hearts") || brands.includes("balenciaga")) return "dark";
+        if (brands.includes("ralph lauren") || brands.includes("burberry") || brands.includes("acne")) return "old money";
+        if (brands.includes("supreme") || brands.includes("off-white") || brands.includes("louis vuitton")) return "luxury";
+        return "streetwear";
+      };
+
+      const boardMap: Record<string, string> = {
+        streetwear: "Streetwear Outfits", dark: "Dark Aesthetic Fits", "old money": "Old Money Style",
+        luxury: "Designer Finds", sporty: "Sporty Fits", minimal: "Minimal Style",
+        girls: "Girls Collection", sneakers: "Sneaker Rotation", budget: "Budget Finds Under €20",
+        accessories: "Accessories & Jewelry",
+      };
+
+      if (template === "outfit-pin") {
+        const [tops, bots, shoes, accs] = await Promise.all([
+          queryTop(supabase, 40), queryTop(supabase, 40), queryTop(supabase, 40), queryTop(supabase, 40),
+        ]);
+        const topPick = dedupeByBrand(tops.filter((p) => TOP_CATS.includes(p.category)), 1, 1)[0];
+        const botPick = dedupeByBrand(bots.filter((p) => BOT_CATS.includes(p.category)), 1, 1)[0];
+        const shoePick = dedupeByBrand(shoes.filter((p) => SHOE_CATS.includes(p.category)), 1, 1)[0];
+        const accPicks = dedupeByBrand(accs.filter((p) => ACC_CATS.includes(p.category)), 1, 2);
+        const items = [topPick, botPick, shoePick, ...accPicks].filter(Boolean);
+        const brands = Array.from(new Set(items.map((p) => p.brand))).slice(0, 2);
+        const vibe = vibeFromProducts(items);
+        const vibeLabel = vibe === "dark" ? "Dark Aesthetic" : vibe === "old money" ? "Old Money" : vibe === "luxury" ? "Designer" : "Streetwear";
+        const desc = items.map((p) => `${p.brand} ${p.name} — ¥${p.price_cny}`).join("\n") + "\n\nAll pieces on murmreps.com — 8 agents, best prices. #repfinds #outfitinspo #streetwear #flatlay #ootd #mensfashion #budgetfashion";
+        const alt = `Flat lay ${vibe} outfit on grey carpet with ${items.map((p) => p.name.toLowerCase()).join(", ")}`;
+        return NextResponse.json({
+          platform: "pinterest",
+          title: `${brands.join(" x ")} Outfit | ${vibeLabel} Inspo`,
+          body: desc,
+          altText: alt,
+          board: boardMap[vibe] || "Streetwear Outfits",
+          link: "https://murmreps.com",
+        });
+      }
+
+      if (template === "single-product-pin") {
+        const picks = dedupeByBrand(await queryTop(supabase, 30), 1, 1);
+        const p = picks[0];
+        if (!p) return NextResponse.json({ error: "No products" }, { status: 400 });
+        const catBoard = SHOE_CATS.includes(p.category) ? "sneakers" : ACC_CATS.includes(p.category) ? "accessories" : "streetwear";
+        return NextResponse.json({
+          platform: "pinterest",
+          title: `${p.brand} ${p.name} | Rep Find ¥${p.price_cny}`,
+          body: `${p.brand} ${p.name} — ¥${p.price_cny} (≈€${eur(p.price_cny)}). Find this and 19,000+ more finds on murmreps.com. Compare prices across 8 agents including KakoBuy, Superbuy, and CnFans.\n\n#repfinds #${p.brand.toLowerCase().replace(/\s+/g, "")} #designerdupe #affordableluxury #fashionfinds`,
+          altText: `${p.brand} ${p.name} product photo`,
+          board: boardMap[catBoard] || "Streetwear Outfits",
+          link: `https://murmreps.com/products/${p.id}`,
+        });
+      }
+
+      if (template === "top-5-pin") {
+        const picks = dedupeByBrand(await queryTop(supabase, 50), 1, 5);
+        const cat = picks[0]?.category || "Streetwear";
+        const maxPrice = Math.max(...picks.map((p) => p.price_cny));
+        const list = picks.map((p, i) => `${i + 1}. ${p.brand} ${p.name} — ¥${p.price_cny} (≈€${eur(p.price_cny)})`).join("\n");
+        return NextResponse.json({
+          platform: "pinterest",
+          title: `Top 5 ${cat} Finds Under ¥${maxPrice} | Rep Finds 2026`,
+          body: `${list}\n\nAll links on murmreps.com\n\n#repfinds #top5 #budgetfashion #affordableluxury #haul #streetwear #designerdupe`,
+          altText: `List of 5 affordable ${cat.toLowerCase()} replica finds with prices`,
+          board: maxPrice < 150 ? boardMap.budget : boardMap.streetwear,
+          link: `https://murmreps.com/products?category=${encodeURIComponent(cat)}`,
+        });
+      }
+
+      if (template === "girls-pin") {
+        const picks = dedupeByBrand(await queryGirls(supabase, 40), 1, 5);
+        const list = picks.map((p) => `${p.brand} ${p.name} — ¥${p.price_cny}`).join("\n");
+        return NextResponse.json({
+          platform: "pinterest",
+          title: `${picks[0]?.brand || "Designer"} ${picks[0]?.name || "Finds"} | Women's Rep Finds`,
+          body: `${list}\n\nShop the full girls collection at murmreps.com/girls — 2,500+ women's finds\n\n#repfinds #repladies #womensfashion #designerdupe #luxurybags #outfitinspo`,
+          altText: `Women's fashion flat lay with ${picks.map((p) => p.name.toLowerCase()).join(", ")}`,
+          board: boardMap.girls,
+          link: "https://murmreps.com/girls",
+        });
+      }
+
+      if (template === "brand-spotlight-pin") {
+        if (!brand) return NextResponse.json({ error: "Select a brand" }, { status: 400 });
+        const { data } = await supabase
+          .from("products").select("id, name, brand, price_cny, image, views, category")
+          .eq("brand", brand).not("image", "is", null).neq("image", "")
+          .order("score", { ascending: false }).limit(5);
+        const items = (data as Product[]) || [];
+        const list = items.map((p) => `${p.name} — ¥${p.price_cny} (≈€${eur(p.price_cny)})`).join("\n");
+        return NextResponse.json({
+          platform: "pinterest",
+          title: `Best ${brand} Reps 2026 | Top Finds`,
+          body: `${list}\n\nBrowse all ${brand} finds on murmreps.com\n\n#${brand.toLowerCase().replace(/\s+/g, "")} #repfinds #designerdupe #affordableluxury #fashionfinds`,
+          altText: `${brand} replica products collection`,
+          board: boardMap.luxury,
+          link: `https://murmreps.com/products?search=${encodeURIComponent(brand)}`,
+        });
+      }
+    }
+
     return NextResponse.json({ error: "Unknown platform/template" }, { status: 400 });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";

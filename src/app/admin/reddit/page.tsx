@@ -11,11 +11,14 @@ interface ContentResult {
   hashtags?: string;
   videoIdea?: string;
   contentType?: string;
+  altText?: string;
+  board?: string;
+  link?: string;
 }
 
 interface BrandOption { name: string; count: number; }
 
-type Platform = "reddit" | "tiktok" | "instagram" | "discord";
+type Platform = "reddit" | "tiktok" | "instagram" | "discord" | "pinterest";
 
 const platformTemplates: Record<Platform, { value: string; label: string }[]> = {
   reddit: [
@@ -47,6 +50,13 @@ const platformTemplates: Record<Platform, { value: string; label: string }[]> = 
     { value: "girls-drop", label: "Girls Drop" },
     { value: "welcome", label: "Welcome / Server Info" },
   ],
+  pinterest: [
+    { value: "outfit-pin", label: "Outfit Flat-Lay Pin" },
+    { value: "single-product-pin", label: "Single Product Pin" },
+    { value: "top-5-pin", label: "Top 5 Finds Pin" },
+    { value: "girls-pin", label: "Girls Collection Pin" },
+    { value: "brand-spotlight-pin", label: "Brand Spotlight Pin" },
+  ],
 };
 
 const platformLabels: Record<Platform, string> = {
@@ -54,6 +64,7 @@ const platformLabels: Record<Platform, string> = {
   tiktok: "TikTok",
   instagram: "Instagram",
   discord: "Discord",
+  pinterest: "Pinterest",
 };
 
 export default function ContentGeneratorPage() {
@@ -99,7 +110,7 @@ export default function ContentGeneratorPage() {
   }, [platform]);
 
   const generate = async () => {
-    if (template === "brand-spotlight" && !brand) return;
+    if ((template === "brand-spotlight" || template === "brand-spotlight-pin") && !brand) return;
     setLoading(true);
     try {
       const res = await fetch("/api/admin/reddit/generate", {
@@ -187,7 +198,7 @@ export default function ContentGeneratorPage() {
             </select>
           </div>
 
-          {template === "brand-spotlight" && (
+          {(template === "brand-spotlight" || template === "brand-spotlight-pin") && (
             <div>
               <label className="mb-1.5 block text-sm font-medium text-[#9CA3AF]">Brand</label>
               <select value={brand} onChange={(e) => setBrand(e.target.value)}
@@ -198,7 +209,7 @@ export default function ContentGeneratorPage() {
             </div>
           )}
 
-          <button onClick={generate} disabled={loading || (template === "brand-spotlight" && !brand)}
+          <button onClick={generate} disabled={loading || ((template === "brand-spotlight" || template === "brand-spotlight-pin") && !brand)}
             className="rounded-lg bg-[#FE4205] px-6 py-2.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(254,66,5,0.3)] disabled:opacity-30">
             {loading ? "Generating..." : "Generate"}
           </button>
@@ -209,13 +220,16 @@ export default function ContentGeneratorPage() {
           <div className="space-y-4">
             {result.subreddit && <p className="text-sm text-[#6B7280]">Best for: <span className="text-[#FE4205]">{result.subreddit}</span></p>}
             {result.contentType && <p className="text-sm text-[#6B7280]">Format: <span className="text-[#FE4205]">{result.contentType}</span></p>}
-            {platform === "reddit" && result.title && <CopyBlock label="Post Title" text={result.title} field="title" />}
+            {result.board && <p className="text-sm text-[#6B7280]">Board: <span className="text-[#FE4205]">{result.board}</span></p>}
+            {(platform === "reddit" || platform === "pinterest") && result.title && <CopyBlock label={platform === "pinterest" ? "Pin Title" : "Post Title"} text={result.title} field="title" charLimit={platform === "pinterest" ? 100 : undefined} />}
             <CopyBlock
-              label={platform === "reddit" ? "Post Body" : platform === "discord" ? "Message" : "Caption"}
+              label={platform === "reddit" ? "Post Body" : platform === "discord" ? "Message" : platform === "pinterest" ? "Pin Description" : "Caption"}
               text={result.body} field="body"
-              charLimit={platform === "tiktok" ? 4000 : platform === "instagram" ? 2200 : undefined} />
+              charLimit={platform === "tiktok" ? 4000 : platform === "instagram" ? 2200 : platform === "pinterest" ? 500 : undefined} />
             {platform === "tiktok" && result.hashtags && <CopyBlock label="Hashtags" text={result.hashtags} field="hashtags" />}
             {platform === "tiktok" && result.videoIdea && <CopyBlock label="Video Idea" text={result.videoIdea} field="videoIdea" />}
+            {platform === "pinterest" && result.altText && <CopyBlock label="Alt Text" text={result.altText} field="altText" />}
+            {platform === "pinterest" && result.link && <CopyBlock label="Pin Link" text={result.link} field="link" />}
             <button onClick={generate} disabled={loading} className="text-sm text-[#6B7280] hover:text-white transition-colors disabled:opacity-30">🔄 Regenerate</button>
           </div>
         )}
