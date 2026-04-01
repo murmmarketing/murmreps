@@ -505,6 +505,7 @@ function GirlsInner() {
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
+                data-product-card
                 className="group overflow-hidden transition-all duration-[250ms]"
                 style={{
                   background: P.card,
@@ -533,7 +534,7 @@ function GirlsInner() {
                       width={300}
                       height={375}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      onError={(e) => { const card = e.currentTarget.closest("[data-product-card]") as HTMLElement | null; if (card) card.style.display = "none"; }}
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">

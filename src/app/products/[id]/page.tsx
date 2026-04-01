@@ -727,6 +727,7 @@ export default function ProductDetailPage() {
               <Link
                 key={p.id}
                 href={`/products/${p.id}`}
+                data-product-card
                 className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 sm:w-auto"
               >
                 <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#0a0a0a]">
@@ -741,7 +742,8 @@ export default function ProductDetailPage() {
                       height={140}
                       className="h-full w-full object-contain"
                       onError={(e) => {
-                        e.currentTarget.style.display = "none";
+                        const card = e.currentTarget.closest("[data-product-card]") as HTMLElement | null;
+                        if (card) card.style.display = "none";
                       }}
                     />
                   ) : (
@@ -796,6 +798,7 @@ export default function ProductDetailPage() {
               <Link
                 key={p.id}
                 href={`/products/${p.id}`}
+                data-product-card
                 className="group w-60 shrink-0 snap-start rounded-card border border-[rgba(255,255,255,0.06)] bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20 sm:w-auto"
               >
                 <div className="relative h-[140px] overflow-hidden rounded-t-card bg-[#0a0a0a]">
@@ -810,7 +813,8 @@ export default function ProductDetailPage() {
                       height={140}
                       className="h-full w-full object-contain"
                       onError={(e) => {
-                        e.currentTarget.style.display = "none";
+                        const card = e.currentTarget.closest("[data-product-card]") as HTMLElement | null;
+                        if (card) card.style.display = "none";
                       }}
                     />
                   ) : (

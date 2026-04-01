@@ -199,6 +199,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
               href={`/products/${product.id}`}
               onClick={handleCardClick}
               draggable={false}
+              data-product-card
               className={`group/card w-[220px] min-w-[220px] flex-shrink-0 snap-start overflow-hidden rounded-xl bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 ${isPremium ? "premium-card" : "border border-[rgba(255,255,255,0.06)] hover:border-[var(--accent-glow)]"}`}
             >
               {/* Image */}
@@ -216,7 +217,8 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
                     draggable={false}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-[1.03]"
                     onError={(e) => {
-                      e.currentTarget.style.display = "none";
+                      const card = e.currentTarget.closest("[data-product-card]") as HTMLElement | null;
+                      if (card) card.style.display = "none";
                     }}
                   />
                 ) : (

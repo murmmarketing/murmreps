@@ -512,6 +512,7 @@ function ProductsPageInner() {
           return (
             <div
               key={product.id}
+              data-product-card
               className="group overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(254,66,5,0.2)]"
             >
               {/* Image area */}
@@ -528,7 +529,8 @@ function ProductsPageInner() {
                       height={300}
                       className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
                       onError={(e) => {
-                        e.currentTarget.style.display = "none";
+                        const card = e.currentTarget.closest("[data-product-card]") as HTMLElement | null;
+                        if (card) card.style.display = "none";
                       }}
                     />
                   </>
