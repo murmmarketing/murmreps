@@ -750,6 +750,51 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
+      {/* SEO Content */}
+      {product.price_cny != null && (
+        <section className="mt-12 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
+          <h2 className="text-lg font-bold text-white mb-3">About this {product.category}</h2>
+          <p className="text-sm text-text-secondary leading-relaxed mb-4">
+            This {product.brand !== "Various" ? product.brand : ""} {product.category.toLowerCase()} is available for ¥{product.price_cny} (approximately €{(product.price_cny * 0.127).toFixed(2)}).
+            Compare prices across 8 verified shopping agents including KakoBuy, Superbuy, CnFans, and more.
+            MurmReps tracks 15,000+ products to help you find the best deals.
+          </p>
+          <h3 className="text-sm font-semibold text-white mb-2">How to buy</h3>
+          <p className="text-sm text-text-secondary leading-relaxed mb-4">
+            Click any agent button above to open this product on your preferred agent&apos;s site.
+            Create a free account, add the item to your cart, and your agent buys it from the seller and sends you QC photos.
+            Review the photos, then ship to your address.
+          </p>
+          <p className="text-sm text-text-secondary leading-relaxed">
+            Estimated shipping: €8-15 to Europe, €10-18 to USA/Canada. Ship with other items to save on shipping costs.
+          </p>
+          {product.brand !== "Various" && (
+            <div className="mt-4 flex gap-3 text-sm">
+              <Link href={`/brands/${product.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} className="text-accent hover:underline">
+                More {product.brand} products →
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Product JSON-LD */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: `${product.brand !== "Various" ? product.brand + " " : ""}${product.name}`,
+        image: product.image || undefined,
+        description: `${product.brand} ${product.category} available on MurmReps`,
+        brand: product.brand !== "Various" ? { "@type": "Brand", name: product.brand } : undefined,
+        offers: product.price_cny ? {
+          "@type": "Offer",
+          price: (product.price_cny * 0.127).toFixed(2),
+          priceCurrency: "EUR",
+          availability: "https://schema.org/InStock",
+          url: `https://murmreps.com/products/${product.id}`,
+        } : undefined,
+      }) }} />
+
       {/* Similar Finds */}
       {similarFinds.length >= 3 && (
         <section className="mt-16">

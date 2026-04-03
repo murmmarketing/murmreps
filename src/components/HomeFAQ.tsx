@@ -15,8 +15,19 @@ const faqs = [
 export default function HomeFAQ() {
   const [open, setOpen] = useState<number | null>(null);
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <h2 className="mb-8 text-center font-heading text-2xl font-bold text-white sm:text-3xl">
         New to Reps? Common Questions
       </h2>
