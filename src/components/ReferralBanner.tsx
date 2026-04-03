@@ -90,7 +90,7 @@ export default function ReferralBanner() {
 
         <button
           onClick={handleDismiss}
-          className="shrink-0 p-1 text-text-muted transition-colors duration-200 hover:text-white"
+          className="shrink-0 flex h-8 w-8 items-center justify-center text-text-muted transition-colors duration-200 hover:text-white"
           aria-label="Dismiss banner"
         >
           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

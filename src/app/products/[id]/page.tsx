@@ -13,6 +13,7 @@ import { usePreferences } from "@/lib/usePreferences";
 import { addRecentlyViewed } from "@/components/RecentlyViewed";
 import { useToast } from "@/components/Toast";
 import ProductReviews from "@/components/ProductReviews";
+import GlossaryTip from "@/components/GlossaryTip";
 
 interface ProductVariant {
   name: string;
@@ -584,8 +585,8 @@ export default function ProductDetailPage() {
           <div data-buy-section>
             <p className="mb-3 text-sm font-medium text-text-secondary">
               {hasLink
-                ? "Buy this item through an agent:"
-                : "Sign up with an agent:"}
+                ? <>Buy this item through an <GlossaryTip term="agent">agent</GlossaryTip>:</>
+                : <>Sign up with an <GlossaryTip term="agent">agent</GlossaryTip>:</>}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {agents.map((agent) => {
@@ -897,7 +898,7 @@ export default function ProductDetailPage() {
       <section className="mt-16">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-heading text-xl font-bold text-white">
-            Quality Check
+            <GlossaryTip term="QC">Quality Check</GlossaryTip>
           </h2>
           {product.source_link && (
             <div className="flex items-center gap-2">

@@ -116,6 +116,14 @@ export default function Navbar() {
       document.documentElement.scrollLeft = 0;
     });
   };
+  // Escape to close mobile menu
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeMenu(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [mobileOpen]);
+
   const [navSearch, setNavSearch] = useState("");
   const wishlistCount = useWishlistCount();
   const pathname = usePathname();
@@ -267,7 +275,7 @@ export default function Navbar() {
           {/* Wishlist heart */}
           <Link
             href="/wishlist"
-            className="relative flex items-center text-[#9CA3AF] transition-colors duration-200 hover:text-white"
+            className="relative flex h-11 w-11 items-center justify-center text-[#9CA3AF] transition-colors duration-200 hover:text-white"
             aria-label="Wishlist"
           >
             <svg
@@ -369,7 +377,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/wishlist"
-            className="relative flex items-center text-[#9CA3AF] transition-colors duration-200 hover:text-white"
+            className="relative flex h-11 w-11 items-center justify-center text-[#9CA3AF] transition-colors duration-200 hover:text-white"
             aria-label="Wishlist"
           >
             <svg
@@ -393,7 +401,7 @@ export default function Navbar() {
           </Link>
 
           <button
-            className="flex flex-col gap-1.5"
+            className="relative z-[60] flex h-11 w-11 flex-col items-center justify-center gap-1.5"
             onClick={() => { if (mobileOpen) { closeMenu(); } else { openMenu(); } }}
             aria-label="Toggle menu"
           >
@@ -426,6 +434,9 @@ export default function Navbar() {
                 className="rounded-full bg-accent px-5 py-2 text-[14px] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
               >
                 Login
+              </button>
+              <button onClick={closeMenu} className="flex h-11 w-11 items-center justify-center rounded-lg text-[#9CA3AF] hover:text-white transition-colors" aria-label="Close menu">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
