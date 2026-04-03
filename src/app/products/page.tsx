@@ -109,6 +109,30 @@ function ProductsPageInner() {
     setDebouncedSearch(urlQuery);
   }, [urlQuery]);
 
+  // Autocomplete search
+  useEffect(() => {
+    if (search.length < 2) { setAcResults([]); setAcOpen(false); return; }
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await supabase.from("products")
+          .select("id, name, brand, price_cny, image")
+          .or(`name.ilike.%${search}%,brand.ilike.%${search}%`)
+          .not("image", "is", null).neq("image", "")
+          .order("score", { ascending: false }).limit(6);
+        setAcResults((data || []) as typeof acResults);
+        setAcOpen(true);
+      } catch { /* */ }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Close autocomplete on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (acRef.current && !acRef.current.contains(e.target as Node)) setAcOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   // Initialize category from URL ?category= parameter
   const urlCategory = searchParams.get("category") || "All Categories";
   const [category, setCategory] = useState<Category>(
@@ -125,6 +149,10 @@ function ProductsPageInner() {
   const [sort, setSort] = useState<Sort>("best");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  // Autocomplete
+  const [acResults, setAcResults] = useState<{ id: number; name: string; brand: string; price_cny: number | null; image: string }[]>([]);
+  const [acOpen, setAcOpen] = useState(false);
+  const acRef = useRef<HTMLDivElement>(null);
   const PRODUCTS_PER_PAGE = 24;
   const [currentPage, setCurrentPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -314,7 +342,7 @@ function ProductsPageInner() {
     <div id="product-grid" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       {/* Mobile search + Filters */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1">
+        <div ref={acRef} className="relative flex-1">
           <svg
             className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
             fill="none"
@@ -328,9 +356,32 @@ function ProductsPageInner() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => { if (search.length >= 2 && acResults.length) setAcOpen(true); }}
+            onKeyDown={(e) => { if (e.key === "Escape") setAcOpen(false); }}
             placeholder="Search products..."
             className="h-10 w-full rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#141414] pl-9 pr-3 text-sm text-white placeholder-text-muted outline-none transition-colors focus:border-accent/50"
           />
+          {/* Autocomplete dropdown */}
+          {acOpen && acResults.length > 0 && (
+            <div className="absolute left-0 right-0 top-full z-40 mt-1 overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141414] shadow-xl">
+              {acResults.map((p) => (
+                <Link key={p.id} href={`/products/${p.id}`} onClick={() => setAcOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-[rgba(255,255,255,0.05)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.image} alt="" className="h-10 w-10 shrink-0 rounded-md object-cover bg-[#0a0a0a]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white truncate">{p.name}</p>
+                    <p className="text-xs text-text-muted">{p.brand}{p.price_cny ? ` · ¥${p.price_cny}` : ""}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          {acOpen && search.length >= 2 && acResults.length === 0 && (
+            <div className="absolute left-0 right-0 top-full z-40 mt-1 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141414] px-4 py-3 text-sm text-text-muted shadow-xl">
+              No results for &quot;{search}&quot;
+            </div>
+          )}
         </div>
         <button
           onClick={openFilters}

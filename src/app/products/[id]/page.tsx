@@ -12,6 +12,7 @@ import { trackEvent } from "@/lib/track";
 import { usePreferences } from "@/lib/usePreferences";
 import { addRecentlyViewed } from "@/components/RecentlyViewed";
 import { useToast } from "@/components/Toast";
+import ProductReviews from "@/components/ProductReviews";
 
 interface ProductVariant {
   name: string;
@@ -726,6 +727,9 @@ export default function ProductDetailPage() {
               <span>{stats.views} views</span>
             </span>
           </div>
+
+          {/* Reviews */}
+          <ProductReviews productId={Number(product.id)} avgRating={product.score as unknown as number} reviewCount={0} />
 
           {/* Mini FAQ */}
           <div className="mt-8 space-y-2">

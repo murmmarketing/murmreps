@@ -38,7 +38,7 @@ export default function NewsletterPopup() {
       const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'popup' }),
+        body: JSON.stringify({ email, source: 'popup', ref_code: localStorage.getItem('murmreps_ref') || undefined }),
       });
 
       if (res.ok) {

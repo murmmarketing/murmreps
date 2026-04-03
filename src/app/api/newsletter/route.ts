@@ -15,7 +15,7 @@ function getSupabase() {
 
 export async function POST(req: Request) {
   try {
-    const { email, source } = await req.json();
+    const { email, source, ref_code } = await req.json();
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
@@ -41,6 +41,23 @@ export async function POST(req: Request) {
       subject: '🔥 Welcome to MurmReps — Your top picks inside',
       html: getWelcomeEmailHTML(email),
     });
+
+    // Mark referral conversion if ref_code exists
+    if (ref_code) {
+      try {
+        const { data: visit } = await supabase
+          .from('referral_visits')
+          .select('id')
+          .eq('ref_code', ref_code)
+          .eq('converted', false)
+          .order('visited_at', { ascending: false })
+          .limit(1)
+          .single();
+        if (visit) {
+          await supabase.from('referral_visits').update({ converted: true }).eq('id', visit.id);
+        }
+      } catch { /* referral tracking is best-effort */ }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
