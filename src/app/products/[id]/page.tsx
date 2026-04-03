@@ -359,8 +359,8 @@ export default function ProductDetailPage() {
               e.currentTarget.style.setProperty("--zoom-x", `${x}%`);
               e.currentTarget.style.setProperty("--zoom-y", `${y}%`);
             }}
-            onMouseEnter={(e) => e.currentTarget.classList.add("is-zoomed")}
-            onMouseLeave={(e) => e.currentTarget.classList.remove("is-zoomed")}
+            onMouseEnter={(e) => { const el = e.currentTarget; el.dataset.hoverTimer = String(setTimeout(() => el.classList.add("is-zoomed"), 150)); }}
+            onMouseLeave={(e) => { clearTimeout(Number(e.currentTarget.dataset.hoverTimer)); e.currentTarget.classList.remove("is-zoomed"); }}
           >
             {displayImage && !imgError ? (
               /* eslint-disable-next-line @next/next/no-img-element */
@@ -370,7 +370,7 @@ export default function ProductDetailPage() {
                 width={600}
                 height={600}
                 decoding="async"
-                className="h-full w-full object-contain transition-transform duration-100 [.is-zoomed_&]:scale-[2]"
+                className="h-full w-full object-contain transition-transform duration-300 ease-out [.is-zoomed_&]:scale-150"
                 style={{ transformOrigin: "var(--zoom-x, 50%) var(--zoom-y, 50%)" }}
                 onError={() => setImgError(true)}
               />
