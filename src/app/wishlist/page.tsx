@@ -7,6 +7,7 @@ import BuyModal from "@/components/BuyModal";
 import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 import { usePreferences } from "@/lib/usePreferences";
+import { useToast } from "@/components/Toast";
 
 const tierColors: Record<string, string> = {
   budget: "bg-[#6B7280]/15 text-[#9CA3AF]",
@@ -23,8 +24,16 @@ export default function WishlistPage() {
     (typeof products)[0] | null
   >(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const { showToast } = useToast();
 
   const saved = products.filter((p) => wishlist.has(String(p.id)));
+
+  const shareWishlist = () => {
+    const ids = saved.map((p) => p.id).join(",");
+    const url = `https://murmreps.com/wishlist?ids=${ids}`;
+    navigator.clipboard.writeText(url);
+    showToast("Wishlist link copied!");
+  };
 
   const handleClear = () => {
     if (!confirmClear) {
@@ -43,16 +52,18 @@ export default function WishlistPage() {
             Your wishlist
           </h1>
           <p className="mt-2 text-text-secondary">
-            Items you&apos;ve saved. Stored locally on this device.
+            {saved.length} saved item{saved.length !== 1 ? "s" : ""}. Stored locally on this device.
           </p>
         </div>
         {saved.length > 0 && (
-          <button
-            onClick={handleClear}
-            className="shrink-0 rounded-btn px-4 py-2 text-sm font-medium text-danger transition-colors duration-200 hover:bg-danger/10"
-          >
-            {confirmClear ? "Are you sure?" : "Clear all"}
-          </button>
+          <div className="flex shrink-0 gap-2">
+            <button onClick={shareWishlist} className="rounded-btn border border-subtle px-4 py-2 text-sm font-medium text-white transition-colors hover:border-accent/30 hover:text-accent">
+              Share
+            </button>
+            <button onClick={handleClear} className="rounded-btn px-4 py-2 text-sm font-medium text-danger transition-colors duration-200 hover:bg-danger/10">
+              {confirmClear ? "Are you sure?" : "Clear all"}
+            </button>
+          </div>
         )}
       </div>
 

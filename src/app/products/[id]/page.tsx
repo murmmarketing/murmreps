@@ -10,6 +10,8 @@ import { useProductStats } from "@/lib/useProductStats";
 import { supabase } from "@/lib/supabase";
 import { trackEvent } from "@/lib/track";
 import { usePreferences } from "@/lib/usePreferences";
+import { addRecentlyViewed } from "@/components/RecentlyViewed";
+import { useToast } from "@/components/Toast";
 
 interface ProductVariant {
   name: string;
@@ -108,6 +110,7 @@ export default function ProductDetailPage() {
   const wishlist = useWishlist();
   const productStats = useProductStats();
   const { formatPrice } = usePreferences();
+  const { showToast } = useToast();
   const [imgError, setImgError] = useState(false);
 
   // Fetch fresh product data from Supabase (for up-to-date likes/dislikes/views)
@@ -137,6 +140,12 @@ export default function ProductDetailPage() {
   const [miniFaqOpen, setMiniFaqOpen] = useState<number | null>(null);
   const [similarFinds, setSimilarFinds] = useState<Product[]>([]);
   const [moreBrand, setMoreBrand] = useState<Product[]>([]);
+
+  // Track recently viewed
+  useEffect(() => {
+    if (!product) return;
+    addRecentlyViewed({ id: Number(product.id), name: product.name, brand: product.brand, category: product.category, price_cny: product.price_cny, image: product.image });
+  }, [product]);
 
   // Fetch smart recommendations from Supabase
   useEffect(() => {
@@ -339,7 +348,18 @@ export default function ProductDetailPage() {
       <div className="mt-2 grid gap-8 lg:grid-cols-[55%_1fr]">
         {/* LEFT — Image */}
         <div>
-          <div className="relative aspect-square overflow-hidden rounded-xl bg-[#0a0a0a]">
+          <div
+            className="relative aspect-square overflow-hidden rounded-xl bg-[#0a0a0a] cursor-zoom-in"
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = ((e.clientX - rect.left) / rect.width) * 100;
+              const y = ((e.clientY - rect.top) / rect.height) * 100;
+              e.currentTarget.style.setProperty("--zoom-x", `${x}%`);
+              e.currentTarget.style.setProperty("--zoom-y", `${y}%`);
+            }}
+            onMouseEnter={(e) => e.currentTarget.classList.add("is-zoomed")}
+            onMouseLeave={(e) => e.currentTarget.classList.remove("is-zoomed")}
+          >
             {displayImage && !imgError ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
@@ -348,7 +368,8 @@ export default function ProductDetailPage() {
                 width={600}
                 height={600}
                 decoding="async"
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain transition-transform duration-100 [.is-zoomed_&]:scale-[2]"
+                style={{ transformOrigin: "var(--zoom-x, 50%) var(--zoom-y, 50%)" }}
                 onError={() => setImgError(true)}
               />
             ) : (
@@ -655,6 +676,24 @@ export default function ProductDetailPage() {
                 />
               </svg>
               {saved ? "Saved" : "Add to wishlist"}
+            </button>
+            <button
+              onClick={async () => {
+                const url = `https://murmreps.com/products/${product.id}`;
+                const text = `${product.brand} ${product.name}${product.price_cny ? ` — ¥${product.price_cny}` : ""} on MurmReps`;
+                if (navigator.share) {
+                  try { await navigator.share({ title: text, url }); } catch { /* cancelled */ }
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  showToast("Link copied!");
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-btn border border-subtle bg-surface px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:border-accent/30 hover:text-accent"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+              </svg>
+              Share
             </button>
           </div>
 

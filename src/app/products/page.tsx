@@ -9,6 +9,7 @@ import { useWishlist } from "@/lib/useWishlist";
 import { useProductStats } from "@/lib/useProductStats";
 import { usePreferences } from "@/lib/usePreferences";
 import { Pagination } from "@/components/ui/pagination";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 type Tier = "all" | "budget" | "value" | "quality" | "premium";
 type Quality = "all" | "best" | "good" | "budget";
@@ -485,6 +486,8 @@ function ProductsPageInner() {
           </div>
         </div>
       )}
+
+      <RecentlyViewed />
 
       {/* Product grid */}
       {loading ? (
