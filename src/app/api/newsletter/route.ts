@@ -75,7 +75,7 @@ function getWelcomeEmailHTML(email: string): string {
       <p style="color:#f97316; font-size:13px; text-transform:uppercase; letter-spacing:2px; margin:0 0 12px; font-weight:600;">Welcome to the family</p>
       <h1 style="color:#fff; font-size:32px; font-weight:800; margin:0 0 16px; line-height:1.2; letter-spacing:-0.5px;">You're in. 🔥</h1>
       <p style="color:#a1a1aa; font-size:15px; line-height:1.6; margin:0; max-width:400px; display:inline-block;">
-        19,000+ finds. 8 shopping agents. Every product handpicked. Welcome to the rep community's most trusted source.
+        15,000+ finds. 8 shopping agents. Every product handpicked. Welcome to the rep community's most trusted source.
       </p>
     </div>
 
@@ -180,7 +180,7 @@ function getWelcomeEmailHTML(email: string): string {
             </td>
             <td style="vertical-align:top; padding-left:14px;">
               <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">Find something you love</p>
-              <p style="color:#a1a1aa; font-size:13px; line-height:1.5; margin:0;">Browse 19,000+ products on MurmReps. Use filters to find your style.</p>
+              <p style="color:#a1a1aa; font-size:13px; line-height:1.5; margin:0;">Browse 15,000+ products on MurmReps. Use filters to find your style.</p>
             </td>
           </tr>
         </table>

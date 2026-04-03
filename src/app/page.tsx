@@ -16,20 +16,20 @@ const HomeSections = dynamic(() => import("@/components/HomeSections"), {
 const HomeFAQ = dynamic(() => import("@/components/HomeFAQ"), { ssr: false });
 
 export const metadata: Metadata = {
-  title: "MurmReps \u2014 Find the Best Rep Finds | 19,000+ Products",
+  title: "MurmReps \u2014 Find the Best Rep Finds | 15,000+ Products",
   description:
-    "Discover 19,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
+    "Discover 15,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
   keywords: "reps, replica fashion, rep finds, weidian finds, taobao finds, fashion reps, best reps, QC photos",
   openGraph: {
-    title: "MurmReps \u2014 Find the Best Rep Finds | 19,000+ Products",
+    title: "MurmReps \u2014 Find the Best Rep Finds | 15,000+ Products",
     description:
-      "Discover 19,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents.",
+      "Discover 15,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents.",
     url: "/",
   },
   twitter: {
-    title: "MurmReps \u2014 Find the Best Rep Finds | 19,000+ Products",
+    title: "MurmReps \u2014 Find the Best Rep Finds | 15,000+ Products",
     description:
-      "Discover 19,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents.",
+      "Discover 15,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents.",
   },
   alternates: { canonical: "/" },
 };
@@ -41,7 +41,7 @@ const jsonLd = {
   name: "MurmReps",
   url: "https://murmreps.com",
   description:
-    "Discover 19,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
+    "Discover 15,000+ handpicked rep finds with QC photos. Free link converter for 8 shopping agents. New drops every week.",
   potentialAction: {
     "@type": "SearchAction",
     target: "https://murmreps.com/products?search={search_term_string}",
@@ -97,7 +97,7 @@ export default function Home() {
               </div>
               <h3 className="font-heading text-lg font-semibold text-white">Products</h3>
               <p className="mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
-                19,000+ verified finds across shoes, streetwear, bags, and jewelry. See before you buy.
+                15,000+ verified finds across shoes, streetwear, bags, and jewelry. See before you buy.
               </p>
             </Link>
             <Link
@@ -175,7 +175,7 @@ export default function Home() {
                 <div>
                   <h3 className="font-heading text-base font-semibold text-white">Community</h3>
                   <p className="mt-1 text-sm leading-relaxed text-text-secondary">
-                    Join r/MurmReps and 19,000+ rep enthusiasts
+                    Join r/MurmReps and 15,000+ rep enthusiasts
                   </p>
                 </div>
               </div>

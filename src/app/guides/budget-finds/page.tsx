@@ -116,7 +116,7 @@ export default async function BudgetFindsPage() {
       </h1>
       <p className="mt-4 text-lg text-text-secondary">
         Cheap reps that look expensive. Every product here is under ¥200
-        (~€27) and handpicked from 19,000+ finds.
+        (~€27) and handpicked from 15,000+ finds.
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-text-muted">
         <span>6 min read</span>

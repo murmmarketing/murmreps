@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
       if (template === "pov-hook") {
         return NextResponse.json({
           platform: "tiktok",
-          body: `POV: you find a site with 19,000+ rep finds and links for 8 agents 😳\n\nmurmreps.com — link in bio 🔗`,
+          body: `POV: you find a site with 15,000+ rep finds and links for 8 agents 😳\n\nmurmreps.com — link in bio 🔗`,
           hashtags: "#reps #fashionreps #pov #haul #replica #murmreps #fyp #viral #streetwear",
           videoIdea: `POV style: Screen recording scrolling through murmreps.com. Show the product grid, click a product, show the agent buttons. Trending audio. Fast cuts.`,
         });
@@ -316,7 +316,7 @@ export async function POST(req: NextRequest) {
       if (template === "reel-walkthrough") {
         return NextResponse.json({
           platform: "instagram",
-          body: `POV: You discover the best rep finds site 😳🔥\n\n19,000+ products. 8 agents. Free link converter.\nmurmreps.com — link in bio 🛒\n\nSave this for your next haul 📌${igHashtags}`,
+          body: `POV: You discover the best rep finds site 😳🔥\n\n15,000+ products. 8 agents. Free link converter.\nmurmreps.com — link in bio 🛒\n\nSave this for your next haul 📌${igHashtags}`,
           contentType: "Reel — screen recording scrolling murmreps.com with trending audio",
         });
       }
@@ -368,7 +368,7 @@ export async function POST(req: NextRequest) {
       if (template === "welcome") {
         return NextResponse.json({
           platform: "discord",
-          body: `👋 **Welcome to MurmReps!**\n\nWe're a community of rep enthusiasts with 19,000+ curated finds.\n\n**Quick links:**\n🛍️ Browse products: <https://murmreps.com/products>\n👜 Girls collection: <https://murmreps.com/girls>\n📖 How to buy guide: <https://murmreps.com/guides/how-to-buy-reps-kakobuy>\n🔗 Link converter: <https://murmreps.com/converter>\n📱 TikTok: @murmreps\n📸 Instagram: @murmreps\n\nNew drops posted daily. React with 🔥 on finds you like!`,
+          body: `👋 **Welcome to MurmReps!**\n\nWe're a community of rep enthusiasts with 15,000+ curated finds.\n\n**Quick links:**\n🛍️ Browse products: <https://murmreps.com/products>\n👜 Girls collection: <https://murmreps.com/girls>\n📖 How to buy guide: <https://murmreps.com/guides/how-to-buy-reps-kakobuy>\n🔗 Link converter: <https://murmreps.com/converter>\n📱 TikTok: @murmreps\n📸 Instagram: @murmreps\n\nNew drops posted daily. React with 🔥 on finds you like!`,
         });
       }
     }
@@ -427,7 +427,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           platform: "pinterest",
           title: `${p.brand} ${p.name} | Rep Find ¥${p.price_cny}`,
-          body: `${p.brand} ${p.name} — ¥${p.price_cny} (≈€${eur(p.price_cny)}). Find this and 19,000+ more finds on murmreps.com. Compare prices across 8 agents including KakoBuy, Superbuy, and CnFans.\n\n#repfinds #${p.brand.toLowerCase().replace(/\s+/g, "")} #designerdupe #affordableluxury #fashionfinds`,
+          body: `${p.brand} ${p.name} — ¥${p.price_cny} (≈€${eur(p.price_cny)}). Find this and 15,000+ more finds on murmreps.com. Compare prices across 8 agents including KakoBuy, Superbuy, and CnFans.\n\n#repfinds #${p.brand.toLowerCase().replace(/\s+/g, "")} #designerdupe #affordableluxury #fashionfinds`,
           altText: `${p.brand} ${p.name} product photo`,
           board: boardMap[catBoard] || "Streetwear Outfits",
           link: `https://murmreps.com/products/${p.id}`,

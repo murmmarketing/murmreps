@@ -299,7 +299,7 @@ export default function AgentComparisonPage() {
           Ready to start buying?
         </h2>
         <p className="mt-2 text-white/80">
-          Sign up to KakoBuy and browse 19,000+ finds on MurmReps.
+          Sign up to KakoBuy and browse 15,000+ finds on MurmReps.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <a

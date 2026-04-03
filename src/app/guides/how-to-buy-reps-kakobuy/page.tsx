@@ -217,7 +217,7 @@ export default function KakoBuyGuidePage() {
         </h2>
         <p className="mb-4 leading-relaxed text-[#d4d4d8]">
           This is where MurmReps makes everything easy. Instead of browsing
-          sketchy Chinese websites yourself, we&apos;ve curated 19,000+
+          sketchy Chinese websites yourself, we&apos;ve curated 15,000+
           verified finds for you.
         </p>
         <StepCard step={1} title="Browse MurmReps">
@@ -400,7 +400,7 @@ export default function KakoBuyGuidePage() {
             checking size charts matters.
           </FaqCard>
           <FaqCard question="Why use MurmReps instead of browsing Weidian/Taobao directly?">
-            MurmReps curates 19,000+ finds so you don&apos;t have to navigate
+            MurmReps curates 15,000+ finds so you don&apos;t have to navigate
             Chinese websites. Every product has been sourced from trusted
             sellers, with view counts and likes from the community. Plus, our
             link converter generates agent links instantly.

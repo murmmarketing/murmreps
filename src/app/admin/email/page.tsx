@@ -125,7 +125,7 @@ const AGENT_DEAL_TEMPLATE = `<!DOCTYPE html>
     <div style="padding:0 24px 32px;">
       <div style="background:linear-gradient(135deg, #f97316 0%, #c2410c 100%); border-radius:12px; padding:32px; text-align:center;">
         <h2 style="color:#fff; font-size:24px; font-weight:800; margin:0 0 8px; letter-spacing:-0.3px;">Start buying now</h2>
-        <p style="color:rgba(255,255,255,0.85); font-size:14px; margin:0 0 20px; line-height:1.5;">Create your free KakoBuy account and browse 19,000+ finds on MurmReps.</p>
+        <p style="color:rgba(255,255,255,0.85); font-size:14px; margin:0 0 20px; line-height:1.5;">Create your free KakoBuy account and browse 15,000+ finds on MurmReps.</p>
         <a href="https://ikako.vip/r/6gkjt" style="display:inline-block; background:#fff; color:#f97316; padding:14px 40px; border-radius:10px; text-decoration:none; font-weight:700; font-size:15px;">
           Sign up to KakoBuy →
         </a>
