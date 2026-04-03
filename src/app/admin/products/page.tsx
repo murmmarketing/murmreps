@@ -183,7 +183,7 @@ export default function AdminPage() {
     try {
       const params = new URLSearchParams({
         page: String(page),
-        limit: "50",
+        limit: "100",
         sort: sortCol,
         order: sortOrder,
       });
@@ -1125,6 +1125,20 @@ export default function AdminPage() {
             </div>
           </div>
 
+          {/* Quick filters + shortcuts legend */}
+          <div className="px-6 pb-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-[#6B7280]">Quick:</span>
+            <button onClick={() => { setSearch(""); setCategoryFilter(""); setTierFilter(""); setSortCol("id"); setSortOrder("asc"); setPage(1); }}
+              className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">All</button>
+            <button onClick={() => { setSortCol("score"); setSortOrder("asc"); setPage(1); }}
+              className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">Lowest Score</button>
+            <button onClick={() => { setSortCol("created_at"); setSortOrder("desc"); setPage(1); }}
+              className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">Newest</button>
+            <button onClick={() => { setSortCol("created_at"); setSortOrder("asc"); setPage(1); }}
+              className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">Oldest</button>
+            <span className="ml-auto text-[10px] text-[#52525b]">Page {page}/{totalPages} · {total} products · 100/page</span>
+          </div>
+
           {/* Product Table */}
           <div className="overflow-x-auto px-6">
             <table className="w-full text-sm">
@@ -1282,9 +1296,26 @@ export default function AdminPage() {
                       </td>
                       <td className="px-3 py-2.5 text-[13px] text-[#9CA3AF]">{p.brand}</td>
                       <td className="px-3 py-2.5">
-                        <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] px-2.5 py-0.5 text-[12px]">
-                          {p.category}
-                        </span>
+                        <select
+                          value={p.category}
+                          onChange={async (e) => {
+                            const newCat = e.target.value;
+                            try {
+                              const res = await fetch(`/api/admin/products/${p.id}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json", "x-admin-password": storedPassword },
+                                body: JSON.stringify({ category: newCat }),
+                              });
+                              if (res.ok) {
+                                setProducts((prev) => prev.map((pr) => pr.id === p.id ? { ...pr, category: newCat } : pr));
+                                addToast(`Category → ${newCat}`);
+                              }
+                            } catch { /* */ }
+                          }}
+                          className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#1A1A1A] px-2 py-1 text-[12px] text-white outline-none focus:border-[#FE4205] cursor-pointer"
+                        >
+                          {CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
                       </td>
                       <td className="px-3 py-2.5">
                         {p.price_cny != null ? (
