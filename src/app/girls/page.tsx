@@ -85,8 +85,6 @@ const CAT_MAP: Record<string, string[]> = {
   accessories: ["Keychains", "Hats & Caps", "Scarves & Gloves", "Glasses", "Socks & Underwear", "Belts", "Ties", "Masks", "Accessories"],
 };
 
-const PER_PAGE = 24;
-
 interface BrandRow {
   brand: string;
   products: RowProduct[];
@@ -104,7 +102,11 @@ function GirlsInner() {
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [activeCat, setActiveCat] = useState("All");
   const [sort, setSort] = useState<Sort>("best");
-  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 24;
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [totalCount, setTotalCount] = useState(0);
 
   // Carousel state
@@ -258,51 +260,72 @@ function GirlsInner() {
     })();
   }, [brandsVisible]);
 
-  // Fetch paginated grid data with server-side filters
+  // Build query with current filters
+  const buildGirlsQuery = useCallback((from: number, to: number) => {
+    let query = supabase
+      .from("products")
+      .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,image,views,likes", { count: "exact" })
+      .in("collection", ["girls", "both"])
+      .not("image", "is", null)
+      .neq("image", "");
+
+    if (debouncedSearch) query = query.or(`name.ilike.%${debouncedSearch}%,brand.ilike.%${debouncedSearch}%`);
+    if (activeCat !== "All") {
+      const cats = CAT_MAP[activeCat];
+      if (cats) query = query.in("category", cats);
+      else query = query.eq("category", activeCat);
+    }
+
+    if (sort === "price-asc") query = query.order("price_cny", { ascending: true, nullsFirst: false });
+    else if (sort === "price-desc") query = query.order("price_cny", { ascending: false, nullsFirst: false });
+    else if (sort === "popular") query = query.order("views", { ascending: false });
+    else if (sort === "newest") query = query.order("created_at", { ascending: false });
+    else query = query.order("score", { ascending: false });
+
+    return query.range(from, to);
+  }, [debouncedSearch, activeCat, sort]);
+
+  // Initial fetch (resets on filter/sort/search change)
   useEffect(() => {
     (async () => {
       setLoading(true);
-
-      let query = supabase
-        .from("products")
-        .select("id,name,brand,category,price_cny,price_usd,price_eur,tier,quality,image,views,likes", { count: "exact" })
-        .in("collection", ["girls", "both"])
-        .not("image", "is", null)
-        .neq("image", "");
-
-      if (debouncedSearch) {
-        query = query.or(`name.ilike.%${debouncedSearch}%,brand.ilike.%${debouncedSearch}%`);
-      }
-
-      if (activeCat !== "All") {
-        const cats = CAT_MAP[activeCat];
-        if (cats) {
-          query = query.in("category", cats);
-        } else {
-          query = query.eq("category", activeCat);
-        }
-      }
-
-      if (sort === "price-asc") query = query.order("price_cny", { ascending: true, nullsFirst: false });
-      else if (sort === "price-desc") query = query.order("price_cny", { ascending: false, nullsFirst: false });
-      else if (sort === "popular") query = query.order("views", { ascending: false });
-      else if (sort === "newest") query = query.order("created_at", { ascending: false });
-      else query = query.order("score", { ascending: false });
-
-      const from = (currentPage - 1) * PER_PAGE;
-      query = query.range(from, from + PER_PAGE - 1);
-
-      const { data, count } = await query;
+      setProducts([]);
+      setOffset(0);
+      setHasMore(true);
+      const { data, count } = await buildGirlsQuery(0, PAGE_SIZE - 1);
       setProducts((data as Product[]) || []);
       setTotalCount(count ?? 0);
+      if (!data || data.length < PAGE_SIZE) setHasMore(false);
+      setOffset(data?.length || 0);
       setLoading(false);
     })();
-  }, [debouncedSearch, activeCat, sort, currentPage]);
+  }, [buildGirlsQuery]);
 
-  const totalPages = Math.ceil(totalCount / PER_PAGE);
+  // Load more
+  const loadMoreGirls = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const { data } = await buildGirlsQuery(offset, offset + PAGE_SIZE - 1);
+    if (data && data.length > 0) {
+      setProducts((prev) => [...prev, ...(data as Product[])]);
+      setOffset((prev) => prev + data.length);
+    }
+    if (!data || data.length < PAGE_SIZE) setHasMore(false);
+    setLoadingMore(false);
+  }, [buildGirlsQuery, offset, loadingMore, hasMore]);
+
+  // IntersectionObserver
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMoreGirls(); },
+      { threshold: 0.1, rootMargin: "200px" }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [loadMoreGirls]);
+
   const paginated = products;
-
-  useEffect(() => setCurrentPage(1), [debouncedSearch, activeCat, sort]);
 
   return (
     <div data-theme="pink" style={{ background: P.bg }} className="min-h-screen">
@@ -587,48 +610,32 @@ function GirlsInner() {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-10 flex justify-center">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); { const el = document.getElementById("product-grid"); if (el) { const top = el.getBoundingClientRect().top + window.scrollY - 20; window.scrollTo({ top, behavior: "smooth" }); } } }}
-                disabled={currentPage === 1}
-                className="rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-30"
-                style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}
-              >
-                &larr;
-              </button>
-              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                let page: number;
-                if (totalPages <= 7) page = i + 1;
-                else if (currentPage <= 4) page = i + 1;
-                else if (currentPage >= totalPages - 3) page = totalPages - 6 + i;
-                else page = currentPage - 3 + i;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => { setCurrentPage(page); { const el = document.getElementById("product-grid"); if (el) { const top = el.getBoundingClientRect().top + window.scrollY - 20; window.scrollTo({ top, behavior: "smooth" }); } } }}
-                    className="min-w-[36px] rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-                    style={{
-                      background: currentPage === page ? P.primary : P.card,
-                      color: currentPage === page ? "#fff" : P.textSec,
-                    }}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); { const el = document.getElementById("product-grid"); if (el) { const top = el.getBoundingClientRect().top + window.scrollY - 20; window.scrollTo({ top, behavior: "smooth" }); } } }}
-                disabled={currentPage === totalPages}
-                className="rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-30"
-                style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}
-              >
-                &rarr;
-              </button>
-            </div>
+        {/* Infinite scroll sentinel */}
+        {hasMore && products.length < 200 && (
+          <div ref={sentinelRef} className="flex justify-center py-8">
+            {loadingMore && (
+              <div className="flex gap-4">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-40 w-40 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }} />
+                    <div className="mt-2 h-3 w-24 rounded" style={{ background: "rgba(255,255,255,0.05)" }} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        )}
+        {hasMore && products.length >= 200 && (
+          <div className="flex justify-center py-8">
+            <button onClick={loadMoreGirls} disabled={loadingMore}
+              className="rounded-lg px-6 py-3 text-sm transition-colors disabled:opacity-50"
+              style={{ background: P.card, border: `1px solid ${P.border}`, color: P.textSec }}>
+              {loadingMore ? "Loading..." : "Load more"}
+            </button>
+          </div>
+        )}
+        {!hasMore && products.length > 0 && (
+          <p className="text-center text-sm py-8" style={{ color: P.textMuted }}>All {products.length} products loaded</p>
         )}
       </div>
 
