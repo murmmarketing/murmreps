@@ -74,8 +74,8 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [tierFilter, setTierFilter] = useState("");
-  const [sortCol, setSortCol] = useState("id");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortCol, setSortCol] = useState("score");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
@@ -1130,6 +1130,8 @@ export default function AdminPage() {
             <span className="text-[#6B7280]">Quick:</span>
             <button onClick={() => { setSearch(""); setCategoryFilter(""); setTierFilter(""); setSortCol("id"); setSortOrder("asc"); setPage(1); }}
               className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">All</button>
+            <button onClick={() => { setSortCol("score"); setSortOrder("desc"); setPage(1); }}
+              className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">Highest Score</button>
             <button onClick={() => { setSortCol("score"); setSortOrder("asc"); setPage(1); }}
               className="rounded border border-[rgba(255,255,255,0.08)] bg-[#1a1a1a] px-2 py-1 text-[#9CA3AF] hover:text-white transition-colors">Lowest Score</button>
             <button onClick={() => { setSortCol("created_at"); setSortOrder("desc"); setPage(1); }}
