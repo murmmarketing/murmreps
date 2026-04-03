@@ -636,10 +636,9 @@ export default function ProductDetailPage() {
 
           {/* Action buttons */}
           <div className="mt-6 flex flex-wrap gap-3">
-            {hasLink && (
-              <Link
-                href={`/qc?link=${encodeURIComponent(product.source_link)}`}
-                className="inline-flex items-center gap-2 rounded-btn border border-subtle bg-surface px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:border-accent/30 hover:text-accent"
+            <Link
+              href={`/qc?product=${encodeURIComponent(product.name)}&brand=${encodeURIComponent(product.brand)}`}
+              className="inline-flex items-center gap-2 rounded-btn border border-subtle bg-surface px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:border-accent/30 hover:text-accent"
               >
                 <svg
                   className="h-4 w-4"
@@ -656,7 +655,6 @@ export default function ProductDetailPage() {
                 </svg>
                 QC Photos
               </Link>
-            )}
             <button
               onClick={() => wishlist.toggle(pid)}
               className={`inline-flex items-center gap-2 rounded-btn border px-5 py-2.5 text-sm font-medium transition-all duration-200 ${

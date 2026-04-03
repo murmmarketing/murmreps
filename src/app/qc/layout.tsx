@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "QC Photo Checker \u2014 Check Quality Before You Buy | MurmReps",
+  title: "QC Photo Guide \u2014 How to Check Quality Before You Buy | MurmReps",
   description:
-    "Paste any Taobao, Weidian, or 1688 link to find QC photos across 6 agents. Check stitching, tags, and shape before you ship your haul.",
+    "Learn how to read QC photos, what to look for in shoes, clothing, bags, and jewelry. Free QC request generator for Reddit.",
   openGraph: {
-    title: "QC Photo Checker \u2014 Check Quality Before You Buy | MurmReps",
+    title: "QC Photo Guide \u2014 How to Check Quality Before You Buy | MurmReps",
     description:
-      "Find QC photos for any rep product across 6 agents before you buy.",
+      "Learn how to read QC photos, what to look for, and where to find them. Free QC request generator.",
     url: "/qc",
   },
   twitter: {
-    title: "QC Photo Checker \u2014 Check Quality Before You Buy | MurmReps",
+    title: "QC Photo Guide \u2014 How to Check Quality Before You Buy | MurmReps",
     description:
-      "Find QC photos for any rep product across 6 agents before you buy.",
+      "Learn how to read QC photos, what to look for, and where to find them.",
   },
   alternates: { canonical: "/qc" },
 };
