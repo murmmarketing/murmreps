@@ -196,8 +196,8 @@ function ProductsPageInner() {
         setTotalCount(count ?? 0);
         if (!data || data.length < PAGE_SIZE) setHasMore(false);
         setOffset(data?.length || 0);
-      } catch (err) {
-        console.log("Supabase fetch failed:", err);
+      } catch {
+        // Supabase fetch failed — products array stays empty, skeleton shows
       } finally {
         setLoading(false);
       }
