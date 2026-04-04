@@ -665,6 +665,43 @@ export default function AdminPage() {
     });
   };
 
+  // Auto-save a single field
+  const [savedField, setSavedField] = useState<string | null>(null);
+  const autoSave = async (field: string, value: string | number | null) => {
+    if (!editProduct) return;
+    try {
+      const body: Record<string, unknown> = { [field]: value };
+      // Auto-calc price conversions
+      if (field === "price_cny" && value) {
+        body.price_usd = Math.round(Number(value) * 0.14 * 100) / 100;
+        body.price_eur = Math.round(Number(value) * 0.13 * 100) / 100;
+      }
+      const res = await fetch(`/api/admin/products/${editProduct.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-admin-password": storedPassword },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setSavedField(field);
+        setTimeout(() => setSavedField(null), 1200);
+        // Update local products array
+        setProducts((prev) => prev.map((p) => p.id === editProduct.id ? { ...p, ...body } as Product : p));
+      } else {
+        setSavedField("error-" + field);
+        setTimeout(() => setSavedField(null), 2000);
+      }
+    } catch {
+      setSavedField("error-" + field);
+      setTimeout(() => setSavedField(null), 2000);
+    }
+  };
+
+  const SaveIndicator = ({ field }: { field: string }) => {
+    if (savedField === field) return <span className="ml-2 text-[10px] text-green-400 animate-pulse">Saved ✓</span>;
+    if (savedField === "error-" + field) return <span className="ml-2 text-[10px] text-red-400">Error</span>;
+    return null;
+  };
+
   const openEdit = (p: Product) => {
     setForm({
       name: p.name,
@@ -1528,11 +1565,12 @@ export default function AdminPage() {
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                  Name
+                  Name <SaveIndicator field="name" />
                 </label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onBlur={() => editProduct && autoSave("name", form.name)}
                   className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                 />
               </div>
@@ -1579,21 +1617,22 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                    Brand
+                    Brand <SaveIndicator field="brand" />
                   </label>
                   <input
                     value={form.brand}
                     onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                    onBlur={() => editProduct && autoSave("brand", form.brand)}
                     className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                    Category
+                    Category <SaveIndicator field="category" />
                   </label>
                   <select
                     value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, category: e.target.value }); if (editProduct) autoSave("category", e.target.value); }}
                     className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                   >
                     {CATEGORIES.map((c) => (
@@ -1608,23 +1647,24 @@ export default function AdminPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                    Price &yen;
+                    Price ¥ <SaveIndicator field="price_cny" />
                   </label>
                   <input
                     type="number"
                     value={form.price_cny}
                     onChange={(e) => setForm({ ...form, price_cny: e.target.value })}
+                    onBlur={() => editProduct && autoSave("price_cny", form.price_cny ? parseFloat(form.price_cny) : null)}
                     placeholder="e.g. 299"
                     className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                    Tier
+                    Tier <SaveIndicator field="tier" />
                   </label>
                   <select
                     value={form.tier}
-                    onChange={(e) => setForm({ ...form, tier: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, tier: e.target.value }); if (editProduct) autoSave("tier", e.target.value || null); }}
                     className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                   >
                     <option value="">Auto</option>
@@ -1637,11 +1677,11 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                    Quality
+                    Quality <SaveIndicator field="quality" />
                   </label>
                   <select
                     value={form.quality}
-                    onChange={(e) => setForm({ ...form, quality: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, quality: e.target.value }); if (editProduct) autoSave("quality", e.target.value || null); }}
                     className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                   >
                     <option value="">None</option>
@@ -1656,11 +1696,12 @@ export default function AdminPage() {
 
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                  Source Link
+                  Source Link <SaveIndicator field="source_link" />
                 </label>
                 <input
                   value={form.source_link}
                   onChange={(e) => setForm({ ...form, source_link: e.target.value })}
+                  onBlur={() => editProduct && autoSave("source_link", form.source_link)}
                   placeholder="https://weidian.com/item.html?itemID=..."
                   className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                 />
@@ -1668,11 +1709,12 @@ export default function AdminPage() {
 
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#FE4205]">
-                  Image URL
+                  Image URL <SaveIndicator field="image" />
                 </label>
                 <input
                   value={form.image}
                   onChange={(e) => setForm({ ...form, image: e.target.value })}
+                  onBlur={() => editProduct && autoSave("image", form.image)}
                   placeholder="https://..."
                   className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-2 text-sm text-white focus:border-[#FE4205] focus:outline-none"
                 />
@@ -1680,23 +1722,28 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => saveProduct(!!editProduct)}
-                className="flex-1 rounded-lg bg-[#FE4205] py-3 font-semibold text-white transition-opacity hover:opacity-90"
-              >
-                {editProduct ? "Save Changes" : "Add Product"}
-              </button>
+              {!editProduct && (
+                <button
+                  onClick={() => saveProduct(false)}
+                  className="flex-1 rounded-lg bg-[#FE4205] py-3 font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  Add Product
+                </button>
+              )}
               <button
                 onClick={() => {
                   setShowAdd(false);
                   setEditProduct(null);
                   resetForm();
                 }}
-                className="rounded-lg border border-white/10 px-6 py-3 text-sm text-[#9CA3AF] hover:text-white"
+                className={`rounded-lg border border-white/10 px-6 py-3 text-sm text-[#9CA3AF] hover:text-white ${editProduct ? "flex-1" : ""}`}
               >
-                Cancel
+                {editProduct ? "Close" : "Cancel"}
               </button>
             </div>
+            {editProduct && (
+              <p className="mt-2 text-center text-[10px] text-[#52525b]">All changes auto-save</p>
+            )}
           </div>
         </div>
       )}
