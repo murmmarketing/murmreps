@@ -81,6 +81,8 @@ export default function RootLayout({
         <meta name="theme-color" content="#FE4205" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="dns-prefetch" href="//pxdkqylraptallrkiaab.supabase.co" />
         <link rel="preconnect" href="https://pxdkqylraptallrkiaab.supabase.co" />
         <link rel="dns-prefetch" href="//photo.yupoo.com" />
