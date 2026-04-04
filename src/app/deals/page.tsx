@@ -1,24 +1,79 @@
+"use client";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/Toast";
+import { supabase } from "@/lib/supabase";
+
+interface Coupon {
+  id: string; agent: string; code: string; description: string;
+  discount_value: string; min_spend: string; expires_at: string | null;
+}
+
 export default function DealsPage() {
+  const { showToast } = useToast();
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("agent_coupons")
+        .select("*")
+        .eq("is_active", true)
+        .order("agent");
+      setCoupons((data as Coupon[]) || []);
+    })();
+  }, []);
+
+  const grouped: Record<string, Coupon[]> = {};
+  for (const c of coupons) {
+    if (!grouped[c.agent]) grouped[c.agent] = [];
+    grouped[c.agent].push(c);
+  }
+
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-24 text-center sm:px-6 sm:py-32">
-      <h1 className="font-heading text-[32px] font-bold tracking-tight text-white">
-        Deals Coming Soon
-      </h1>
-      <p className="mt-4 text-base leading-relaxed text-text-secondary">
-        Exclusive discounts and agent promotions are on the way. Join our
-        Discord to get notified first.
-      </p>
-      <a
-        href="https://discord.gg/8r5EFMRg"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
-      >
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-        </svg>
-        Join Discord
-      </a>
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <h1 className="font-heading text-3xl font-bold text-white">Agent Discount Codes & Deals</h1>
+      <p className="mt-2 text-text-secondary mb-8">Save money on your next haul.</p>
+
+      {Object.keys(grouped).length > 0 ? (
+        <div className="space-y-4 mb-12">
+          {Object.entries(grouped).map(([agent, codes]) => (
+            <div key={agent} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-5">
+              <h2 className="text-lg font-bold text-white mb-3">{agent}</h2>
+              <div className="space-y-3">
+                {codes.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between gap-3 rounded-lg bg-[#1a1a1a] p-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <code className="rounded bg-accent/10 px-2 py-0.5 text-sm font-mono font-bold text-accent">{c.code}</code>
+                        {c.discount_value && <span className="text-xs text-green-400">{c.discount_value}</span>}
+                      </div>
+                      <p className="text-xs text-text-muted">{c.description}</p>
+                      {c.min_spend && <p className="text-[10px] text-text-muted mt-0.5">Min spend: {c.min_spend}</p>}
+                      {c.expires_at && <p className="text-[10px] text-text-muted">Expires: {new Date(c.expires_at).toLocaleDateString()}</p>}
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText(c.code); showToast("Code copied!"); }}
+                      className="shrink-0 rounded-lg border border-[rgba(255,255,255,0.08)] px-3 py-2 text-xs text-text-muted hover:text-white transition-colors">
+                      Copy
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-8 text-center mb-12">
+          <p className="text-text-secondary mb-2">No active coupon codes right now.</p>
+          <p className="text-xs text-text-muted">Check back later — we regularly add new deals.</p>
+        </div>
+      )}
+
+      <div className="rounded-xl bg-gradient-to-r from-[#FE4205] to-[#c2410c] p-8 text-center">
+        <h2 className="text-xl font-bold text-white">No code needed</h2>
+        <p className="mt-2 text-white/80">Sign up through MurmReps for the best rates with all agents.</p>
+        <a href="https://ikako.vip/r/6gkjt" target="_blank" rel="noopener noreferrer"
+          className="mt-4 inline-block rounded-lg bg-white px-6 py-3 font-bold text-[#FE4205]">Sign up with KakoBuy →</a>
+      </div>
     </div>
   );
 }

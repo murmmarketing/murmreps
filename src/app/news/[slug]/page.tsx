@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import BlogComments from "@/components/BlogComments";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -68,6 +69,9 @@ export default async function BlogPostPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: renderContent(post.content) }} />
 
       {/* KakoBuy CTA */}
+      {/* Comments */}
+      <BlogComments slug={slug} />
+
       <div className="mt-12 rounded-xl bg-gradient-to-r from-[#FE4205] to-[#c2410c] p-8 text-center">
         <h2 className="text-xl font-bold text-white">Ready to cop?</h2>
         <p className="mt-2 text-white/80">Sign up to KakoBuy and start shopping.</p>

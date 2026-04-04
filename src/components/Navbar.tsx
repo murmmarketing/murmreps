@@ -81,6 +81,8 @@ const allMobileLinks = [
   { href: "/deals", label: "Deals" },
   { href: "/news", label: "News" },
   { href: "/new", label: "New Drops" },
+  { href: "/collections", label: "Collections" },
+  { href: "/deals", label: "Deals" },
   { href: "/guides", label: "Guides" },
   { href: "/haul", label: "Haul Builder" },
   { href: "/converter", label: "Converter" },

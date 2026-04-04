@@ -125,6 +125,11 @@ function ProductsPageInner() {
     return () => clearTimeout(t);
   }, [search]);
 
+  // Fetch trending searches
+  useEffect(() => {
+    fetch("/api/search/trending").then((r) => r.json()).then((d) => { if (d.terms) setTrendingTerms(d.terms); }).catch(() => {});
+  }, []);
+
   // Close autocomplete on click outside
   useEffect(() => {
     const handler = (e: MouseEvent) => { if (acRef.current && !acRef.current.contains(e.target as Node)) setAcOpen(false); };
@@ -158,6 +163,7 @@ function ProductsPageInner() {
   const [loadingMore, setLoadingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [trendingTerms, setTrendingTerms] = useState<string[]>([]);
 
   // Build a query with current filters (reused by initial fetch and loadMore)
   const buildQuery = useCallback((from: number, to: number) => {
@@ -196,6 +202,10 @@ function ProductsPageInner() {
         setTotalCount(count ?? 0);
         if (!data || data.length < PAGE_SIZE) setHasMore(false);
         setOffset(data?.length || 0);
+        // Log search query (fire and forget)
+        if (debouncedSearch && debouncedSearch.length >= 2) {
+          fetch("/api/search/log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: debouncedSearch, resultsCount: count ?? 0 }) }).catch(() => {});
+        }
       } catch {
         // Supabase fetch failed — products array stays empty, skeleton shows
       } finally {
@@ -203,7 +213,7 @@ function ProductsPageInner() {
       }
     }
     fetchInitial();
-  }, [buildQuery]);
+  }, [buildQuery, debouncedSearch]);
 
   // Load more products (infinite scroll)
   const loadMore = useCallback(async () => {
@@ -525,6 +535,19 @@ function ProductsPageInner() {
       )}
 
       <RecentlyViewed />
+
+      {/* Trending searches */}
+      {!debouncedSearch && trendingTerms.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-text-muted">🔍 Trending:</span>
+          {trendingTerms.map((term) => (
+            <button key={term} onClick={() => setSearch(term)}
+              className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[#141414] px-3 py-1 text-text-secondary hover:text-white hover:border-accent/30 transition-colors">
+              {term}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Product grid */}
       {loading ? (
