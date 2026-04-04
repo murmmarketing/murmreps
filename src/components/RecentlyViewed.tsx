@@ -50,7 +50,7 @@ export default function RecentlyViewed() {
         <h2 className="font-heading text-lg font-bold text-white">Recently Viewed</h2>
         <button onClick={clear} className="text-xs text-text-muted hover:text-white transition-colors">Clear</button>
       </div>
-      <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:px-0 sm:scroll-pl-0">
         {items.map((p) => (
           <Link
             key={p.id}

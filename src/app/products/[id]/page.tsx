@@ -825,7 +825,7 @@ export default function ProductDetailPage() {
               View More →
             </Link>
           </div>
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 sm:scroll-pl-0">
             {similarFinds.map((p) => (
               <Link
                 key={p.id}
@@ -896,7 +896,7 @@ export default function ProductDetailPage() {
               View all →
             </Link>
           </div>
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 sm:scroll-pl-0">
             {moreBrand.map((p) => (
               <Link
                 key={p.id}

@@ -185,7 +185,7 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
         {/* Scroll container */}
         <div
           ref={scrollRef}
-          className={`hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 ${isDragging ? "select-none" : ""}`}
+          className={`hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:px-0 sm:scroll-pl-0 ${isDragging ? "select-none" : ""}`}
           style={{ cursor: isDragging ? "grabbing" : "grab" }}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}

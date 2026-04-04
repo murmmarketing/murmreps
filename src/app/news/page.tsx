@@ -82,7 +82,7 @@ export default async function NewsPage() {
       {trending && trending.length > 0 && (
         <div className="mb-10">
           <h2 className="mb-4 font-heading text-lg font-bold text-white">Trending Right Now</h2>
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:px-0 sm:scroll-pl-0">
             {(trending as { id: number; name: string; brand: string; price_cny: number | null; image: string; views: number }[]).map((p) => (
               <Link key={p.id} href={`/products/${p.id}`} data-product-card
                 className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all hover:-translate-y-0.5 hover:border-accent/20">
