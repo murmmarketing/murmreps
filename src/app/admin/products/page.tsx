@@ -679,6 +679,20 @@ export default function AdminPage() {
     setEditProduct(p);
   };
 
+  // Arrow key navigation in edit modal
+  useEffect(() => {
+    if (!editProduct) return;
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      const idx = products.findIndex((p) => p.id === editProduct.id);
+      if (e.key === "ArrowLeft" && idx > 0) { e.preventDefault(); openEdit(products[idx - 1]); }
+      if (e.key === "ArrowRight" && idx < products.length - 1) { e.preventDefault(); openEdit(products[idx + 1]); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [editProduct, products]);
+
   const parseBulk = () => {
     const lines = bulkText.trim().split("\n").filter(Boolean);
     if (!lines.length) return;
@@ -1482,9 +1496,23 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#141414] p-6">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="font-heading text-lg font-bold">
-                {editProduct ? "Edit Product" : "Add Product"}
-              </h2>
+              <div>
+                <h2 className="font-heading text-lg font-bold">
+                  {editProduct ? "Edit Product" : "Add Product"}
+                </h2>
+                {editProduct && (() => {
+                  const idx = products.findIndex((p) => p.id === editProduct.id);
+                  return (
+                    <div className="mt-1 flex items-center gap-2 text-xs text-[#6B7280]">
+                      <button onClick={() => idx > 0 && openEdit(products[idx - 1])} disabled={idx <= 0}
+                        className="hover:text-white disabled:opacity-30 transition-colors">← Prev</button>
+                      <span>Product {idx + 1} of {products.length}</span>
+                      <button onClick={() => idx < products.length - 1 && openEdit(products[idx + 1])} disabled={idx >= products.length - 1}
+                        className="hover:text-white disabled:opacity-30 transition-colors">Next →</button>
+                    </div>
+                  );
+                })()}
+              </div>
               <button
                 onClick={() => {
                   setShowAdd(false);
