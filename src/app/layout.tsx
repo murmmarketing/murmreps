@@ -12,6 +12,7 @@ const FloatingReferral = dynamic(() => import("@/components/FloatingReferral"), 
 const NewsletterPopup = dynamic(() => import("@/components/NewsletterPopup"), { ssr: false });
 const SearchModal = dynamic(() => import("@/components/SearchModal"), { ssr: false });
 const BackToTop = dynamic(() => import("@/components/BackToTop"), { ssr: false });
+const ServiceWorker = dynamic(() => import("@/components/ServiceWorker"), { ssr: false });
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -76,6 +77,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#FE4205" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="dns-prefetch" href="//pxdkqylraptallrkiaab.supabase.co" />
         <link rel="preconnect" href="https://pxdkqylraptallrkiaab.supabase.co" />
         <link rel="dns-prefetch" href="//photo.yupoo.com" />
@@ -94,6 +99,7 @@ export default function RootLayout({
           <NewsletterPopup />
           <SearchModal />
           <BackToTop />
+          <ServiceWorker />
         </ClientProviders>
       </body>
     </html>

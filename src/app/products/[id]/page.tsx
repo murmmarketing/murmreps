@@ -14,6 +14,7 @@ import { addRecentlyViewed } from "@/components/RecentlyViewed";
 import { useToast } from "@/components/Toast";
 import ProductReviews from "@/components/ProductReviews";
 import GlossaryTip from "@/components/GlossaryTip";
+import { useHaul } from "@/lib/useHaul";
 
 interface ProductVariant {
   name: string;
@@ -113,6 +114,7 @@ export default function ProductDetailPage() {
   const productStats = useProductStats();
   const { formatPrice } = usePreferences();
   const { showToast } = useToast();
+  const haul = useHaul();
   const [imgError, setImgError] = useState(false);
 
   // Fetch fresh product data from Supabase (for up-to-date likes/dislikes/views)
@@ -695,6 +697,20 @@ export default function ProductDetailPage() {
               </svg>
               Share
             </button>
+            {product.price_cny != null && (
+              <button
+                onClick={() => {
+                  if (!haul.has(Number(product.id))) {
+                    haul.add({ id: Number(product.id), name: product.name, brand: product.brand, price_cny: product.price_cny!, image: product.image, category: product.category });
+                    showToast("Added to haul!");
+                  }
+                }}
+                disabled={haul.has(Number(product.id))}
+                className={`inline-flex items-center gap-2 rounded-btn border px-5 py-2.5 text-sm font-medium transition-all duration-200 ${haul.has(Number(product.id)) ? "border-green-500/30 bg-green-500/5 text-green-400" : "border-subtle bg-surface text-white hover:border-accent/30 hover:text-accent"}`}
+              >
+                {haul.has(Number(product.id)) ? "In haul ✓" : "+ Add to haul"}
+              </button>
+            )}
           </div>
 
           {/* Like / Dislike */}

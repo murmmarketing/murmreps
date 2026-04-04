@@ -80,7 +80,9 @@ const allMobileLinks = [
   { href: "/girls", label: "For Her" },
   { href: "/deals", label: "Deals" },
   { href: "/news", label: "News" },
+  { href: "/new", label: "New Drops" },
   { href: "/guides", label: "Guides" },
+  { href: "/haul", label: "Haul Builder" },
   { href: "/converter", label: "Converter" },
   { href: "/agents", label: "Agents" },
   { href: "/tracking", label: "Tracking" },
@@ -216,6 +218,9 @@ export default function Navbar() {
           </DesktopLink>
           <DesktopLink href="/news" active={pathname === "/news"}>
             News
+          </DesktopLink>
+          <DesktopLink href="/new" active={pathname === "/new"}>
+            New
           </DesktopLink>
           <DesktopLink href="/guides" active={pathname.startsWith("/guides")}>
             Guides
