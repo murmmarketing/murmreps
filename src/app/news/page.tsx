@@ -20,7 +20,18 @@ function formatDate(dateStr: string) {
   });
 }
 
+export const revalidate = 300;
+
 export default async function NewsPage() {
+  // Fetch trending products
+  const { data: trending } = await supabase
+    .from("products")
+    .select("id, name, brand, price_cny, image, views")
+    .not("image", "is", null)
+    .neq("image", "")
+    .order("views", { ascending: false })
+    .limit(8);
+
   // Fetch blog posts from Supabase
   const { data: dbPosts } = await supabase
     .from("blog_posts")
@@ -66,6 +77,35 @@ export default async function NewsPage() {
           Latest from <span className="text-accent">MurmReps</span>
         </p>
       </div>
+
+      {/* Trending products */}
+      {trending && trending.length > 0 && (
+        <div className="mb-10">
+          <h2 className="mb-4 font-heading text-lg font-bold text-white">Trending Right Now</h2>
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+            {(trending as { id: number; name: string; brand: string; price_cny: number | null; image: string; views: number }[]).map((p) => (
+              <Link key={p.id} href={`/products/${p.id}`} data-product-card
+                className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all hover:-translate-y-0.5 hover:border-accent/20">
+                <div className="aspect-square overflow-hidden bg-[#0a0a0a]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" />
+                </div>
+                <div className="p-2.5">
+                  <p className="text-[10px] font-semibold text-accent">{p.brand}</p>
+                  <p className="text-xs font-medium text-white line-clamp-1">{p.name}</p>
+                  <div className="mt-1 flex items-center justify-between">
+                    {p.price_cny ? <span className="text-xs font-bold text-white">€{(p.price_cny * 0.127).toFixed(0)}</span> : <span className="text-xs text-text-muted">Multi</span>}
+                    <span className="flex items-center gap-1 text-[10px] text-text-muted">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      {p.views}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Two-column layout */}
       <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
