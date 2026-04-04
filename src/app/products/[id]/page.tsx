@@ -640,6 +640,11 @@ export default function ProductDetailPage() {
                 Not sure which agent?{" "}
                 <Link href="/guides/agent-comparison" className="text-accent hover:underline">Compare all 8 agents →</Link>
               </p>
+              <p className="text-sm text-text-muted">
+                📐 <Link href="/guides/sizing-guide" className="text-accent hover:underline">Sizing help</Link>
+                {" · "}
+                🎨 <Link href="/guides/color-guide" className="text-accent hover:underline">Color matching</Link>
+              </p>
             </div>
           </div>
 
