@@ -93,6 +93,7 @@ const PLATFORMS: { id: Platform; label: string; icon: string; color: string }[] 
 ];
 
 const DATE_RANGES = [
+  { label: "1d", days: 1 },
   { label: "7d", days: 7 },
   { label: "14d", days: 14 },
   { label: "30d", days: 30 },
@@ -152,7 +153,7 @@ export default function MarketingDashboard() {
   const [storedPassword, setStoredPassword] = useState("");
 
   const [platform, setPlatform] = useState<Platform>("overview");
-  const [rangeDays, setRangeDays] = useState(30);
+  const [rangeDays, setRangeDays] = useState(1);
   const [chartReady, setChartReady] = useState(false);
   // Chart refs
   const ga4SessionsChartRef = useRef<HTMLCanvasElement>(null);
