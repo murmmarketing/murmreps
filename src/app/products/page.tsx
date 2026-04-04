@@ -188,8 +188,57 @@ function ProductsPageInner() {
     return query.range(from, to);
   }, [debouncedSearch, category, tier, quality, sort, minPrice, maxPrice]);
 
-  // Initial fetch (resets on filter/sort/search change)
+  // Save scroll state on unmount for back-navigation restore
+  const productsRef = useRef(products);
+  const offsetRef = useRef(offset);
+  const hasMoreRef = useRef(hasMore);
+  const totalCountRef = useRef(totalCount);
+  productsRef.current = products;
+  offsetRef.current = offset;
+  hasMoreRef.current = hasMore;
+  totalCountRef.current = totalCount;
+
   useEffect(() => {
+    return () => {
+      try {
+        if (productsRef.current.length > 0) {
+          sessionStorage.setItem("murmreps_products_cache", JSON.stringify({
+            products: productsRef.current.slice(0, 48), // Cap to keep size reasonable
+            offset: offsetRef.current,
+            hasMore: hasMoreRef.current,
+            totalCount: totalCountRef.current,
+            scrollY: window.scrollY,
+            category, sort, search: debouncedSearch, tier, quality, minPrice, maxPrice,
+          }));
+        }
+      } catch { /* sessionStorage full or unavailable */ }
+    };
+  }, [category, sort, debouncedSearch, tier, quality, minPrice, maxPrice]);
+
+  // Initial fetch (resets on filter/sort/search change)
+  const initialFetchDone = useRef(false);
+  useEffect(() => {
+    // Try restoring from cache on first mount
+    if (!initialFetchDone.current) {
+      initialFetchDone.current = true;
+      try {
+        const raw = sessionStorage.getItem("murmreps_products_cache");
+        if (raw) {
+          const cached = JSON.parse(raw);
+          sessionStorage.removeItem("murmreps_products_cache");
+          if (cached.category === category && cached.search === debouncedSearch && cached.sort === sort) {
+            setProducts(cached.products as typeof staticProducts);
+            setOffset(cached.offset);
+            setHasMore(cached.hasMore);
+            setTotalCount(cached.totalCount);
+            setLoading(false);
+            requestAnimationFrame(() => { setTimeout(() => window.scrollTo(0, cached.scrollY), 50); });
+            return;
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
     async function fetchInitial() {
       setLoading(true);
       setProducts([]);
@@ -202,12 +251,11 @@ function ProductsPageInner() {
         setTotalCount(count ?? 0);
         if (!data || data.length < PAGE_SIZE) setHasMore(false);
         setOffset(data?.length || 0);
-        // Log search query (fire and forget)
         if (debouncedSearch && debouncedSearch.length >= 2) {
           fetch("/api/search/log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: debouncedSearch, resultsCount: count ?? 0 }) }).catch(() => {});
         }
       } catch {
-        // Supabase fetch failed — products array stays empty, skeleton shows
+        // Supabase fetch failed
       } finally {
         setLoading(false);
       }
