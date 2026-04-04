@@ -22,8 +22,13 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (!post) notFound();
 
-  // Simple markdown-like rendering
+  // Render content: if it already contains HTML tags, use as-is; otherwise convert markdown
   const renderContent = (content: string) => {
+    if (/<[a-z][\s\S]*>/i.test(content)) {
+      // Already HTML — just return it
+      return content;
+    }
+    // Markdown-like rendering for plain text posts
     return content
       .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-white mt-8 mb-3">$1</h2>')
       .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-white mt-8 mb-3">$1</h1>')
@@ -59,7 +64,8 @@ export default async function BlogPostPage({ params }: Props) {
 
       <h1 className="font-heading text-3xl font-bold text-white mb-6">{post.title}</h1>
 
-      <div className="prose-dark" dangerouslySetInnerHTML={{ __html: `<p class="text-text-secondary leading-relaxed mb-4">${renderContent(post.content)}</p>` }} />
+      <div className="prose-dark text-text-secondary leading-relaxed [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_a]:text-accent [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 [&_li]:mb-1 [&_strong]:text-white"
+        dangerouslySetInnerHTML={{ __html: renderContent(post.content) }} />
 
       {/* KakoBuy CTA */}
       <div className="mt-12 rounded-xl bg-gradient-to-r from-[#FE4205] to-[#c2410c] p-8 text-center">
