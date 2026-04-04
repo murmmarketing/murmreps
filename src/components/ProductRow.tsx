@@ -247,6 +247,13 @@ export default function ProductRow({ title, products, viewMoreHref }: ProductRow
                     </span>
                   )}
                 </div>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {((product as any).variant_count || 0) > 1 && (
+                  <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {(product as any).variant_count}+ colors
+                  </span>
+                )}
               </div>
 
               {/* Info */}

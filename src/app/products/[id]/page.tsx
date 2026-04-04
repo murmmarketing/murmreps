@@ -440,6 +440,13 @@ export default function ProductDetailPage() {
           <h1 className="font-heading text-2xl font-bold text-white">
             {product.name}
           </h1>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {((product as any).variant_count || 0) > 1 && (
+            <p className="mt-1 text-sm text-text-muted">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              🎨 {(product as any).variant_count}+ colorways available — pick your color on the agent&apos;s site
+            </p>
+          )}
 
           {/* Price */}
           <div className="mt-4">
