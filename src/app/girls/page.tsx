@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchTrending, fetchForYou } from "@/lib/smartFetch";
@@ -272,63 +271,8 @@ function GirlsInner() {
     return query.range(from, to);
   }, [debouncedSearch, activeCat, sort]);
 
-  // Save scroll state on unmount
-  const gProductsRef = useRef(products);
-  const gOffsetRef = useRef(offset);
-  const gHasMoreRef = useRef(hasMore);
-  const gTotalRef = useRef(totalCount);
-  gProductsRef.current = products;
-  gOffsetRef.current = offset;
-  gHasMoreRef.current = hasMore;
-  gTotalRef.current = totalCount;
-
-  useEffect(() => {
-    return () => {
-      try {
-        if (gProductsRef.current.length > 0) {
-          sessionStorage.setItem("murmreps_girls_cache", JSON.stringify({
-            products: gProductsRef.current,
-            offset: gOffsetRef.current,
-            hasMore: gHasMoreRef.current,
-            totalCount: gTotalRef.current,
-            scrollY: window.scrollY,
-            activeCat, sort, search: debouncedSearch,
-            timestamp: Date.now(),
-          }));
-        }
-      } catch { /* */ }
-    };
-  }, [activeCat, sort, debouncedSearch]);
-
   // Initial fetch (resets on filter/sort/search change)
-  const girlsInitDone = useRef(false);
   useEffect(() => {
-    if (!girlsInitDone.current) {
-      girlsInitDone.current = true;
-      try {
-        const raw = sessionStorage.getItem("murmreps_girls_cache");
-        if (raw) {
-          const cached = JSON.parse(raw);
-          sessionStorage.removeItem("murmreps_girls_cache");
-          const fresh = !cached.timestamp || (Date.now() - cached.timestamp < 30 * 60 * 1000);
-          if (fresh && cached.activeCat === activeCat && cached.search === debouncedSearch && cached.sort === sort && cached.products?.length > 0) {
-            setProducts(cached.products as Product[]);
-            setOffset(cached.offset);
-            setHasMore(cached.hasMore);
-            setTotalCount(cached.totalCount);
-            setLoading(false);
-            const savedY = cached.scrollY;
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                window.scrollTo(0, savedY);
-              });
-            });
-            return;
-          }
-        }
-      } catch { /* */ }
-    }
-
     (async () => {
       setLoading(true);
       setProducts([]);
@@ -567,9 +511,11 @@ function GirlsInner() {
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {paginated.map((product, productIndex) => (
-              <Link
+              <a
                 key={product.id}
                 href={`/products/${product.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 data-product-card
                 className="group overflow-hidden transition-all duration-[250ms]"
                 style={{
@@ -647,7 +593,7 @@ function GirlsInner() {
                     {product.price_cny != null ? formatPrice(product) : <span style={{ color: P.textMuted }}>Multi</span>}
                   </p>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         )}

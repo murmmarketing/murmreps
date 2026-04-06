@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { usePreferences } from "@/lib/usePreferences";
 
 interface RecentProduct {
@@ -52,9 +51,11 @@ export default function RecentlyViewed() {
       </div>
       <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:px-0 sm:scroll-pl-0">
         {items.map((p) => (
-          <Link
+          <a
             key={p.id}
             href={`/products/${p.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/20"
           >
             <div className="aspect-square overflow-hidden bg-[#0a0a0a]">
@@ -68,7 +69,7 @@ export default function RecentlyViewed() {
                 <p className="mt-1 text-xs font-bold text-white">{formatPrice(p)}</p>
               )}
             </div>
-          </Link>
+          </a>
         ))}
       </div>
     </section>

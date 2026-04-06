@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback, Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import staticProducts from "@/data/products.json";
 import { supabase } from "@/lib/supabase";
@@ -188,73 +187,8 @@ function ProductsPageInner() {
     return query.range(from, to);
   }, [debouncedSearch, category, tier, quality, sort, minPrice, maxPrice]);
 
-  // Save scroll state on unmount for back-navigation restore
-  const productsRef = useRef(products);
-  const offsetRef = useRef(offset);
-  const hasMoreRef = useRef(hasMore);
-  const totalCountRef = useRef(totalCount);
-  productsRef.current = products;
-  offsetRef.current = offset;
-  hasMoreRef.current = hasMore;
-  totalCountRef.current = totalCount;
-
-  useEffect(() => {
-    return () => {
-      try {
-        if (productsRef.current.length > 0) {
-          sessionStorage.setItem("murmreps_products_cache", JSON.stringify({
-            products: productsRef.current,
-            offset: offsetRef.current,
-            hasMore: hasMoreRef.current,
-            totalCount: totalCountRef.current,
-            scrollY: window.scrollY,
-            category, sort, search: debouncedSearch, tier, quality, minPrice, maxPrice,
-            timestamp: Date.now(),
-          }));
-        }
-      } catch { /* sessionStorage full or unavailable */ }
-    };
-  }, [category, sort, debouncedSearch, tier, quality, minPrice, maxPrice]);
-
   // Initial fetch (resets on filter/sort/search change)
-  const initialFetchDone = useRef(false);
   useEffect(() => {
-    // Try restoring from cache on first mount
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true;
-      try {
-        const raw = sessionStorage.getItem("murmreps_products_cache");
-        if (raw) {
-          const cached = JSON.parse(raw);
-          sessionStorage.removeItem("murmreps_products_cache");
-          // Only restore if cache is less than 30 minutes old and all filters match
-          const fresh = !cached.timestamp || (Date.now() - cached.timestamp < 30 * 60 * 1000);
-          const filtersMatch =
-            cached.category === category &&
-            cached.search === debouncedSearch &&
-            cached.sort === sort &&
-            (cached.tier || "all") === tier &&
-            (cached.quality || "all") === quality &&
-            (cached.minPrice || "") === minPrice &&
-            (cached.maxPrice || "") === maxPrice;
-          if (fresh && filtersMatch && cached.products?.length > 0) {
-            setProducts(cached.products as typeof staticProducts);
-            setOffset(cached.offset);
-            setHasMore(cached.hasMore);
-            setTotalCount(cached.totalCount);
-            setLoading(false);
-            const savedY = cached.scrollY;
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                window.scrollTo(0, savedY);
-              });
-            });
-            return;
-          }
-        }
-      } catch { /* ignore */ }
-    }
-
     async function fetchInitial() {
       setLoading(true);
       setProducts([]);
@@ -425,7 +359,7 @@ function ProductsPageInner() {
           {acOpen && acResults.length > 0 && (
             <div className="absolute left-0 right-0 top-full z-40 mt-1 overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#141414] shadow-xl">
               {acResults.map((p) => (
-                <Link key={p.id} href={`/products/${p.id}`} onClick={() => setAcOpen(false)}
+                <a key={p.id} href={`/products/${p.id}`} target="_blank" rel="noopener noreferrer" onClick={() => setAcOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-[rgba(255,255,255,0.05)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.image} alt="" className="h-10 w-10 shrink-0 rounded-md object-cover bg-[#0a0a0a]" />
@@ -433,7 +367,7 @@ function ProductsPageInner() {
                     <p className="text-white truncate">{p.name}</p>
                     <p className="text-xs text-text-muted">{p.brand}{p.price_cny ? ` · ¥${p.price_cny}` : ""}</p>
                   </div>
-                </Link>
+                </a>
               ))}
             </div>
           )}
@@ -643,7 +577,7 @@ function ProductsPageInner() {
               className="group overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(254,66,5,0.2)]"
             >
               {/* Image area */}
-              <Link href={`/products/${product.id}`} className="relative block aspect-square overflow-hidden bg-[#0a0a0a]">
+              <a href={`/products/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-square overflow-hidden bg-[#0a0a0a]">
                 {product.image ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -709,15 +643,15 @@ function ProductsPageInner() {
                     {"\uD83D\uDD25"}
                   </span>
                 )}
-              </Link>
+              </a>
 
               {/* Card body */}
               <div className="p-4">
-                <Link href={`/products/${product.id}`} className="block">
+                <a href={`/products/${product.id}`} target="_blank" rel="noopener noreferrer" className="block">
                   <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-white transition-colors group-hover:text-accent">
                     {product.name}
                   </h3>
-                </Link>
+                </a>
                 <p className="mt-1 text-xs text-text-muted">{product.category}</p>
 
                 {product.quality && qualityBadgeStyles[product.quality] && (
@@ -736,12 +670,14 @@ function ProductsPageInner() {
                       <p className="font-heading text-base font-bold text-text-muted">Multi</p>
                     )}
                   </div>
-                  <Link
+                  <a
                     href={`/products/${product.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="rounded-lg border border-[rgba(255,255,255,0.1)] px-3 py-1.5 text-xs font-medium text-accent transition-all hover:border-accent/40 hover:bg-accent/5"
                   >
                     Check &rarr;
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
