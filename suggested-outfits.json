@@ -1,0 +1,462 @@
+[
+  {
+    "name": "Chrome Hearts Monochrome",
+    "colors": "black/grey",
+    "items": [
+      {
+        "slot": "Hoodies",
+        "id": 745,
+        "brand": "Chrome Hearts",
+        "name": "Chrome Hearts Rolling Stones Hoodie",
+        "price_cny": null,
+        "photoScore": 63
+      },
+      {
+        "slot": "Pants",
+        "id": 6756,
+        "brand": "Chrome Hearts",
+        "name": "Chrome Hearts\nDenim Mini Skirt",
+        "price_cny": 450,
+        "photoScore": 61
+      },
+      {
+        "slot": "Shoes",
+        "id": 3260,
+        "brand": "Chrome Hearts",
+        "name": "Rick Owens Chrome Hearts Dunks",
+        "price_cny": 373,
+        "photoScore": 55
+      },
+      {
+        "slot": "Necklaces",
+        "id": 2062,
+        "brand": "Chrome Hearts",
+        "name": "Chrome Hearts Pendant Necklace",
+        "price_cny": null,
+        "photoScore": 59
+      },
+      {
+        "slot": "Hats & Caps",
+        "id": 1813,
+        "brand": "Chrome Hearts",
+        "name": "Chrome Hearts Trucker Cap",
+        "price_cny": 55.2,
+        "photoScore": 61
+      }
+    ]
+  },
+  {
+    "name": "Nike Summer Clean",
+    "colors": "white/black",
+    "items": [
+      {
+        "slot": "Shirts",
+        "id": 1162,
+        "brand": "Nike",
+        "name": "Nike Tech Fleece Black Top",
+        "price_cny": 169.08,
+        "photoScore": 65
+      },
+      {
+        "slot": "Shorts",
+        "id": 965,
+        "brand": "Jordan",
+        "name": "Jordan Shorts",
+        "price_cny": 70.03,
+        "photoScore": 65
+      },
+      {
+        "slot": "Shoes",
+        "id": 311,
+        "brand": "Jordan",
+        "name": "Air Jordan 11",
+        "price_cny": 261.29,
+        "photoScore": 67
+      },
+      {
+        "slot": "Hats & Caps",
+        "id": 5432,
+        "brand": "Nike",
+        "name": "Nike Football Balaclava",
+        "price_cny": 42.86,
+        "photoScore": 52
+      },
+      {
+        "slot": "Bags",
+        "id": 14105,
+        "brand": "Jordan",
+        "name": "Air Jordan Backpack",
+        "price_cny": 136,
+        "photoScore": 51
+      }
+    ]
+  },
+  {
+    "name": "Old Money Luxury",
+    "colors": "cream/beige/brown",
+    "items": [
+      {
+        "slot": "Sweaters",
+        "id": 651,
+        "brand": "Burberry",
+        "name": "Burberry Sweatshirt zip Black interior monogram",
+        "price_cny": 245.12,
+        "photoScore": 53
+      },
+      {
+        "slot": "Pants",
+        "id": 280,
+        "brand": "Acne Studios",
+        "name": "Acne Studios Basic Denim (Light Grey)",
+        "price_cny": null,
+        "photoScore": 52
+      },
+      {
+        "slot": "Shoes",
+        "id": 83,
+        "brand": "New Balance",
+        "name": "New Balance 550",
+        "price_cny": 209.1,
+        "photoScore": 59
+      },
+      {
+        "slot": "Belts",
+        "id": 1858,
+        "brand": "Hermes",
+        "name": "Hermes Belt",
+        "price_cny": 38.02,
+        "photoScore": 48
+      },
+      {
+        "slot": "Watches",
+        "id": 5488,
+        "brand": "Hermes",
+        "name": "Apple Watch Hermes",
+        "price_cny": 257.14,
+        "photoScore": 45
+      }
+    ]
+  },
+  {
+    "name": "Dark Aesthetic",
+    "colors": "all black",
+    "items": [
+      {
+        "slot": "Jackets",
+        "id": 558,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Track Jacket",
+        "price_cny": 220.8,
+        "photoScore": 67
+      },
+      {
+        "slot": "Pants",
+        "id": 590,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Unity Track Pants",
+        "price_cny": null,
+        "photoScore": 65
+      },
+      {
+        "slot": "Shoes",
+        "id": 132,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Speed Trainer",
+        "price_cny": 339.48,
+        "photoScore": 67
+      },
+      {
+        "slot": "Necklaces",
+        "id": 2062,
+        "brand": "Chrome Hearts",
+        "name": "Chrome Hearts Pendant Necklace",
+        "price_cny": null,
+        "photoScore": 59
+      },
+      {
+        "slot": "Bags",
+        "id": 1740,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Lecagole Tassel Bag",
+        "price_cny": null,
+        "photoScore": 64
+      }
+    ]
+  },
+  {
+    "name": "Hypebeast Statement",
+    "colors": "bold/mixed",
+    "items": [
+      {
+        "slot": "Hoodies",
+        "id": 6667,
+        "brand": "Supreme",
+        "name": "Maison Margiela\nSupreme\nZip Ups",
+        "price_cny": 387.07,
+        "photoScore": 67
+      },
+      {
+        "slot": "Shorts",
+        "id": 1461,
+        "brand": "Stussy",
+        "name": "Stussy Shorts",
+        "price_cny": 149.07,
+        "photoScore": 49
+      },
+      {
+        "slot": "Shoes",
+        "id": 12742,
+        "brand": "Off-White",
+        "name": "Air Force 1 Off-White",
+        "price_cny": 439,
+        "photoScore": 52
+      },
+      {
+        "slot": "Hats & Caps",
+        "id": 1971,
+        "brand": "Stussy",
+        "name": "Stussy Baseball Cap",
+        "price_cny": 35.02,
+        "photoScore": 53
+      },
+      {
+        "slot": "Bags",
+        "id": 1975,
+        "brand": "Supreme",
+        "name": "Supreme Shoulder Bag",
+        "price_cny": 47.02,
+        "photoScore": 61
+      }
+    ]
+  },
+  {
+    "name": "Balenciaga Full Set",
+    "colors": "black/grey",
+    "items": [
+      {
+        "slot": "Jackets",
+        "id": 558,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Track Jacket",
+        "price_cny": 220.8,
+        "photoScore": 67
+      },
+      {
+        "slot": "Pants",
+        "id": 590,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Unity Track Pants",
+        "price_cny": null,
+        "photoScore": 65
+      },
+      {
+        "slot": "Shoes",
+        "id": 132,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Speed Trainer",
+        "price_cny": 339.48,
+        "photoScore": 67
+      },
+      {
+        "slot": "Sunglasses",
+        "id": 6984,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Sunglasses",
+        "price_cny": 308.5,
+        "photoScore": 56
+      },
+      {
+        "slot": "Bags",
+        "id": 1740,
+        "brand": "Balenciaga",
+        "name": "Balenciaga Lecagole Tassel Bag",
+        "price_cny": null,
+        "photoScore": 64
+      }
+    ]
+  },
+  {
+    "name": "Stussy Casual",
+    "colors": "neutral",
+    "items": [
+      {
+        "slot": "Shirts",
+        "id": 1162,
+        "brand": "Nike",
+        "name": "Nike Tech Fleece Black Top",
+        "price_cny": 169.08,
+        "photoScore": 65
+      },
+      {
+        "slot": "Shorts",
+        "id": 1163,
+        "brand": "Nike",
+        "name": "Nike Tech Shorts",
+        "price_cny": 116.06,
+        "photoScore": 60
+      },
+      {
+        "slot": "Shoes",
+        "id": 62,
+        "brand": "Nike",
+        "name": "Nike Air Force 1 Low Nocta",
+        "price_cny": 298.15,
+        "photoScore": 67
+      },
+      {
+        "slot": "Hats & Caps",
+        "id": 1971,
+        "brand": "Stussy",
+        "name": "Stussy Baseball Cap",
+        "price_cny": 35.02,
+        "photoScore": 53
+      },
+      {
+        "slot": "Necklaces",
+        "id": 3914,
+        "brand": "Stussy",
+        "name": "Stussy Bowling Beads Necklace",
+        "price_cny": 26,
+        "photoScore": 42
+      }
+    ]
+  },
+  {
+    "name": "Girls Luxury",
+    "colors": "mixed",
+    "items": [
+      {
+        "slot": "Bags",
+        "id": 6902,
+        "brand": "Chanel",
+        "name": "Chanel Heart Zip Coin Purse",
+        "price_cny": 288.43,
+        "photoScore": 60
+      },
+      {
+        "slot": "Shoes",
+        "id": 6100,
+        "brand": "Dior",
+        "name": "Christian Dior\nB23",
+        "price_cny": 232.07,
+        "photoScore": 61
+      },
+      {
+        "slot": "Earrings",
+        "id": 2149,
+        "brand": "Vivienne Westwood",
+        "name": "Vivienne Westwood Double Earrings",
+        "price_cny": null,
+        "photoScore": 53
+      },
+      {
+        "slot": "Necklaces",
+        "id": 6369,
+        "brand": "Vivienne Westwood",
+        "name": "Vivienne Westwood Heart Orb Necklace",
+        "price_cny": 29.79,
+        "photoScore": 55
+      },
+      {
+        "slot": "Sunglasses",
+        "id": 6467,
+        "brand": "Dior",
+        "name": "Christian Dior\nSunglasses",
+        "price_cny": 295.57,
+        "photoScore": 56
+      }
+    ]
+  },
+  {
+    "name": "Earth Tones Workwear",
+    "colors": "olive/brown/cream",
+    "items": [
+      {
+        "slot": "Jackets",
+        "id": 1167,
+        "brand": "Nike",
+        "name": "Nike X Drake Nocta jacket",
+        "price_cny": 469.23,
+        "photoScore": 62
+      },
+      {
+        "slot": "Pants",
+        "id": 1161,
+        "brand": "Nike",
+        "name": "Nike Tech Fleece Black Pants",
+        "price_cny": 119.06,
+        "photoScore": 65
+      },
+      {
+        "slot": "Shoes",
+        "id": 62,
+        "brand": "Nike",
+        "name": "Nike Air Force 1 Low Nocta",
+        "price_cny": 298.15,
+        "photoScore": 67
+      },
+      {
+        "slot": "Hats & Caps",
+        "id": 5432,
+        "brand": "Nike",
+        "name": "Nike Football Balaclava",
+        "price_cny": 42.86,
+        "photoScore": 52
+      },
+      {
+        "slot": "Belts",
+        "id": 1812,
+        "brand": "Chrome Hearts",
+        "name": "Chrome Hearts Belt",
+        "price_cny": 111.55,
+        "photoScore": 59
+      }
+    ]
+  },
+  {
+    "name": "Louis Vuitton Flex",
+    "colors": "brown/monogram",
+    "items": [
+      {
+        "slot": "Bags",
+        "id": 1879,
+        "brand": "Louis Vuitton",
+        "name": "Louis Vuitton Neverfull Tote Bag",
+        "price_cny": 199.1,
+        "photoScore": 69
+      },
+      {
+        "slot": "Belts",
+        "id": 1880,
+        "brand": "Louis Vuitton",
+        "name": "Louis Vuitton Belt (30+ colorways)",
+        "price_cny": null,
+        "photoScore": 59
+      },
+      {
+        "slot": "Shoes",
+        "id": 1055,
+        "brand": "Louis Vuitton",
+        "name": "Louis Vuitton x Air Force (Real Leather Batch)",
+        "price_cny": null,
+        "photoScore": 67
+      },
+      {
+        "slot": "Shirts",
+        "id": 1889,
+        "brand": "Louis Vuitton",
+        "name": "Louis Vuitton Trio (3-in-1)",
+        "price_cny": 1450.72,
+        "photoScore": 60
+      },
+      {
+        "slot": "Wallets",
+        "id": 1890,
+        "brand": "Louis Vuitton",
+        "name": "Louis Vuitton Wallet",
+        "price_cny": 129.06,
+        "photoScore": 58
+      }
+    ]
+  }
+]
