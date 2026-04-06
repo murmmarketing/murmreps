@@ -47,7 +47,7 @@ async function rescore() {
   while (true) {
     const { data } = await supabase
       .from("products")
-      .select("id, name, brand, category, price_cny, image, views, likes, dislikes, review_count, avg_rating")
+      .select("id, name, brand, category, price_cny, image, views, likes, dislikes, review_count, avg_rating, created_at, variant_count")
       .range(offset, offset + 999);
     if (!data || data.length === 0) break;
     allProducts = allProducts.concat(data);
@@ -78,6 +78,11 @@ async function rescore() {
     const dislikes = p.dislikes || 0;
     const reviewCount = p.review_count || 0;
     const avgRating = parseFloat(p.avg_rating) || 0;
+
+    // 0. Fresh finds boost
+    const ageInDays = (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24);
+    if (ageInDays <= 7) score += 15;
+    else if (ageInDays <= 14) score += 8;
 
     // 1. Price Appeal (0-20)
     const median = catMedians[p.category] || 200;
@@ -113,15 +118,28 @@ async function rescore() {
     if (p.image && p.image.startsWith("http")) score += 5;
     else score -= 10;
 
+    // Image source quality
+    const imgUrl = (p.image || "").toLowerCase();
+    if (imgUrl.includes("yupoo.com")) score += 5;
+    else if (imgUrl.includes("geilicdn.com")) score -= 3;
+    else if (imgUrl.includes("weidian.com") || imgUrl.includes("img.alicdn.com")) score += 2;
+
+    // No image = heavy penalty
+    if (!p.image || p.image === "") score -= 20;
+
+    // Review boost
     if (reviewCount > 0) {
-      score += Math.min(5, reviewCount);
-      score += Math.round(avgRating);
+      score += Math.min(10, reviewCount * 2);
+      score += Math.round((avgRating || 0) * 2);
     }
+
+    // Penalize multi-variant listings that slipped through
+    if ((p.variant_count || 0) > 10) score -= 5;
 
     if (p.brand && p.brand !== "Unknown" && p.brand !== "Various" && p.brand !== "?") score += 3;
     if (p.name && p.name.length > 10 && !p.name.startsWith("Product ")) score += 2;
 
-    score = Math.max(0, Math.min(100, score));
+    score = Math.max(0, Math.min(115, score));
     updates.push({ id: p.id, score });
   }
 

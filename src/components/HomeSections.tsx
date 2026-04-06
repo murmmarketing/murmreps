@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { fetchForYou } from "@/lib/smartFetch";
 import ProductRow from "./ProductRow";
 
 const CARD_COLUMNS = "id,name,brand,price_cny,price_usd,price_eur,image,views,likes,category";
@@ -39,16 +40,9 @@ export default function HomeSections() {
   // Fetch above-fold data: "For You" and "Recently Added" only
   useEffect(() => {
     async function fetchInitial() {
-      const [forYouRes, recentRes, girlsRes] = await Promise.all([
-        // "For You" — random 50 from top 200 by score (shuffled client-side to 8)
-        supabase
-          .from("products")
-          .select(CARD_COLUMNS)
-          .not("image", "eq", "")
-          .not("image", "is", null)
-          .not("price_cny", "is", null)
-          .order("score", { ascending: false })
-          .range(8, 207),
+      const [forYouData, recentRes, girlsRes] = await Promise.all([
+        // "For You" — smart fetch with weighted randomness and category diversity
+        fetchForYou(8, "main"),
         // "Recently Added" — 8 newest
         supabase
           .from("products")
@@ -68,9 +62,7 @@ export default function HomeSections() {
           .limit(8),
       ]);
 
-      const forYouPool = (forYouRes.data as RowProduct[]) || [];
-      const shuffled = forYouPool.sort(() => Math.random() - 0.5).slice(0, 8);
-      setForYouProducts(shuffled);
+      setForYouProducts(forYouData as RowProduct[]);
       setRecentProducts((recentRes.data as RowProduct[]) || []);
       setGirlsProducts((girlsRes.data as RowProduct[]) || []);
       setLoading(false);

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { fetchTrending } from "@/lib/smartFetch";
 import newsData from "@/data/news.json";
 
 const tagColors: Record<string, { bg: string; text: string }> = {
@@ -20,17 +21,11 @@ function formatDate(dateStr: string) {
   });
 }
 
-export const revalidate = 300;
+export const revalidate = 21600; // 6 hours — matches smartFetch time seed rotation
 
 export default async function NewsPage() {
-  // Fetch trending products
-  const { data: trending } = await supabase
-    .from("products")
-    .select("id, name, brand, price_cny, image, views")
-    .not("image", "is", null)
-    .neq("image", "")
-    .order("views", { ascending: false })
-    .limit(8);
+  // Fetch trending products with smart weighted shuffle
+  const trending = await fetchTrending(8);
 
   // Fetch blog posts from Supabase
   const { data: dbPosts } = await supabase
@@ -79,11 +74,11 @@ export default async function NewsPage() {
       </div>
 
       {/* Trending products */}
-      {trending && trending.length > 0 && (
+      {trending.length > 0 && (
         <div className="mb-10">
           <h2 className="mb-4 font-heading text-lg font-bold text-white">Trending Right Now</h2>
           <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pr-4 sm:mx-0 sm:px-0 sm:scroll-pl-0">
-            {(trending as { id: number; name: string; brand: string; price_cny: number | null; image: string; views: number }[]).map((p) => (
+            {trending.map((p: { id: number; name: string; brand: string; price_cny: number | null; image: string; views: number }) => (
               <Link key={p.id} href={`/products/${p.id}`} data-product-card
                 className="group w-40 shrink-0 snap-start overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] transition-all hover:-translate-y-0.5 hover:border-accent/20">
                 <div className="aspect-square overflow-hidden bg-[#0a0a0a]">

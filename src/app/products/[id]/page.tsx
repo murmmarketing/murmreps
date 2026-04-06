@@ -216,7 +216,20 @@ export default function ProductDetailPage() {
           return { ...p, _relevance: relevance };
         });
         scored.sort((a, b) => b._relevance - a._relevance);
-        setSimilarFinds(scored.slice(0, 8));
+
+        // Limit to max 3 from same brand in Similar Finds
+        const brandCounts: Record<string, number> = {};
+        const diverse: typeof scored = [];
+        for (const item of scored) {
+          const b = item.brand || "unknown";
+          const count = brandCounts[b] || 0;
+          if (count < 3) {
+            diverse.push(item);
+            brandCounts[b] = count + 1;
+          }
+          if (diverse.length >= 8) break;
+        }
+        setSimilarFinds(diverse);
       }
 
       if (brandRes?.data) {

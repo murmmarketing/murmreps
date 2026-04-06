@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import ProductRow from "./ProductRow";
+import { fetchTrending } from "@/lib/smartFetch";
 import staticProducts from "@/data/products.json";
 
 interface PopularProduct {
@@ -21,20 +21,10 @@ export default function PopularFinds() {
   const [popular, setPopular] = useState<PopularProduct[]>([]);
 
   useEffect(() => {
-    async function fetchTrending() {
+    async function load() {
       try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("id, name, brand, price_cny, price_usd, price_eur, image, views, likes")
-          .not("price_cny", "is", null)
-          .not("image", "eq", "")
-          .not("image", "is", null)
-          .order("score", { ascending: false })
-          .limit(8);
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
+        const data = await fetchTrending(8, "main");
+        if (data.length > 0) {
           setPopular(data as PopularProduct[]);
         } else {
           throw new Error("No data");
@@ -59,7 +49,7 @@ export default function PopularFinds() {
         );
       }
     }
-    fetchTrending();
+    load();
   }, []);
 
   if (popular.length === 0) return null;

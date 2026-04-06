@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { fetchTrending, fetchForYou } from "@/lib/smartFetch";
 import { useWishlist } from "@/lib/useWishlist";
 import { usePreferences } from "@/lib/usePreferences";
 import ProductRow from "@/components/ProductRow";
@@ -149,27 +150,9 @@ function GirlsInner() {
   // Fetch carousel data once (Trending, For You, Recently Added)
   useEffect(() => {
     (async () => {
-      const [trendingRes, forYouRes, recentRes] = await Promise.all([
-        // Trending Now — top 8 by score
-        supabase
-          .from("products")
-          .select(CARD_COLUMNS)
-          .in("collection", ["girls", "both"])
-          .not("image", "is", null)
-          .neq("image", "")
-          .not("price_cny", "is", null)
-          .order("score", { ascending: false })
-          .limit(8),
-        // For You — random 8 from positions 9-200 by score
-        supabase
-          .from("products")
-          .select(CARD_COLUMNS)
-          .in("collection", ["girls", "both"])
-          .not("image", "is", null)
-          .neq("image", "")
-          .not("price_cny", "is", null)
-          .order("score", { ascending: false })
-          .range(8, 207),
+      const [trendingData, recentRes] = await Promise.all([
+        // Trending Now — smart fetch with weighted randomness
+        fetchTrending(8, "girls"),
         // Recently Added — 8 newest with images
         supabase
           .from("products")
@@ -181,11 +164,15 @@ function GirlsInner() {
           .limit(8),
       ]);
 
-      setTrendingProducts((trendingRes.data as RowProduct[]) || []);
+      setTrendingProducts(trendingData as RowProduct[]);
 
-      const forYouPool = (forYouRes.data as RowProduct[]) || [];
-      const shuffled = forYouPool.sort(() => Math.random() - 0.5).slice(0, 8);
-      setForYouProducts(shuffled);
+      // For You — exclude trending products for no duplicates
+      const forYouData = await fetchForYou(
+        8,
+        "girls",
+        trendingData.map((p: { id: number }) => String(p.id))
+      );
+      setForYouProducts(forYouData as RowProduct[]);
 
       setRecentProducts((recentRes.data as RowProduct[]) || []);
     })();
