@@ -203,12 +203,13 @@ function ProductsPageInner() {
       try {
         if (productsRef.current.length > 0) {
           sessionStorage.setItem("murmreps_products_cache", JSON.stringify({
-            products: productsRef.current.slice(0, 48), // Cap to keep size reasonable
+            products: productsRef.current,
             offset: offsetRef.current,
             hasMore: hasMoreRef.current,
             totalCount: totalCountRef.current,
             scrollY: window.scrollY,
             category, sort, search: debouncedSearch, tier, quality, minPrice, maxPrice,
+            timestamp: Date.now(),
           }));
         }
       } catch { /* sessionStorage full or unavailable */ }
@@ -226,13 +227,28 @@ function ProductsPageInner() {
         if (raw) {
           const cached = JSON.parse(raw);
           sessionStorage.removeItem("murmreps_products_cache");
-          if (cached.category === category && cached.search === debouncedSearch && cached.sort === sort) {
+          // Only restore if cache is less than 30 minutes old and all filters match
+          const fresh = !cached.timestamp || (Date.now() - cached.timestamp < 30 * 60 * 1000);
+          const filtersMatch =
+            cached.category === category &&
+            cached.search === debouncedSearch &&
+            cached.sort === sort &&
+            (cached.tier || "all") === tier &&
+            (cached.quality || "all") === quality &&
+            (cached.minPrice || "") === minPrice &&
+            (cached.maxPrice || "") === maxPrice;
+          if (fresh && filtersMatch && cached.products?.length > 0) {
             setProducts(cached.products as typeof staticProducts);
             setOffset(cached.offset);
             setHasMore(cached.hasMore);
             setTotalCount(cached.totalCount);
             setLoading(false);
-            requestAnimationFrame(() => { setTimeout(() => window.scrollTo(0, cached.scrollY), 50); });
+            const savedY = cached.scrollY;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                window.scrollTo(0, savedY);
+              });
+            });
             return;
           }
         }

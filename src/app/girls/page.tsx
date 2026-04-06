@@ -287,12 +287,13 @@ function GirlsInner() {
       try {
         if (gProductsRef.current.length > 0) {
           sessionStorage.setItem("murmreps_girls_cache", JSON.stringify({
-            products: gProductsRef.current.slice(0, 48),
+            products: gProductsRef.current,
             offset: gOffsetRef.current,
             hasMore: gHasMoreRef.current,
             totalCount: gTotalRef.current,
             scrollY: window.scrollY,
             activeCat, sort, search: debouncedSearch,
+            timestamp: Date.now(),
           }));
         }
       } catch { /* */ }
@@ -309,13 +310,19 @@ function GirlsInner() {
         if (raw) {
           const cached = JSON.parse(raw);
           sessionStorage.removeItem("murmreps_girls_cache");
-          if (cached.activeCat === activeCat && cached.search === debouncedSearch && cached.sort === sort) {
+          const fresh = !cached.timestamp || (Date.now() - cached.timestamp < 30 * 60 * 1000);
+          if (fresh && cached.activeCat === activeCat && cached.search === debouncedSearch && cached.sort === sort && cached.products?.length > 0) {
             setProducts(cached.products as Product[]);
             setOffset(cached.offset);
             setHasMore(cached.hasMore);
             setTotalCount(cached.totalCount);
             setLoading(false);
-            requestAnimationFrame(() => { setTimeout(() => window.scrollTo(0, cached.scrollY), 50); });
+            const savedY = cached.scrollY;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                window.scrollTo(0, savedY);
+              });
+            });
             return;
           }
         }
