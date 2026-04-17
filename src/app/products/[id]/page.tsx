@@ -630,7 +630,10 @@ export default function ProductDetailPage() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => trackEvent('agent_click', { product_id: Number(product.id), agent_name: agent.name })}
+                    onClick={() => {
+                      trackEvent('agent_click', { product_id: Number(product.id), agent_name: agent.name });
+                      fetch('/api/track/agent-click', { method: 'POST', body: JSON.stringify({ agent: agent.name, productId: product.id }), headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+                    }}
                     className={`relative flex items-center justify-center gap-2 rounded-btn border px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-accent hover:shadow-[0_0_20px_rgba(254,66,5,0.1)] ${isKako ? "border-accent/40 bg-accent/5" : "border-subtle bg-[#141414]"}`}
                   >
                     {agent.name}
