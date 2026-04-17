@@ -603,6 +603,14 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Coupon strip */}
+          <div className="mb-4 rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
+            <p className="text-sm text-orange-400">
+              💰 <strong>Save on this item:</strong> Sign up with KakoBuy through MurmReps for the best shipping rates
+              <a href="https://ikako.vip/r/6gkjt" target="_blank" rel="noopener noreferrer" className="ml-2 underline">Sign up →</a>
+            </p>
+          </div>
+
           {/* Buy section */}
           <div data-buy-section>
             <p className="mb-3 text-sm font-medium text-text-secondary">

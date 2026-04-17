@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import HeroSection from "@/components/HeroSection";
+import HomeCouponCTA from "@/components/HomeCouponCTA";
 
 const PopularFinds = dynamic(() => import("@/components/PopularFinds"), {
   ssr: false,
@@ -76,6 +77,9 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6">
         <HomeSections />
       </section>
+
+      {/* Coupon CTA */}
+      <HomeCouponCTA />
 
       {/* FAQ */}
       <HomeFAQ />

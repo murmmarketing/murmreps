@@ -12,6 +12,7 @@ const FloatingReferral = dynamic(() => import("@/components/FloatingReferral"), 
 const NewsletterPopup = dynamic(() => import("@/components/NewsletterPopup"), { ssr: false });
 const SearchModal = dynamic(() => import("@/components/SearchModal"), { ssr: false });
 const BackToTop = dynamic(() => import("@/components/BackToTop"), { ssr: false });
+const StickyBanner = dynamic(() => import("@/components/StickyBanner"), { ssr: false });
 const ServiceWorker = dynamic(() => import("@/components/ServiceWorker"), { ssr: false });
 
 const spaceGrotesk = Space_Grotesk({
@@ -101,6 +102,7 @@ export default function RootLayout({
           <NewsletterPopup />
           <SearchModal />
           <BackToTop />
+          <StickyBanner />
           <ServiceWorker />
         </ClientProviders>
       </body>

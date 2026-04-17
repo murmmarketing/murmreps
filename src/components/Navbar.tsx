@@ -89,6 +89,9 @@ const toolsLinks = [
 const allMobileLinks = [
   { href: "/products", label: "Products" },
   { href: "/girls", label: "For Her" },
+  { href: "/sellers", label: "Sellers" },
+  { href: "/best-batch", label: "Best Batch" },
+  { href: "/giveaway", label: "Giveaway 🎁" },
   { href: "/deals", label: "Deals" },
   { href: "/news", label: "News" },
   { href: "/new", label: "New Drops" },
@@ -284,9 +287,28 @@ export default function Navbar() {
             </div>
           </div>
 
+          <DesktopLink href="/sellers" active={pathname === "/sellers"}>
+            Sellers
+          </DesktopLink>
+          <DesktopLink href="/best-batch" active={pathname.startsWith("/best-batch")}>
+            Best Batch
+          </DesktopLink>
           <DesktopLink href="/verified" active={pathname === "/verified"}>
             Verified
           </DesktopLink>
+
+          <Link
+            href="/giveaway"
+            className={`relative text-[14px] font-medium transition-colors duration-200 ${
+              pathname === "/giveaway" ? "text-white" : "text-[#9CA3AF] hover:text-white"
+            }`}
+          >
+            Giveaway 🎁
+            <span className="absolute -right-1.5 -top-1 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            {pathname === "/giveaway" && (
+              <span className="absolute -bottom-[19px] left-0 right-0 h-[2px] bg-accent" />
+            )}
+          </Link>
         </div>
 
         {/* Far right */}

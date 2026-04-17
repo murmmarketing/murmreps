@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { usePreferences } from "@/lib/usePreferences";
-import type { Metadata } from "next";
 
 interface OutfitItem {
   id: number;
