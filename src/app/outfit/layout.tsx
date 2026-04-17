@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Generate random outfit combinations from 15,000+ fashion finds. Streetwear, dark aesthetic, old money, hypebeast styles.",
   openGraph: {
-    title: "Outfit Generator — Random Outfit Ideas | MurmReps",
+    title: "Outfit Generator — Random Outfit Ideas",
     description:
       "Generate random outfit combinations from 15,000+ fashion finds. Streetwear, dark aesthetic, old money, hypebeast styles.",
   },

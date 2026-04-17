@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   description:
     "Latest drops, agent deals, and rep community updates from MurmReps.",
   openGraph: {
-    title: "News & Updates | MurmReps",
+    title: "News & Updates",
     description:
       "Latest drops, agent deals, and rep community updates from MurmReps.",
     url: "/news",
   },
   twitter: {
-    title: "News & Updates | MurmReps",
+    title: "News & Updates",
     description:
       "Latest drops, agent deals, and rep community updates from MurmReps.",
   },

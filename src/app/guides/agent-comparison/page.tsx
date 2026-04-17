@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Agent Comparison: Which Shopping Agent Should You Use? | MurmReps",
+  title: "Agent Comparison: Which Shopping Agent Should You Use?",
   description:
     "Compare all 8 shopping agents side by side — KakoBuy, Superbuy, CnFans, MuleBuy, ACBuy, LoveGoBuy, JoyaGoo, SugarGoo. Find the best agent for your needs.",
 };

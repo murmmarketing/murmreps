@@ -31,13 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     openGraph: {
-      title: `${title} | MurmReps`,
+      title: `${title}`,
       description,
       url: `/products/${id}`,
       images: [{ url: image, alt: product.name }],
     },
     twitter: {
-      title: `${title} | MurmReps`,
+      title: `${title}`,
       description,
       images: [image],
     },

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Compare rep batches by price and quality. Find the right batch for Jordan 4, Nike Dunk, Yeezy 350, and more.",
   openGraph: {
-    title: "Best Batch Comparisons — Budget vs Mid vs Top Tier | MurmReps",
+    title: "Best Batch Comparisons — Budget vs Mid vs Top Tier",
     description:
       "Compare rep batches by price and quality. Budget, mid-tier, and best batch for the most popular shoes.",
   },

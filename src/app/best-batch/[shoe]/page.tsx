@@ -124,7 +124,7 @@ export async function generateMetadata({
     title: `Best Batch ${config.name} — Budget vs Mid vs Top Tier Comparison 2026`,
     description: `Compare ${config.name} batches by price and quality. Budget ¥100-200, mid-tier ¥200-400, best batch ¥400+. Find the right batch for you.`,
     openGraph: {
-      title: `Best Batch ${config.name} — Budget vs Mid vs Top Tier Comparison 2026 | MurmReps`,
+      title: `Best Batch ${config.name} — Budget vs Mid vs Top Tier Comparison 2026`,
       description: `Compare ${config.name} batches by price and quality. Budget ¥100-200, mid-tier ¥200-400, best batch ¥400+.`,
     },
     alternates: { canonical: `/best-batch/${config.slug}` },

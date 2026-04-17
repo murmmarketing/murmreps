@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { data: post } = await supabase.from("blog_posts").select("title, excerpt, thumbnail_url").eq("slug", slug).eq("is_published", true).single();
   if (!post) return { title: "Not Found" };
   return {
-    title: `${post.title} | MurmReps`,
+    title: `${post.title}`,
     description: post.excerpt || post.title,
     openGraph: { title: post.title, description: post.excerpt || "", images: post.thumbnail_url ? [{ url: post.thumbnail_url }] : [] },
   };

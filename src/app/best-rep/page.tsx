@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Best Reps by Category 2026 | MurmReps",
+  title: "Best Reps by Category 2026",
   description:
     "Browse the best replica finds by category. Shoes, hoodies, bags, jewelry, jackets, and more — ranked by the community.",
   openGraph: {
-    title: "Best Reps by Category 2026 | MurmReps",
+    title: "Best Reps by Category 2026",
     description:
       "Browse the best replica finds by category. Shoes, hoodies, bags, jewelry, jackets, and more.",
   },

@@ -3,10 +3,10 @@ import FooterNewsletter from "./FooterNewsletter";
 
 const productLinks = [
   { label: "All Products", href: "/products" },
-  { label: "Shoes", href: "/products?category=Shoes" },
-  { label: "Streetwear", href: "/products?category=Streetwear" },
-  { label: "Bags & Acc", href: "/products?category=Bags+%26+Acc" },
-  { label: "Jewelry", href: "/products?category=Jewelry" },
+  { label: "Shoes", href: "/best-rep/shoes" },
+  { label: "Hoodies", href: "/best-rep/hoodies" },
+  { label: "Bags", href: "/best-rep/bags" },
+  { label: "Jewelry", href: "/best-rep/jewelry" },
   { label: "Deals", href: "/deals" },
 ];
 

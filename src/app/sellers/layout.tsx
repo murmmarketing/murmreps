@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Trusted Weidian and Taobao sellers for replica shoes, clothing, jewelry, and bags. Verified stores with consistent quality.",
   openGraph: {
-    title: "Best Weidian & Taobao Sellers for Reps 2026 | MurmReps",
+    title: "Best Weidian & Taobao Sellers for Reps 2026",
     description:
       "Trusted Weidian and Taobao sellers for replica shoes, clothing, jewelry, and bags. Verified stores with consistent quality.",
   },

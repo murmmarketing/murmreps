@@ -3,7 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "Collections — Curated Rep Finds | MurmReps",
+  title: "Collections — Curated Rep Finds",
   description: "Browse curated collections: summer essentials, all black outfits, budget steals, designer bags, and sneaker picks.",
 };
 

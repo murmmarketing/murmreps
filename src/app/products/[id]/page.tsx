@@ -780,7 +780,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Reviews */}
-          <ProductReviews productId={Number(product.id)} avgRating={product.score as unknown as number} reviewCount={0} />
+          <ProductReviews productId={Number(product.id)} />
 
           {/* Mini FAQ */}
           <div className="mt-8 space-y-2">
@@ -805,9 +805,9 @@ export default function ProductDetailPage() {
       {/* SEO Content */}
       {product.price_cny != null && (
         <section className="mt-12 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#141414] p-6">
-          <h2 className="text-lg font-bold text-white mb-3">About this {product.category}</h2>
+          <h2 className="text-lg font-bold text-white mb-3">About this item</h2>
           <p className="text-sm text-text-secondary leading-relaxed mb-4">
-            This {product.brand !== "Various" ? product.brand : ""} {product.category.toLowerCase()} is available for ¥{product.price_cny} (approximately €{(product.price_cny * 0.127).toFixed(2)}).
+            This {product.brand !== "Various" ? product.brand : ""} {product.category.toLowerCase().replace(/s$/, "").replace(/ies$/, "y")} is available for ¥{product.price_cny} (approximately €{(product.price_cny * 0.127).toFixed(2)}).
             Compare prices across 8 verified shopping agents including KakoBuy, Superbuy, CnFans, and more.
             MurmReps tracks 15,000+ products to help you find the best deals.
           </p>

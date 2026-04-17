@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   description:
     "Browse 15,000+ verified rep finds across 45+ categories. Compare prices across 8 shopping agents. New products added daily.",
   openGraph: {
-    title: "All Products \u2014 15,000+ Rep Finds | MurmReps",
+    title: "All Products \u2014 15,000+ Rep Finds",
     description:
       "Browse 15,000+ verified rep finds across 45+ categories. Compare prices across 8 shopping agents.",
     url: "/products",
   },
   twitter: {
-    title: "All Products \u2014 15,000+ Rep Finds | MurmReps",
+    title: "All Products \u2014 15,000+ Rep Finds",
     description:
       "Browse 15,000+ verified rep finds across 45+ categories. Compare prices across 8 shopping agents.",
   },

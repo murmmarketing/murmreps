@@ -3,7 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "Girls Collection: Complete Guide to Women's Rep Finds | MurmReps",
+  title: "Girls Collection: Complete Guide to Women's Rep Finds",
   description:
     "2,500+ handpicked women's rep finds. Bags, shoes, jewelry, clothing from Chanel, Dior, Hermes, Louis Vuitton and more.",
 };

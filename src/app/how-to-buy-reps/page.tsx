@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "How to Buy Reps in 2026 — Complete Beginner Guide | MurmReps",
+  title: "How to Buy Reps in 2026 — Complete Beginner Guide",
   description:
     "Step-by-step guide to buying reps in 2026. Learn how shopping agents work, which agent to pick, how to find items, place orders, check QC photos, and ship your haul.",
   openGraph: {
-    title: "How to Buy Reps in 2026 — Complete Beginner Guide | MurmReps",
+    title: "How to Buy Reps in 2026 — Complete Beginner Guide",
     description:
       "Step-by-step guide to buying reps in 2026. Learn how shopping agents work, which agent to pick, and how to build your first haul.",
   },

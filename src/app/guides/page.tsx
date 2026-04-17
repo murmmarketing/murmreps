@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Guides — Learn How to Buy Reps | MurmReps",
+  title: "Guides — Learn How to Buy Reps",
   description:
     "Step-by-step guides on buying reps through shopping agents. Learn how to use KakoBuy, compare agents, and build your first haul.",
 };

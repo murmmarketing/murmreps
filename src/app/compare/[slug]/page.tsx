@@ -173,7 +173,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pair = parseSlug(slug);
   if (!pair) return { title: "Not Found" };
   const [a, b] = pair;
-  const title = `${AGENTS[a].name} vs ${AGENTS[b].name} 2026 — Which Agent is Better? | MurmReps`;
+  const title = `${AGENTS[a].name} vs ${AGENTS[b].name} 2026 — Which Agent is Better?`;
   const desc = `Detailed comparison of ${AGENTS[a].name} vs ${AGENTS[b].name} for buying reps in 2026. Compare shipping speed, pricing, QC photos, returns, customer service, and more.`;
   return {
     title,

@@ -120,7 +120,7 @@ interface Props { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const brand = slugToBrand(slug);
-  const title = `Best ${brand} Reps 2026 — Top Finds | MurmReps`;
+  const title = `Best ${brand} Reps 2026 — Top Finds`;
   const desc = `The best ${brand} replica finds in 2026. Compare prices across 8 agents. Quality-checked and community-verified.`;
   return { title, description: desc, openGraph: { title, description: desc }, alternates: { canonical: `/best/${slug}` } };
 }

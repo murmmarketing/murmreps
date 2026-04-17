@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Best Reps by Brand 2026 | MurmReps",
+  title: "Best Reps by Brand 2026",
   description:
     "Find the best reps by brand. Chrome Hearts, Nike, Balenciaga, Louis Vuitton and more.",
   openGraph: {
-    title: "Best Reps by Brand 2026 | MurmReps",
+    title: "Best Reps by Brand 2026",
     description:
       "Find the best reps by brand. Chrome Hearts, Nike, Balenciaga, Louis Vuitton and more.",
   },

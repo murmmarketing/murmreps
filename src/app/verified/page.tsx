@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   description:
     "Quality-checked rep finds with real QC photos. Only the best verified products make this list.",
   openGraph: {
-    title: "Verified Finds \u2014 QC Proven Products | MurmReps",
+    title: "Verified Finds \u2014 QC Proven Products",
     description:
       "Quality-checked rep finds with real QC photos. Only the best verified products make this list.",
     url: "/verified",
   },
   twitter: {
-    title: "Verified Finds \u2014 QC Proven Products | MurmReps",
+    title: "Verified Finds \u2014 QC Proven Products",
     description:
       "Quality-checked rep finds with real QC photos. Only the best verified products make this list.",
   },

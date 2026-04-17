@@ -38,9 +38,10 @@ const rules = [
 
 function Swatch({ hex, name, size = "md" }: { hex: string; name?: string; size?: "sm" | "md" }) {
   const s = size === "sm" ? "h-8 w-8" : "h-10 w-10";
+  const isDark = hex.toLowerCase().replace("#", "").match(/^[0-3]/);
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className={`${s} rounded-full border border-white/10`} style={{ background: hex }} />
+      <div className={`${s} rounded-full border-2 ${isDark ? "border-white/30" : "border-white/10"}`} style={{ background: hex }} />
       {name && <span className="text-[10px] text-text-muted">{name}</span>}
     </div>
   );

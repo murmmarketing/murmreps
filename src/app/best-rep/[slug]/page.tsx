@@ -94,9 +94,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!config) return {};
   const name = config.name;
   const title =
-    `Best Rep ${name} 2026 | MurmReps`.length <= 60
-      ? `Best Rep ${name} 2026 | MurmReps`
-      : `Best Rep ${name} 2026 | MurmReps`;
+    `Best Rep ${name} 2026`.length <= 60
+      ? `Best Rep ${name} 2026`
+      : `Best Rep ${name} 2026`;
   const description = `Find the best replica ${name.toLowerCase()} in 2026. Top picks with QC photos and agent links.`;
   return {
     title,

@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Best KakoBuy Spreadsheet 2026 — 15,000+ Finds | MurmReps",
+  title: "Best KakoBuy Spreadsheet 2026 — 15,000+ Finds",
   description:
     "The biggest KakoBuy spreadsheet with 15,000+ rep finds. Browse shoes, clothing, bags, jewelry and more. Updated daily with QC photos, prices, and direct KakoBuy links.",
   openGraph: {
-    title: "Best KakoBuy Spreadsheet 2026 — 15,000+ Finds | MurmReps",
+    title: "Best KakoBuy Spreadsheet 2026 — 15,000+ Finds",
     description:
       "The biggest KakoBuy spreadsheet with 15,000+ rep finds. Browse shoes, clothing, bags, jewelry and more.",
   },

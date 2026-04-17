@@ -3,7 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "Best Budget Finds Under ¥200 — Cheap Reps That Look Expensive | MurmReps",
+  title: "Best Budget Finds Under ¥200 — Cheap Reps That Look Expensive",
   description:
     "The best rep finds under ¥200 (under $30). Shoes, hoodies, bags, accessories — all handpicked and quality-checked.",
 };

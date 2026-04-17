@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { data } = await supabase.from("collections").select("title, description").eq("slug", slug).eq("is_published", true).single();
   if (!data) return { title: "Not Found" };
-  return { title: `${data.title} | MurmReps`, description: data.description || data.title };
+  return { title: `${data.title}`, description: data.description || data.title };
 }
 
 export default async function CollectionPage({ params }: Props) {

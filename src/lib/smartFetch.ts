@@ -144,12 +144,14 @@ export async function fetchForYou(
   collection?: string,
   exclude?: string[]
 ) {
+  const timeSeed = Math.floor(Date.now() / (6 * 60 * 60 * 1000));
   return smartFetch({
     count,
     discoverySlots: 3,
     maxPerCategory: 1,
     collection,
     exclude,
+    seed: timeSeed + 9999,
   });
 }
 

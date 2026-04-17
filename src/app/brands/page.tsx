@@ -3,7 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
-  title: "All Brands — Browse by Brand | MurmReps",
+  title: "All Brands — Browse by Brand",
   description: "Browse rep finds by brand. Nike, Louis Vuitton, Chrome Hearts, Balenciaga, Supreme, and 500+ more brands.",
 };
 

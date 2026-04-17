@@ -37,9 +37,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { count } = await supabase.from("products").select("*", { count: "exact", head: true }).eq("brand", brand).not("image", "is", null).neq("image", "");
   const desc = BRAND_DESCRIPTIONS[slug] || `Browse ${count || 0} ${brand} products on MurmReps.`;
   return {
-    title: `${brand} Reps — ${count || 0} Products | MurmReps`,
+    title: `${brand} Reps — ${count || 0} Products`,
     description: desc,
-    openGraph: { title: `${brand} Reps | MurmReps`, description: desc },
+    openGraph: { title: `${brand} Reps`, description: desc },
   };
 }
 
