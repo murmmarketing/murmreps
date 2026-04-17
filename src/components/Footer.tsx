@@ -10,6 +10,15 @@ const productLinks = [
   { label: "Deals", href: "/deals" },
 ];
 
+const brandLinks = [
+  { label: "Best Chrome Hearts", href: "/best/chrome-hearts" },
+  { label: "Best Nike", href: "/best/nike" },
+  { label: "Best Balenciaga", href: "/best/balenciaga" },
+  { label: "Best Jordan", href: "/best/jordan" },
+  { label: "Best Louis Vuitton", href: "/best/louis-vuitton" },
+  { label: "Best Dior", href: "/best/dior" },
+];
+
 const toolLinks = [
   { label: "Link Converter", href: "/converter" },
   { label: "QC Checker", href: "/qc" },
@@ -30,7 +39,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-subtle bg-void">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Column 1 — Brand */}
           <div>
             <Link href="/">
@@ -103,7 +112,26 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4 — Community */}
+          {/* Column 4 — Top Brands */}
+          <div>
+            <h4 className="text-[13px] font-semibold uppercase tracking-[1px] text-white">
+              Top Brands
+            </h4>
+            <ul className="mt-4 space-y-2.5">
+              {brandLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-text-secondary transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 5 — Community */}
           <div>
             <h4 className="text-[13px] font-semibold uppercase tracking-[1px] text-white">
               Community

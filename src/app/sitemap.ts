@@ -17,6 +17,10 @@ const GUIDE_SLUGS = [
   "how-to-buy-reps-kakobuy", "agent-comparison", "budget-finds",
   "girls-collection", "sizing-guide", "color-guide", "streetwear-styling",
 ];
+const BEST_REP_CATEGORIES = [
+  "shoes", "hoodies", "bags", "jewelry", "jackets",
+  "pants", "watches", "sneakers", "accessories", "t-shirts",
+];
 
 const BASE = "https://murmreps.com";
 
@@ -61,6 +65,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/kakobuy-spreadsheet`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/best-weidian-sellers`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/how-to-buy-reps`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+  ];
+
+  // ── Best rep category pages ────────────────────────────────────
+  const bestRepPages: MetadataRoute.Sitemap = [
+    { url: `${BASE}/best`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/best-rep`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    ...BEST_REP_CATEGORIES.map((slug) => ({
+      url: `${BASE}/best-rep/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
   ];
 
   // ── Guide pages ───────────────────────────────────────────────
@@ -154,6 +170,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...seoPages,
+    ...bestRepPages,
     ...guidePages,
     ...bestBatchPages,
     ...comparePages,
