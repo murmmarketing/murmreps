@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Best Weidian Sellers 2026 — Trusted Stores for Reps | MurmReps",
+  title: "Best Weidian Sellers 2026 — Trusted Stores",
   description:
     "The best Weidian sellers for shoes, clothing, and accessories in 2026. Verified stores with consistent quality, real QC photos, and direct agent links.",
   openGraph: {
-    title: "Best Weidian Sellers 2026 — Trusted Stores for Reps | MurmReps",
+    title: "Best Weidian Sellers 2026 — Trusted Stores",
     description:
       "The best Weidian sellers for shoes, clothing, and accessories in 2026. Verified stores with consistent quality.",
   },

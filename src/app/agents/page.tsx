@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Best Rep Agents 2026 \u2014 Compare KakoBuy, Superbuy, CnFans & More | MurmReps",
+  title: "Best Rep Agents 2026 \u2014 Compare All 8 Agents",
   description:
     "Compare the top 8 rep agents side by side. Ratings, shipping costs, and features for KakoBuy, Superbuy, CnFans, MuleBuy, ACBuy and more.",
   openGraph: {
-    title: "Best Rep Agents 2026 \u2014 Compare KakoBuy, Superbuy, CnFans & More | MurmReps",
+    title: "Best Rep Agents 2026 \u2014 Compare All 8 Agents",
     description:
       "Compare the top 8 rep agents side by side. Ratings, shipping costs, and features.",
     url: "/agents",
   },
   twitter: {
-    title: "Best Rep Agents 2026 \u2014 Compare KakoBuy, Superbuy, CnFans & More | MurmReps",
+    title: "Best Rep Agents 2026 \u2014 Compare All 8 Agents",
     description:
       "Compare the top 8 rep agents side by side. Ratings, shipping costs, and features.",
   },

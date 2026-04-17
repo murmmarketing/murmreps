@@ -2,13 +2,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Rep Sizing Guide — How to Get the Right Fit for Reps | MurmReps",
+  title: "Rep Sizing Guide — Get the Right Fit Every Time",
   description: "Chinese sizing guide for replica clothing and shoes. Size conversion charts, measuring tips, and what to do when your size doesn't fit.",
 };
 
 export default function SizingGuidePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to Get the Right Fit for Reps",
+    description: "Chinese sizing guide for replica clothing and shoes.",
+    step: [
+      { "@type": "HowToStep", name: "Measure yourself", text: "Take accurate body measurements in cm." },
+      { "@type": "HowToStep", name: "Check the size chart", text: "Always use the seller's size chart instead of your usual size." },
+      { "@type": "HowToStep", name: "Convert sizes", text: "Use conversion tables for US/EU/UK to Chinese sizing." },
+      { "@type": "HowToStep", name: "Check QC photos", text: "If the fit looks off in QC photos, return before shipping." },
+    ],
+  };
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav className="mb-6 text-sm text-text-muted">
         <Link href="/guides" className="hover:text-accent transition-colors">Guides</Link>
         <span className="mx-2">/</span><span className="text-[#d4d4d8]">Sizing Guide</span>

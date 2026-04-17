@@ -323,6 +323,12 @@ export default function GiveawayPage() {
           )}
         </>
       )}
+
+      <div className="mt-12 flex flex-wrap gap-3 text-sm">
+        <a href="/products" className="text-accent hover:underline">Browse all finds →</a>
+        <a href="/deals" className="text-accent hover:underline">View deals &amp; coupons →</a>
+        <a href="/how-to-buy-reps" className="text-accent hover:underline">How to buy reps →</a>
+      </div>
     </div>
   );
 }

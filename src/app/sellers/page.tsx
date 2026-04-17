@@ -176,6 +176,13 @@ export default function SellersPage() {
           for specific shoes.
         </p>
       </section>
+
+      <div className="mt-8 flex flex-wrap gap-3 text-sm">
+        <Link href="/products" className="text-accent hover:underline">Browse all finds →</Link>
+        <Link href="/how-to-buy-reps" className="text-accent hover:underline">How to buy reps →</Link>
+        <Link href="/kakobuy-spreadsheet" className="text-accent hover:underline">KakoBuy spreadsheet →</Link>
+        <Link href="/best-weidian-sellers" className="text-accent hover:underline">Best Weidian sellers →</Link>
+      </div>
     </div>
   );
 }

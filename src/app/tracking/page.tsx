@@ -214,6 +214,12 @@ export default function TrackingPage() {
           ))}
         </div>
       </section>
+
+      <div className="mt-12 flex flex-wrap gap-3 text-sm">
+        <a href="/products" className="text-accent hover:underline">Browse all finds →</a>
+        <a href="/how-to-buy-reps" className="text-accent hover:underline">How to buy reps →</a>
+        <a href="/guides/how-to-buy-reps-kakobuy" className="text-accent hover:underline">KakoBuy guide →</a>
+      </div>
     </div>
   );
 }

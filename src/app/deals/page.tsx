@@ -74,6 +74,12 @@ export default function DealsPage() {
         <a href="https://ikako.vip/r/6gkjt" target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded-lg bg-white px-6 py-3 font-bold text-[#FE4205]">Sign up with KakoBuy →</a>
       </div>
+
+      <div className="mt-8 flex flex-wrap gap-3 text-sm">
+        <a href="/products" className="text-[#FE4205] hover:underline">Browse all finds →</a>
+        <a href="/agents" className="text-[#FE4205] hover:underline">Compare agents →</a>
+        <a href="/kakobuy-spreadsheet" className="text-[#FE4205] hover:underline">KakoBuy spreadsheet →</a>
+      </div>
     </div>
   );
 }

@@ -43,8 +43,22 @@ export default async function BlogPostPage({ params }: Props) {
   const { data: related } = await supabase.from("blog_posts").select("slug, title, published_at, category")
     .eq("is_published", true).neq("slug", slug).order("published_at", { ascending: false }).limit(3);
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt || post.title,
+    image: post.thumbnail_url || "https://murmreps.com/og-image.svg",
+    datePublished: post.published_at,
+    dateModified: post.updated_at || post.published_at,
+    author: { "@type": "Organization", name: "MurmReps", url: "https://murmreps.com" },
+    publisher: { "@type": "Organization", name: "MurmReps", url: "https://murmreps.com", logo: { "@type": "ImageObject", url: "https://murmreps.com/favicon.svg" } },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://murmreps.com/news/${slug}` },
+  };
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <nav className="mb-6 text-sm text-text-muted">
         <Link href="/news" className="hover:text-accent transition-colors">News</Link>
         <span className="mx-2">/</span>
@@ -77,6 +91,13 @@ export default async function BlogPostPage({ params }: Props) {
         <p className="mt-2 text-white/80">Sign up to KakoBuy and start shopping.</p>
         <a href="https://ikako.vip/r/6gkjt" target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded-lg bg-white px-6 py-3 font-bold text-[#FE4205]">Sign up to KakoBuy →</a>
+      </div>
+
+      {/* Internal links */}
+      <div className="mt-8 flex flex-wrap gap-3 text-sm">
+        <Link href="/products" className="text-accent hover:underline">Browse all finds →</Link>
+        <Link href="/guides/how-to-buy-reps-kakobuy" className="text-accent hover:underline">How to buy reps →</Link>
+        <Link href="/sellers" className="text-accent hover:underline">Trusted sellers →</Link>
       </div>
 
       {/* Related */}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "How to Style Streetwear in 2026 — Outfit Formulas, Rules & Tips | MurmReps",
+  title: "How to Style Streetwear in 2026 — Outfit Guide",
   description: "Complete streetwear styling guide. 6 outfit formulas, layering system, shoe pairing guide, accessory tips, and common mistakes to avoid.",
 };
 
@@ -25,8 +25,21 @@ const mistakes = [
 ];
 
 export default function StreetwearStylingPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to Style Streetwear in 2026",
+    description: "Complete streetwear styling guide with outfit formulas, layering, and tips.",
+    step: [
+      { "@type": "HowToStep", name: "Pick a formula", text: "Choose from 6 proven outfit formulas." },
+      { "@type": "HowToStep", name: "Layer properly", text: "Use the base-mid-outer layering system." },
+      { "@type": "HowToStep", name: "Pair shoes", text: "Match sneakers to your outfit style." },
+      { "@type": "HowToStep", name: "Add accessories", text: "One or two accessories complete the look." },
+    ],
+  };
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav className="mb-6 text-sm text-text-muted">
         <Link href="/guides" className="hover:text-accent transition-colors">Guides</Link>
         <span className="mx-2">/</span><span className="text-[#d4d4d8]">Streetwear Styling</span>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "How to Buy Reps Using KakoBuy — Step by Step Guide | MurmReps",
+  title: "How to Buy Reps Using KakoBuy — 2026 Guide",
   description:
     "Complete beginner guide to buying replica clothing and shoes using KakoBuy. Step-by-step tutorial with screenshots. Updated 2026.",
 };
@@ -77,8 +77,22 @@ const tocItems = [
 ];
 
 export default function KakoBuyGuidePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to Buy Reps Using KakoBuy",
+    description: "Complete beginner guide to buying replica clothing and shoes using KakoBuy.",
+    step: [
+      { "@type": "HowToStep", name: "Create a KakoBuy account", text: "Sign up for a free KakoBuy account." },
+      { "@type": "HowToStep", name: "Find items", text: "Browse MurmReps or paste Weidian/Taobao links." },
+      { "@type": "HowToStep", name: "Add to cart and pay", text: "Select size, add to cart, pay via PayPal or card." },
+      { "@type": "HowToStep", name: "Review QC photos", text: "Check quality photos before shipping internationally." },
+      { "@type": "HowToStep", name: "Ship your haul", text: "Choose shipping line and wait for delivery." },
+    ],
+  };
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-sm text-text-muted">
         <Link href="/guides" className="transition-colors hover:text-accent">
