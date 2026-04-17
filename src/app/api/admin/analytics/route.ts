@@ -75,13 +75,28 @@ async function handleOverview(supabase: any, dateFilter: string | null) {
     supabase.from("products").select("id", { count: "exact", head: true }),
     supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }).is("unsubscribed_at", null),
     supabase.from("blog_comments").select("id", { count: "exact", head: true }),
-    supabase.from("products").select("views, likes"),
+    supabase.from("products").select("views, likes, dislikes, base_views, base_likes, base_dislikes"),
   ]);
 
-  const totalViews = (allProducts || []).reduce((s: number, p: { views: number }) => s + (p.views || 0), 0);
-  const totalLikes = (allProducts || []).reduce((s: number, p: { likes: number }) => s + (p.likes || 0), 0);
+  const products = allProducts || [];
+  const totalViews = products.reduce((s: number, p: { views: number }) => s + (p.views || 0), 0);
+  const totalLikes = products.reduce((s: number, p: { likes: number }) => s + (p.likes || 0), 0);
+  const realViews = products.reduce((s: number, p: { views: number; base_views: number }) => s + Math.max(0, (p.views || 0) - (p.base_views || 0)), 0);
+  const realLikes = products.reduce((s: number, p: { likes: number; base_likes: number }) => s + Math.max(0, (p.likes || 0) - (p.base_likes || 0)), 0);
+  const realDislikes = products.reduce((s: number, p: { dislikes: number; base_dislikes: number }) => s + Math.max(0, (p.dislikes || 0) - (p.base_dislikes || 0)), 0);
 
-  // Views over time
+  // Real page views from page_views table (accurate daily data)
+  let realViewsQ = supabase.from("page_views").select("viewed_at");
+  if (dateFilter) realViewsQ = realViewsQ.gte("viewed_at", dateFilter);
+  const { data: realViewsData } = await realViewsQ.order("viewed_at", { ascending: true });
+  const realViewsByDate: Record<string, number> = {};
+  (realViewsData || []).forEach((r: { viewed_at: string }) => {
+    const date = r.viewed_at.slice(0, 10);
+    realViewsByDate[date] = (realViewsByDate[date] || 0) + 1;
+  });
+  const realViewsOverTime = Object.entries(realViewsByDate).map(([date, count]) => ({ date, count }));
+
+  // Analytics-table views over time (legacy, includes imported)
   let viewsTimeQ = supabase.from("analytics").select("created_at").eq("event_type", "product_view");
   if (dateFilter) viewsTimeQ = viewsTimeQ.gte("created_at", dateFilter);
   const { data: viewsTimeData } = await viewsTimeQ.order("created_at", { ascending: true });
@@ -92,12 +107,30 @@ async function handleOverview(supabase: any, dateFilter: string | null) {
   });
   const viewsOverTime = Object.entries(viewsByDate).map(([date, count]) => ({ date, count }));
 
-  // Top 10 most viewed products
-  const { data: topViewed } = await supabase
+  // Top 10 by real views (views - base_views)
+  const { data: topViewedRaw } = await supabase
     .from("products")
-    .select("id, name, views")
+    .select("id, name, views, base_views")
     .order("views", { ascending: false })
-    .limit(10);
+    .limit(200);
+  const topByReal = (topViewedRaw || [])
+    .map((p: { id: number; name: string; views: number; base_views: number }) => ({
+      id: p.id, name: p.name,
+      views: p.views || 0,
+      realViews: Math.max(0, (p.views || 0) - (p.base_views || 0)),
+    }))
+    .sort((a: { realViews: number }, b: { realViews: number }) => b.realViews - a.realViews)
+    .slice(0, 10);
+
+  // Top 10 by total views
+  const topByTotal = (topViewedRaw || [])
+    .map((p: { id: number; name: string; views: number; base_views: number }) => ({
+      id: p.id, name: p.name,
+      views: p.views || 0,
+      realViews: Math.max(0, (p.views || 0) - (p.base_views || 0)),
+    }))
+    .sort((a: { views: number }, b: { views: number }) => b.views - a.views)
+    .slice(0, 10);
 
   // Agent clicks
   let agentQ = supabase.from("analytics").select("agent_name").eq("event_type", "agent_click").not("agent_name", "is", null);
@@ -127,6 +160,9 @@ async function handleOverview(supabase: any, dateFilter: string | null) {
       totalProducts: totalProducts || 0,
       totalViews,
       totalLikes,
+      realViews,
+      realLikes,
+      realDislikes,
       subscriberCount: subscriberCount || 0,
       commentCount: commentCount || 0,
       pageViews: viewsRes.count || 0,
@@ -134,7 +170,9 @@ async function handleOverview(supabase: any, dateFilter: string | null) {
       converterUses: converterRes.count || 0,
     },
     viewsOverTime,
-    topViewed: topViewed || [],
+    realViewsOverTime,
+    topByReal,
+    topByTotal,
     agentClicks,
     hourlyActivity,
   });
@@ -159,7 +197,7 @@ async function handleProducts(supabase: any, opts: {
 
   let query = supabase
     .from("products")
-    .select("id, name, brand, category, image, views, likes, dislikes, qc_rating, tier, created_at, verified", { count: "exact" });
+    .select("id, name, brand, category, image, views, likes, dislikes, base_views, base_likes, base_dislikes, qc_rating, tier, created_at, verified", { count: "exact" });
 
   if (search) query = query.ilike("name", `%${search}%`);
   if (category) query = query.eq("category", category);
@@ -490,7 +528,7 @@ async function handleCategories(supabase: any) {
 async function handleHealth(supabase: any) {
   const { data: allProducts } = await supabase
     .from("products")
-    .select("id, name, brand, category, image, views, qc_rating, created_at");
+    .select("id, name, brand, category, image, views, base_views, qc_rating, created_at");
 
   const products = allProducts || [];
   const noImage = products.filter((p: { image: string | null }) => !p.image || p.image === "");
@@ -498,6 +536,7 @@ async function handleHealth(supabase: any) {
   const unknownBrand = products.filter((p: { brand: string }) => !p.brand || p.brand === "Unknown" || p.brand === "Various");
   const shortName = products.filter((p: { name: string }) => p.name.length < 5);
   const zeroViews = products.filter((p: { views: number }) => p.views === 0);
+  const zeroRealViews = products.filter((p: { views: number; base_views: number }) => Math.max(0, (p.views || 0) - (p.base_views || 0)) === 0);
 
   // Duplicates
   const nameCounts: Record<string, number> = {};
@@ -546,6 +585,7 @@ async function handleHealth(supabase: any) {
       shortName: shortName.length,
       duplicates,
       zeroViews: zeroViews.length,
+      zeroRealViews: zeroRealViews.length,
     },
     categoryHealth: {
       lowQuality: lowQualityCategories,

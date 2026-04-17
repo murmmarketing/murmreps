@@ -49,6 +49,7 @@ export default function AnalyticsDashboard() {
   const [tab, setTab] = useState<Tab>("Overview");
   const [rangeDays, setRangeDays] = useState(30);
   const [chartReady, setChartReady] = useState(false);
+  const [showReal, setShowReal] = useState(true);
 
   // Tab data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,20 +197,34 @@ export default function AnalyticsDashboard() {
 
       {/* Date range (for Overview & Engagement) */}
       {(tab === "Overview" || tab === "Engagement") && (
-        <div className="mb-6 flex flex-wrap gap-2">
-          {DATE_RANGES.map(r => (
-            <button key={r.label} onClick={() => setRangeDays(r.days)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${rangeDays === r.days ? "bg-[#FE4205] text-white" : "bg-[#141414] text-gray-400 hover:text-white"}`}>
-              {r.label}
-            </button>
-          ))}
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap gap-2">
+            {DATE_RANGES.map(r => (
+              <button key={r.label} onClick={() => setRangeDays(r.days)}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${rangeDays === r.days ? "bg-[#FE4205] text-white" : "bg-[#141414] text-gray-400 hover:text-white"}`}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+          {tab === "Overview" && (
+            <div className="flex items-center gap-1 rounded-full bg-[#0f0f0f] p-1">
+              <button onClick={() => setShowReal(true)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${showReal ? "bg-[#FE4205] text-white" : "text-gray-400 hover:text-white"}`}>
+                Real engagement
+              </button>
+              <button onClick={() => setShowReal(false)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${!showReal ? "bg-[#FE4205] text-white" : "text-gray-400 hover:text-white"}`}>
+                Total (incl. imported)
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {loading && <Spinner />}
 
       {/* Tab content */}
-      {!loading && tab === "Overview" && <OverviewTab data={data.overview} chartReady={chartReady} />}
+      {!loading && tab === "Overview" && <OverviewTab data={data.overview} chartReady={chartReady} showReal={showReal} />}
       {!loading && tab === "Products" && (
         <ProductsTab
           data={data.products}
@@ -234,7 +249,7 @@ export default function AnalyticsDashboard() {
 // TAB 1: OVERVIEW
 // ════════════════════════════════════════════════════════════════════════
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function OverviewTab({ data, chartReady }: { data: any; chartReady: boolean }) {
+function OverviewTab({ data, chartReady, showReal }: { data: any; chartReady: boolean; showReal: boolean }) {
   const viewsRef = useRef<HTMLCanvasElement>(null);
   const topRef = useRef<HTMLCanvasElement>(null);
   const agentRef = useRef<HTMLCanvasElement>(null);
@@ -250,20 +265,26 @@ function OverviewTab({ data, chartReady }: { data: any; chartReady: boolean }) {
     const grid = { color: "rgba(255,255,255,0.06)" };
     const tick = { color: "#6B7280" };
 
-    if (viewsRef.current && data.viewsOverTime?.length > 0) {
+    // Daily views chart — use real page_views table when in real mode
+    const viewsData = showReal ? (data.realViewsOverTime || []) : (data.viewsOverTime || []);
+    if (viewsRef.current && viewsData.length > 0) {
       charts.current.push(new Chart(viewsRef.current, {
         type: "line",
-        data: { labels: data.viewsOverTime.map((v: { date: string }) => v.date.slice(5)), datasets: [{ label: "Views", data: data.viewsOverTime.map((v: { count: number }) => v.count), borderColor: "#FE4205", backgroundColor: "rgba(254,66,5,0.1)", fill: true, tension: 0.3, pointRadius: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: "Daily Page Views", color: "#fff", font: { size: 14 } } }, scales: { x: { ticks: tick, grid }, y: { ticks: tick, grid, beginAtZero: true } } },
+        data: { labels: viewsData.map((v: { date: string }) => v.date.slice(5)), datasets: [{ label: "Views", data: viewsData.map((v: { count: number }) => v.count), borderColor: showReal ? "#10B981" : "#FE4205", backgroundColor: showReal ? "rgba(16,185,129,0.1)" : "rgba(254,66,5,0.1)", fill: true, tension: 0.3, pointRadius: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: showReal ? "Real Daily Page Views" : "Daily Page Views (all)", color: "#fff", font: { size: 14 } } }, scales: { x: { ticks: tick, grid }, y: { ticks: tick, grid, beginAtZero: true } } },
       }));
     }
-    if (topRef.current && data.topViewed?.length > 0) {
+
+    // Top 10 products — real vs total
+    const topData = showReal ? (data.topByReal || []) : (data.topByTotal || []);
+    if (topRef.current && topData.length > 0) {
       charts.current.push(new Chart(topRef.current, {
         type: "bar",
-        data: { labels: data.topViewed.map((p: { name: string }) => p.name.slice(0, 25)), datasets: [{ label: "Views", data: data.topViewed.map((p: { views: number }) => p.views), backgroundColor: "rgba(254,66,5,0.8)", borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false }, title: { display: true, text: "Top 10 Most Viewed Products", color: "#fff", font: { size: 14 } } }, scales: { x: { ticks: tick, grid, beginAtZero: true }, y: { ticks: { ...tick, font: { size: 10 } }, grid: { display: false } } } },
+        data: { labels: topData.map((p: { name: string }) => p.name.slice(0, 25)), datasets: [{ label: showReal ? "Real Views" : "Total Views", data: topData.map((p: { realViews: number; views: number }) => showReal ? p.realViews : p.views), backgroundColor: showReal ? "rgba(16,185,129,0.8)" : "rgba(254,66,5,0.8)", borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false }, title: { display: true, text: showReal ? "Top 10 by Real Views" : "Top 10 by Total Views", color: "#fff", font: { size: 14 } } }, scales: { x: { ticks: tick, grid, beginAtZero: true }, y: { ticks: { ...tick, font: { size: 10 } }, grid: { display: false } } } },
       }));
     }
+
     if (agentRef.current && data.agentClicks?.length > 0) {
       const palette = ["#FE4205", "#FF6B3D", "#FF9470", "#FFB89E", "#FFD5C4", "#E63B04", "#CC3503", "#B32E03"];
       charts.current.push(new Chart(agentRef.current, {
@@ -280,7 +301,7 @@ function OverviewTab({ data, chartReady }: { data: any; chartReady: boolean }) {
       }));
     }
     return () => { charts.current.forEach(c => c.destroy()); charts.current = []; };
-  }, [chartReady, data]);
+  }, [chartReady, data, showReal]);
 
   if (!data) return <p className="text-sm text-gray-500">No data</p>;
   const s = data.stats || {};
@@ -289,8 +310,16 @@ function OverviewTab({ data, chartReady }: { data: any; chartReady: boolean }) {
     <>
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatBox label="Total Products" value={s.totalProducts || 0} />
-        <StatBox label="Total Views" value={s.totalViews || 0} />
-        <StatBox label="Total Likes" value={s.totalLikes || 0} />
+        <StatBox
+          label={showReal ? "Real Views" : "Total Views"}
+          value={showReal ? (s.realViews || 0) : (s.totalViews || 0)}
+          sub={showReal ? `${(s.totalViews || 0).toLocaleString()} total` : `${(s.realViews || 0).toLocaleString()} real`}
+        />
+        <StatBox
+          label={showReal ? "Real Likes" : "Total Likes"}
+          value={showReal ? (s.realLikes || 0) : (s.totalLikes || 0)}
+          sub={showReal ? `${(s.totalLikes || 0).toLocaleString()} total` : `${(s.realLikes || 0).toLocaleString()} real`}
+        />
         <StatBox label="Subscribers" value={s.subscriberCount || 0} />
         <StatBox label="Blog Comments" value={s.commentCount || 0} />
         <StatBox label="Agent Clicks" value={s.agentClicks || 0} sub={`${s.converterUses || 0} converter uses`} />
@@ -391,6 +420,7 @@ function ProductsTab({ data, sort, onSort, order, onOrder, page, onPage, limit, 
                   <th className="pb-3 pr-2">Brand</th>
                   <th className="pb-3 pr-2">Category</th>
                   <th className="pb-3 pr-2 text-right">Views</th>
+                  <th className="pb-3 pr-2 text-right text-green-400">Real</th>
                   <th className="pb-3 pr-2 text-right">Likes</th>
                   <th className="pb-3 pr-2 text-right">Dislikes</th>
                   <th className="pb-3 pr-2 text-right">Like %</th>
@@ -399,7 +429,7 @@ function ProductsTab({ data, sort, onSort, order, onOrder, page, onPage, limit, 
                 </tr>
               </thead>
               <tbody>
-                {products.map((p: { id: number; name: string; brand: string; category: string; image: string; views: number; likes: number; dislikes: number; qc_rating: number | null; created_at: string }, i: number) => {
+                {products.map((p: { id: number; name: string; brand: string; category: string; image: string; views: number; base_views: number; likes: number; dislikes: number; base_likes: number; base_dislikes: number; qc_rating: number | null; created_at: string }, i: number) => {
                   const likeRatio = (p.likes + p.dislikes) > 0 ? Math.round((p.likes / (p.likes + p.dislikes)) * 100) : 0;
                   return (
                     <tr key={p.id} className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[#FE4205]/5">
@@ -417,6 +447,7 @@ function ProductsTab({ data, sort, onSort, order, onOrder, page, onPage, limit, 
                       <td className="py-2 pr-2 text-gray-400">{p.brand}</td>
                       <td className="py-2 pr-2 text-gray-400">{p.category}</td>
                       <td className="py-2 pr-2 text-right text-white">{p.views.toLocaleString()}</td>
+                      <td className="py-2 pr-2 text-right text-green-400">{Math.max(0, (p.views || 0) - (p.base_views || 0))}</td>
                       <td className="py-2 pr-2 text-right text-green-400">{p.likes}</td>
                       <td className="py-2 pr-2 text-right text-red-400">{p.dislikes}</td>
                       <td className="py-2 pr-2 text-right text-gray-400">{likeRatio}%</td>
@@ -879,7 +910,8 @@ function HealthTab({ data }: { data: any }) {
     { label: "Brand = Unknown/Various", value: alerts.unknownBrand, color: "text-yellow-400", link: "/admin/products" },
     { label: "Very short names (<5 chars)", value: alerts.shortName, color: "text-yellow-400" },
     { label: "Duplicate product names", value: alerts.duplicates, color: "text-orange-400" },
-    { label: "Products with 0 views", value: alerts.zeroViews, color: "text-gray-400" },
+    { label: "Products with 0 views (total)", value: alerts.zeroViews, color: "text-gray-400" },
+    { label: "Products with 0 real views", value: alerts.zeroRealViews, color: "text-yellow-400" },
   ];
 
   return (

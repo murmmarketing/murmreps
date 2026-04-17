@@ -255,6 +255,7 @@ export default function ProductDetailPage() {
     viewIncrementedRef.current = true;
     supabase.rpc('increment_views', { product_id: Number(params.id) }).then(() => {});
     trackEvent('product_view', { product_id: Number(params.id) });
+    fetch('/api/track/view', { method: 'POST', body: JSON.stringify({ productId: Number(params.id) }), headers: { 'Content-Type': 'application/json' } }).catch(() => {});
   }, [params.id]);
 
   const qcPhotos: QCPhotoSet[] = product ? ((product as Product).qc_photos || []) : [];
